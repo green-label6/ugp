@@ -202,11 +202,16 @@ function loadMoreProducts(categoryName, subcategoryName, gridId) {
 
 function getCDNUrl(path) {
     if (!path) return 'https://via.placeholder.com/400x400?text=No+Image';
-    // تحويل المسار المحلي إلى رابط CDN عبر jsDelivr
-    // المستودع: green-label6/ugp
-    // ملاحظة: تم تغيير الفرع إلى master ليتوافق مع مستودعك
-    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-    return `https://cdn.jsdelivr.net/gh/green-label6/ugp@master/${cleanPath}`;
+    
+    // 1. تنظيف المسار من أي سلاش في البداية
+    let cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    
+    // 2. معالجة المسافات والرموز الخاصة في المسار ليتوافق مع الروابط (URL Encoding)
+    // نقوم بتقسيم المسار وتشفير كل جزء على حدة للحفاظ على السلاش
+    const encodedPath = cleanPath.split('/').map(part => encodeURIComponent(part)).join('/');
+    
+    // 3. بناء رابط CDN النهائي باستخدام فرع master
+    return `https://cdn.jsdelivr.net/gh/green-label6/ugp@master/${encodedPath}`;
 }
 
 function createProductCardHtml(product) {
