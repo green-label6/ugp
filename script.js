@@ -204,8 +204,9 @@ function getCDNUrl(path) {
     if (!path) return 'https://via.placeholder.com/400x400?text=No+Image';
     // تحويل المسار المحلي إلى رابط CDN عبر jsDelivr
     // المستودع: green-label6/ugp
+    // ملاحظة: تم تغيير الفرع إلى master ليتوافق مع مستودعك
     const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-    return `https://cdn.jsdelivr.net/gh/green-label6/ugp@main/${cleanPath}`;
+    return `https://cdn.jsdelivr.net/gh/green-label6/ugp@master/${cleanPath}`;
 }
 
 function createProductCardHtml(product) {
