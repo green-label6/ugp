@@ -34,8 +34,15 @@
                     </div>
                 </div>
 
-                <!-- خيارات العرض -->
+                <!-- خيارات العرض والترتيب -->
                 <div class="view-options">
+                    <div class="sort-container">
+                        <select id="sortSelect" class="sort-select">
+                            <option value="default">الترتيب الافتراضي</option>
+                            <option value="price-asc">السعر: من الأقل للأعلى</option>
+                            <option value="price-desc">السعر: من الأعلى للأقل</option>
+                        </select>
+                    </div>
                     <button class="view-btn active" data-view="grid-2" title="عمودين"><i class="fas fa-th-large"></i></button>
                     <button class="view-btn" data-view="grid-3" title="3 أعمدة"><i class="fas fa-th"></i></button>
                     <button class="view-btn" data-view="list" title="قائمة"><i class="fas fa-list"></i></button>
@@ -108,8 +115,31 @@
         </section>
 
         <!-- حاوية الأقسام الديناميكية -->
-        <div id="dynamic-sections">
-            <!-- سيتم إنشاء الأقسام والفئات الفرعية هنا عبر JS -->
+        <div class="main-content-wrapper container">
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h3>تصفية المنتجات</h3>
+                </div>
+                <div class="filter-group">
+                    <h4>نطاق السعر</h4>
+                    <div class="price-range-inputs">
+                        <input type="number" id="minPrice" placeholder="الأقل" min="0">
+                        <span>-</span>
+                        <input type="number" id="maxPrice" placeholder="الأعلى" min="0">
+                    </div>
+                    <button id="applyPriceFilter" class="filter-btn">تطبيق</button>
+                </div>
+                <div class="filter-group">
+                    <h4>الأقسام</h4>
+                    <ul id="sidebarCategories" class="sidebar-cat-list">
+                        <!-- سيتم ملؤها ديناميكياً -->
+                    </ul>
+                </div>
+            </aside>
+            
+            <div id="dynamic-sections" class="dynamic-content">
+                <!-- سيتم إنشاء الأقسام والفئات الفرعية هنا عبر JS -->
+            </div>
         </div>
 
         <!-- قسم المميزات -->
