@@ -664,9 +664,102 @@ button {
 /* تحسينات بطاقات المنتجات */
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 30px;
+    gap: 20px;
     margin-bottom: 30px;
+    transition: all 0.3s ease;
+}
+
+/* الوضع الافتراضي: عمودين */
+.products-grid.grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+/* وضع 3 أعمدة */
+.products-grid.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* وضع القائمة */
+.products-grid.list {
+    grid-template-columns: 1fr;
+}
+
+.products-grid.list .product-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: auto;
+}
+
+.products-grid.list .product-img {
+    width: 150px;
+    height: 150px;
+    flex-shrink: 0;
+}
+
+.products-grid.list .product-info {
+    flex: 1;
+    padding: 20px;
+}
+
+/* أزرار التحكم في العرض */
+.view-options {
+    display: flex;
+    gap: 10px;
+    margin: 0 15px;
+}
+
+.view-btn {
+    background: var(--light-color);
+    color: var(--gray-color);
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: var(--transition);
+}
+
+.view-btn.active, .view-btn:hover {
+    background: var(--gradient);
+    color: white;
+}
+
+/* زر المفضلة داخل البطاقة */
+.fav-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: white;
+    color: var(--gray-color);
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+    z-index: 5;
+    transition: var(--transition);
+}
+
+.fav-btn.active {
+    color: #ff4757;
+}
+
+.fav-btn:hover {
+    transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+    .products-grid.grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .view-options {
+        display: none; /* إخفاء في الجوال لتبسيط الواجهة أو يمكن تركها */
+    }
 }
 
 .load-more-container {

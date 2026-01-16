@@ -1,6 +1,9 @@
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
+let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 let categoriesData = {};
 let allProducts = [];
+let currentView = 'grid-2'; // الوضع الافتراضي عمودين
+let showingFavorites = false;
 
 document.addEventListener('DOMContentLoaded', () => {
     loadProducts();
@@ -9,7 +12,84 @@ document.addEventListener('DOMContentLoaded', () => {
     setupMobileMenu();
     setupBackToTop();
     initLazyLoading();
+    setupViewOptions();
 });
+
+function setupViewOptions() {
+    const viewBtns = document.querySelectorAll('.view-btn[data-view]');
+    viewBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            viewBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentView = btn.dataset.view;
+            applyViewToGrids();
+        });
+    });
+
+    const favToggle = document.getElementById('favToggle');
+    if (favToggle) {
+        favToggle.addEventListener('click', () => {
+            showingFavorites = !showingFavorites;
+            favToggle.classList.toggle('active');
+            if (showingFavorites) {
+                renderFavorites();
+            } else {
+                renderDynamicSections();
+            }
+        });
+    }
+}
+
+function applyViewToGrids() {
+    const grids = document.querySelectorAll('.products-grid');
+    grids.forEach(grid => {
+        grid.classList.remove('grid-2', 'grid-3', 'list');
+        grid.classList.add(currentView);
+    });
+}
+
+function toggleFavorite(id, event) {
+    if (event) event.stopPropagation();
+    const index = favorites.indexOf(id);
+    if (index === -1) {
+        favorites.push(id);
+    } else {
+        favorites.splice(index, 1);
+    }
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+    
+    // تحديث الأيقونات في الصفحة
+    const favBtns = document.querySelectorAll(`.fav-btn[data-id="${id}"]`);
+    favBtns.forEach(btn => btn.classList.toggle('active'));
+    
+    if (showingFavorites) renderFavorites();
+}
+
+function renderFavorites() {
+    const container = document.getElementById('dynamic-sections');
+    container.innerHTML = `
+        <section class="products-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">المفضلة</h2>
+                </div>
+                <div class="products-grid ${currentView}" id="favorites-grid">
+                </div>
+            </div>
+        </section>
+    `;
+    
+    const grid = document.getElementById('favorites-grid');
+    const favProducts = allProducts.filter(p => favorites.includes(p.id));
+    
+    if (favProducts.length === 0) {
+        grid.innerHTML = '<p class="no-results">لا توجد منتجات في المفضلة حالياً.</p>';
+    } else {
+        favProducts.forEach(product => {
+            grid.innerHTML += createProductCardHtml(product);
+        });
+    }
+}
 
 function initLazyLoading() {
     const imageObserver = new IntersectionObserver((entries, observer) => {
@@ -147,7 +227,7 @@ function renderDynamicSections() {
             sectionHtml += `
                 <div class="subcategory-group" data-category="${categoryName}" data-subcategory="${subcategoryName}">
                     <h3 class="subcategory-title">${subcategoryName}</h3>
-                    <div class="products-grid" id="grid-${catIndex}-${subcategoryName.replace(/\s+/g, '-')}">
+                    <div class="products-grid ${currentView}" id="grid-${catIndex}-${subcategoryName.replace(/\s+/g, '-')}">
             `;
             
             // تحميل أول مجموعة فقط من المنتجات
@@ -217,11 +297,13 @@ function getCDNUrl(path) {
 function createProductCardHtml(product) {
     const formattedPrice = formatPrice(product.price);
     const cdnUrl = getCDNUrl(product.image);
+    const isFav = favorites.includes(product.id);
     
-    // استخدام Intersection Observer لـ Lazy Loading المتقدم
-    // واستخدام CDN لتحسين سرعة التحميل
     return `
         <div class="product-card">
+            <button class="fav-btn ${isFav ? 'active' : ''}" data-id="${product.id}" onclick="toggleFavorite(${product.id}, event)">
+                <i class="fas fa-heart"></i>
+            </button>
             <div class="product-img" onclick="showProductDetails(${product.id})">
                 <picture>
                     <source data-srcset="${cdnUrl}" type="image/webp">
