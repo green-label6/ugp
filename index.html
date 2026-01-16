@@ -42,10 +42,6 @@
                     <a href="https://instagram.com/ah_._ay" target="_blank" class="social-link-top" title="انستجرام">
                         <i class="fab fa-instagram"></i>
                     </a>
-                    <a href="#" class="wishlist-icon" id="wishlistIcon" title="المفضلة">
-                        <i class="fas fa-heart"></i>
-                        <span class="wishlist-count" id="wishlistCount">0</span>
-                    </a>
                     <a href="#" class="cart-icon" id="cartIcon" title="سلة المشتريات">
                         <i class="fas fa-shopping-bag"></i>
                         <span class="cart-count" id="cartCount">0</span>
@@ -103,37 +99,9 @@
             </div>
         </section>
 
-        <!-- خيارات العرض والقائمة الجانبية -->
-        <div class="container main-layout">
-            <aside class="sidebar" id="sidebar">
-                <div class="sidebar-header">
-                    <h3>الأقسام</h3>
-                </div>
-                <ul class="sidebar-links" id="sidebarLinks">
-                    <!-- سيتم ملؤها ديناميكياً -->
-                </ul>
-            </aside>
-
-            <div class="content-area">
-                <div class="view-options">
-                    <div class="view-buttons">
-                        <button class="view-btn active" data-view="grid-2" title="عمودين">
-                            <i class="fas fa-th-large"></i>
-                        </button>
-                        <button class="view-btn" data-view="grid-3" title="ثلاثة أعمدة">
-                            <i class="fas fa-th"></i>
-                        </button>
-                        <button class="view-btn" data-view="list" title="قائمة">
-                            <i class="fas fa-list"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- حاوية الأقسام الديناميكية -->
-                <div id="dynamic-sections">
-                    <!-- سيتم إنشاء الأقسام والفئات الفرعية هنا عبر JS -->
-                </div>
-            </div>
+        <!-- حاوية الأقسام الديناميكية -->
+        <div id="dynamic-sections">
+            <!-- سيتم إنشاء الأقسام والفئات الفرعية هنا عبر JS -->
         </div>
 
         <!-- قسم المميزات -->
@@ -226,20 +194,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- قائمة المفضلة الجانبية -->
-    <div class="cart-sidebar wishlist-sidebar" id="wishlistSidebar">
-        <div class="cart-header">
-            <h3>المفضلة</h3>
-            <button class="close-cart" id="closeWishlist">&times;</button>
-        </div>
-        <div class="cart-items" id="wishlistItems">
-            <!-- سيتم ملؤها عبر JavaScript -->
-        </div>
-        <div class="cart-footer">
-            <button class="continue-shopping" id="closeWishlistBtn">إغلاق</button>
-        </div>
-    </div>
 
     <!-- سلة المشتريات الجانبية -->
     <div class="cart-sidebar" id="cartSidebar">
