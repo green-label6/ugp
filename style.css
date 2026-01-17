@@ -14,6 +14,7 @@
     --success-color: #4caf50;
     --warning-color: #ff9800;
     --danger-color: #f44336;
+    --info-color: #2196f3;
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -145,6 +146,142 @@ body {
     white-space: nowrap;
 }
 
+/* شريط البحث في الهيدر */
+.search-container {
+    flex: 1;
+    max-width: 400px;
+    margin: 0 15px;
+    position: relative;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #f5f5f7;
+    border-radius: 16px;
+    padding: 8px 15px;
+    transition: var(--transition);
+    border: 2px solid transparent;
+}
+
+.search-box:focus-within {
+    border-color: var(--primary-color);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.1);
+}
+
+.search-box .search-icon {
+    color: #757575;
+    margin-left: 10px;
+    font-size: 0.9rem;
+}
+
+.search-box input {
+    flex: 1;
+    border: none;
+    padding: 8px 0;
+    font-size: 0.9rem;
+    background: transparent;
+    color: var(--dark-color);
+    font-family: 'Cairo', sans-serif;
+    width: 100%;
+}
+
+.search-box input:focus {
+    outline: none;
+}
+
+.search-box input::placeholder {
+    color: #a0a0a0;
+}
+
+.search-btn {
+    background: var(--gradient);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-right: 5px;
+}
+
+.search-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    margin-top: 5px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--gray-lighter);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.search-result-item:hover {
+    background: var(--gray-lighter);
+}
+
+.search-result-item img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: var(--border-radius);
+    margin-left: 10px;
+}
+
+.search-result-info {
+    flex: 1;
+}
+
+.search-result-info h4 {
+    font-size: 0.9rem;
+    margin-bottom: 3px;
+    color: var(--dark-color);
+}
+
+.search-result-info .result-price {
+    color: var(--secondary-color);
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.search-result-info small {
+    color: var(--gray-color);
+    font-size: 0.8rem;
+}
+
+.no-results {
+    padding: 20px;
+    text-align: center;
+    color: var(--gray-color);
+    font-size: 0.9rem;
+}
+
 /* إخفاء عناصر غير ضرورية على الجوال */
 @media (max-width: 992px) {
     .search-container,
@@ -274,6 +411,168 @@ body {
 
 .menu-toggle:hover {
     transform: scale(1.05);
+}
+
+/* خيارات العرض والترتيب */
+.view-options {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sort-container {
+    position: relative;
+}
+
+.sort-select {
+    padding: 8px 12px;
+    padding-left: 30px;
+    border: 2px solid var(--gray-light);
+    border-radius: var(--border-radius);
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.85rem;
+    color: var(--dark-color);
+    background: white;
+    cursor: pointer;
+    transition: var(--transition);
+    min-width: 150px;
+}
+
+.sort-select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.view-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--border-radius);
+    border: 2px solid var(--gray-light);
+    background: white;
+    color: var(--gray-color);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.view-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.view-btn.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.view-btn.open-drawer {
+    display: flex;
+    background: var(--gradient);
+    color: white;
+    border: none;
+}
+
+.view-btn.open-drawer:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(156, 39, 176, 0.2);
+}
+
+/* روابط التنقل */
+.nav-links {
+    display: flex;
+    gap: 5px;
+    margin: 0 15px;
+}
+
+.nav-link {
+    padding: 8px 15px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    color: var(--dark-color);
+    text-decoration: none;
+    transition: var(--transition);
+    font-size: 0.9rem;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    background: rgba(156, 39, 176, 0.08);
+    color: var(--primary-color);
+}
+
+.nav-link.open-drawer {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.nav-link.open-drawer:hover {
+    background: rgba(156, 39, 176, 0.1);
+}
+
+/* الأيقونات */
+.nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.social-link-top {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gray-lighter);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+    transition: var(--transition);
+    font-size: 1.1rem;
+}
+
+.social-link-top:hover {
+    background: var(--gradient);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.cart-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    position: relative;
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.cart-icon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
+}
+
+.cart-count {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    background: var(--secondary-color);
+    color: white;
+    font-size: 0.75rem;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    border: 2px solid white;
 }
 
 /* ============================================
@@ -1281,6 +1580,13 @@ body {
     font-size: 0.9rem;
 }
 
+.results-count {
+    font-size: 0.8rem;
+    color: var(--gray-color);
+    font-weight: normal;
+    margin-right: 8px;
+}
+
 .subcategory-group {
     margin-bottom: 30px;
 }
@@ -1374,6 +1680,23 @@ body {
     transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary-color);
+}
+
+.featured-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    z-index: 9;
+    box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
 }
 
 .fav-btn {
@@ -1848,6 +2171,32 @@ body {
     border-color: var(--secondary-color);
 }
 
+/* زر المشاركة في نافذة المنتج */
+.share-btn {
+    background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: var(--border-radius-xl);
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+}
+
+.share-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(33, 150, 243, 0.3);
+    background: linear-gradient(135deg, #1976D2 0%, #03A9F4 100%);
+}
+
 @media (min-width: 768px) {
     .modal {
         padding: 20px;
@@ -1885,6 +2234,95 @@ body {
     
     .modal-actions-row {
         flex-direction: row;
+    }
+}
+
+/* ============================================
+   نافذة المشاركة المخصصة
+   ============================================ */
+.share-modal {
+    padding: 20px;
+}
+
+.share-modal h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.share-modal p {
+    color: var(--gray-color);
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+.share-text-container {
+    margin: 15px 0;
+}
+
+#shareTextArea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--gray-light);
+    border-radius: var(--border-radius);
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.9rem;
+    resize: vertical;
+    background: var(--gray-lighter);
+    margin-bottom: 10px;
+    min-height: 120px;
+    line-height: 1.5;
+}
+
+.share-social-icons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.share-social-icons button {
+    flex: 1;
+    padding: 10px;
+    border-radius: var(--border-radius);
+    border: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    min-width: 100px;
+}
+
+.whatsapp-btn {
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    color: white;
+}
+
+.facebook-btn {
+    background: linear-gradient(135deg, #1877F2 0%, #3B5998 100%);
+    color: white;
+}
+
+.twitter-btn {
+    background: linear-gradient(135deg, #1DA1F2 0%, #0D8BD9 100%);
+    color: white;
+}
+
+.share-social-icons button:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+@media (max-width: 576px) {
+    .share-social-icons button {
+        min-width: 80px;
+        font-size: 0.8rem;
+        padding: 8px;
     }
 }
 
@@ -2546,11 +2984,11 @@ body {
 }
 
 .notification.info {
-    border-right-color: var(--accent-color);
+    border-right-color: var(--info-color);
 }
 
 .notification.info i {
-    color: var(--accent-color);
+    color: var(--info-color);
 }
 
 .back-to-top {
@@ -2711,6 +3149,14 @@ body {
     .modal-actions-row .secondary-btn:hover {
         background: var(--primary-color);
         border-color: var(--primary-color);
+    }
+    
+    .share-btn {
+        background: linear-gradient(135deg, #1976D2 0%, #0288D1 100%);
+    }
+    
+    .share-btn:hover {
+        background: linear-gradient(135deg, #1565C0 0%, #0277BD 100%);
     }
 }
 
@@ -2900,6 +3346,59 @@ ul, ol {
     transform: translateY(-2px);
 }
 
+.load-more-container {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 50px;
+    padding: 20px 0;
+    border-top: 1px solid var(--gray-light);
+}
+
+.load-more-btn {
+    background: var(--gradient);
+    color: white;
+    padding: 15px 30px;
+    border-radius: var(--border-radius-xl);
+    font-weight: 700;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(156, 39, 176, 0.2);
+    min-width: 200px;
+}
+
+.load-more-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(156, 39, 176, 0.3);
+}
+
+.load-more-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@media (max-width: 768px) {
+    .load-more-btn {
+        padding: 12px 25px;
+        font-size: 0.9rem;
+        min-width: 180px;
+    }
+}
+
+@media (max-width: 576px) {
+    .load-more-btn {
+        padding: 10px 20px;
+        font-size: 0.85rem;
+        min-width: 160px;
+    }
+}
+
 /* تحسينات أخيرة للتوافق مع جميع الأجهزة */
 @media (hover: none) and (pointer: coarse) {
     .product-card:hover {
@@ -2939,7 +3438,8 @@ ul, ol {
 @media print {
     .header, .footer, .cart-sidebar, .modal, .back-to-top,
     .search-container, .view-options, .menu-toggle, .add-to-cart, .fav-btn,
-    .bottom-nav, .drawer, .drawer-overlay, .modal-actions-row .secondary-btn {
+    .bottom-nav, .drawer, .drawer-overlay, .modal-actions-row .secondary-btn,
+    .share-btn {
         display: none !important;
     }
     

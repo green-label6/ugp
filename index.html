@@ -101,6 +101,50 @@
                 min-width: 160px;
             }
         }
+        
+        /* أنماط زر المشاركة الجديد */
+        .share-btn {
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--border-radius-xl);
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+        }
+        
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(33, 150, 243, 0.3);
+            background: linear-gradient(135deg, #1976D2 0%, #03A9F4 100%);
+        }
+        
+        .modal-actions-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            flex-direction: column;
+        }
+        
+        @media (min-width: 768px) {
+            .modal-actions-row {
+                flex-direction: row;
+            }
+            
+            .share-btn {
+                width: 100%;
+                margin-top: 15px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -471,6 +515,10 @@
                                 <i class="fas fa-heart"></i> المفضلة
                             </button>
                         </div>
+                        <!-- زر المشاركة الجديد -->
+                        <button id="modalShare" class="share-btn">
+                            <i class="fas fa-share-alt"></i> مشاركة المنتج
+                        </button>
                     </div>
                 </div>
             </div>

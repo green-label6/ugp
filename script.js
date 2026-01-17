@@ -20,6 +20,9 @@ let productsPerLoad = 10; // عدد المنتجات في كل تحميل
 let displayedProductsCount = 0; // عدد المنتجات المعروضة حاليًا
 let currentProducts = []; // المنتجات الحالية للعرض
 
+// متغير لحفظ المنتج الحالي في النافذة المنبثقة
+let currentProductInModal = null;
+
 // ============================================
 // تهيئة الموقع عند تحميل الصفحة
 // ============================================
@@ -47,6 +50,7 @@ function initializeApp() {
     setupDrawer();
     setupBottomNavigation();
     setupDefaultView();
+    setupShareButton();
 }
 
 // ============================================
@@ -95,6 +99,243 @@ function getNotificationIcon(type) {
         default: return 'check-circle';
     }
 }
+
+// ============================================
+// إعداد زر المشاركة
+// ============================================
+
+function setupShareButton() {
+    const shareBtn = document.getElementById('modalShare');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', shareProduct);
+    }
+}
+
+function shareProduct() {
+    if (!currentProductInModal) return;
+    
+    const product = currentProductInModal;
+    const productUrl = getCDNUrl(product.image);
+    const priceText = formatPrice(product.price);
+    
+    // نص المشاركة بالعربية والإنجليزية
+    const shareTextAr = `
+🎀 منتج من كوزمتك بين يديك 🎀
+
+✨ ${product.name}
+📝 ${product.description.substring(0, 150)}...
+💰 السعر: ${priceText}
+🏷️ الفئة: ${product.category} - ${product.subcategory}
+
+🔗 قم بزيارة موقعنا لاكتشاف المزيد من المنتجات المميزة!
+    `;
+    
+    const shareTextEn = `
+🎀 Product from Cosmetic Between Your Hands 🎀
+
+✨ ${product.name}
+📝 ${product.description.substring(0, 150)}...
+💰 Price: ${priceText}
+🏷️ Category: ${product.category} - ${product.subcategory}
+
+🔗 Visit our website to discover more amazing products!
+    `;
+    
+    // استخدام Web Share API إذا كان متاحاً
+    if (navigator.share) {
+        const shareData = {
+            title: `كوزمتك بين يديك - ${product.name}`,
+            text: shareTextAr,
+            url: window.location.href,
+        };
+        
+        navigator.share(shareData)
+            .then(() => {
+                showNotification('تمت المشاركة بنجاح! 📤', 'success');
+            })
+            .catch((error) => {
+                console.log('خطأ في المشاركة:', error);
+                fallbackShare(shareTextAr);
+            });
+    } else {
+        // استخدام الطريقة البديلة
+        fallbackShare(shareTextAr);
+    }
+}
+
+function fallbackShare(shareText) {
+    // محاولة نسخ النص إلى الحافظة
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareText)
+            .then(() => {
+                showNotification('تم نسخ تفاصيل المنتج إلى الحافظة 📋', 'success');
+                // عرض رسالة إضافية
+                setTimeout(() => {
+                    showNotification('يمكنك الآن لصق النص في أي تطبيق للمشاركة', 'info');
+                }, 1500);
+            })
+            .catch((err) => {
+                console.error('خطأ في النسخ:', err);
+                manualShare(shareText);
+            });
+    } else {
+        manualShare(shareText);
+    }
+}
+
+function manualShare(shareText) {
+    // إنشاء نافذة منبثقة للمشاركة اليدوية
+    const shareModal = document.createElement('div');
+    shareModal.className = 'modal';
+    shareModal.style.display = 'block';
+    shareModal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="close-modal" onclick="this.parentElement.parentElement.remove(); document.body.style.overflow='auto'">&times;</button>
+            <div class="share-modal">
+                <h3><i class="fas fa-share-alt"></i> مشاركة المنتج</h3>
+                <p>انسخ النص التالي وشاركه على وسائل التواصل الاجتماعي:</p>
+                <div class="share-text-container">
+                    <textarea id="shareTextArea" readonly rows="8">${shareText}</textarea>
+                    <button onclick="copyShareText()" class="primary-btn">
+                        <i class="fas fa-copy"></i> نسخ النص
+                    </button>
+                </div>
+                <div class="share-social-icons">
+                    <button onclick="shareToWhatsApp()" class="whatsapp-btn">
+                        <i class="fab fa-whatsapp"></i> واتساب
+                    </button>
+                    <button onclick="shareToFacebook()" class="facebook-btn">
+                        <i class="fab fa-facebook"></i> فيسبوك
+                    </button>
+                    <button onclick="shareToTwitter()" class="twitter-btn">
+                        <i class="fab fa-twitter"></i> تويتر
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(shareModal);
+    document.body.style.overflow = 'hidden';
+    
+    // إضافة CSS للشكل
+    const style = document.createElement('style');
+    style.textContent = `
+        .share-modal {
+            padding: 20px;
+        }
+        
+        .share-modal h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .share-text-container {
+            margin: 15px 0;
+        }
+        
+        #shareTextArea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--gray-light);
+            border-radius: var(--border-radius);
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            resize: vertical;
+            background: var(--gray-lighter);
+            margin-bottom: 10px;
+        }
+        
+        .share-social-icons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .share-social-icons button {
+            flex: 1;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            border: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            min-width: 100px;
+        }
+        
+        .whatsapp-btn {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+        }
+        
+        .facebook-btn {
+            background: linear-gradient(135deg, #1877F2 0%, #3B5998 100%);
+            color: white;
+        }
+        
+        .twitter-btn {
+            background: linear-gradient(135deg, #1DA1F2 0%, #0D8BD9 100%);
+            color: white;
+        }
+        
+        .share-social-icons button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 576px) {
+            .share-social-icons button {
+                min-width: 80px;
+                font-size: 0.8rem;
+                padding: 8px;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// وظائف المساعدة للمشاركة على وسائل التواصل الاجتماعي
+window.copyShareText = function() {
+    const textarea = document.getElementById('shareTextArea');
+    if (textarea) {
+        textarea.select();
+        document.execCommand('copy');
+        showNotification('تم نسخ النص إلى الحافظة 📋', 'success');
+    }
+};
+
+window.shareToWhatsApp = function() {
+    const textarea = document.getElementById('shareTextArea');
+    if (textarea) {
+        const text = encodeURIComponent(textarea.value);
+        window.open(`https://wa.me/?text=${text}`, '_blank');
+    }
+};
+
+window.shareToFacebook = function() {
+    const textarea = document.getElementById('shareTextArea');
+    if (textarea && currentProductInModal) {
+        const productUrl = getCDNUrl(currentProductInModal.image);
+        const text = encodeURIComponent(textarea.value);
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${text}`, '_blank');
+    }
+};
+
+window.shareToTwitter = function() {
+    const textarea = document.getElementById('shareTextArea');
+    if (textarea) {
+        const text = encodeURIComponent(textarea.value.substring(0, 280));
+        window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+    }
+};
 
 // ============================================
 // إعداد الـ Drawer (القائمة الجانبية)
@@ -338,12 +579,14 @@ function setupModal() {
     closeModal.addEventListener('click', () => {
         modal.style.display = 'none';
         document.body.style.overflow = 'auto';
+        currentProductInModal = null;
     });
     
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             modal.style.display = 'none';
             document.body.style.overflow = 'auto';
+            currentProductInModal = null;
         }
     });
     
@@ -384,11 +627,7 @@ function setupModal() {
 }
 
 function getCurrentModalProductId() {
-    const modalName = document.getElementById('modalName').textContent;
-    if (!modalName) return null;
-    
-    const product = allProducts.find(p => p.name === modalName);
-    return product ? product.id : null;
+    return currentProductInModal ? currentProductInModal.id : null;
 }
 
 function updateFavoriteButtonState(productId) {
@@ -1102,6 +1341,8 @@ function showProductDetails(id) {
     const product = allProducts.find(p => p.id === id);
     if (!product) return;
     
+    currentProductInModal = product;
+    
     const modal = document.getElementById('productModal');
     const modalImage = document.getElementById('modalImage');
     const cdnUrl = getCDNUrl(product.image);
@@ -1134,6 +1375,7 @@ function showProductDetails(id) {
         addToCart(product.id, qty);
         modal.style.display = 'none';
         document.body.style.overflow = 'auto';
+        currentProductInModal = null;
     };
     
     // تحديث زر المفضلة
@@ -1142,6 +1384,12 @@ function showProductDetails(id) {
     favBtn.innerHTML = isFav ? '<i class="fas fa-heart"></i> في المفضلة' : '<i class="fas fa-heart"></i> المفضلة';
     favBtn.classList.toggle('active', isFav);
     favBtn.onclick = () => toggleFavorite(product.id);
+    
+    // تحديث زر المشاركة
+    const shareBtn = document.getElementById('modalShare');
+    if (shareBtn) {
+        shareBtn.onclick = () => shareProduct(product);
+    }
     
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
@@ -1238,6 +1486,174 @@ function removeFromCart(id) {
 }
 
 // ============================================
+// تحسين دالة البحث لدعم العربية والإنجليزية
+// ============================================
+
+// دالة لتحسين البحث العربي (إزالة التشكيل والتطبيع)
+function normalizeArabic(text) {
+    if (!text) return '';
+    
+    // تحويل إلى حروف صغيرة
+    text = text.toLowerCase();
+    
+    // إزالة التشكيل (الحركات) العربية
+    text = text.replace(/[\u064B-\u065F]/g, '');
+    
+    // تطبيع الأحرف العربية (مثل: إ، أ، آ إلى ا)
+    text = text.replace(/[إأآ]/g, 'ا');
+    text = text.replace(/ى/g, 'ي');
+    text = text.replace(/ة/g, 'ه');
+    
+    // إزالة المسافات الزائدة
+    text = text.replace(/\s+/g, ' ').trim();
+    
+    return text;
+}
+
+// دالة لتحسين البحث الإنجليزي
+function normalizeEnglish(text) {
+    if (!text) return '';
+    
+    // تحويل إلى حروف صغيرة
+    text = text.toLowerCase();
+    
+    // إزالة المسافات الزائدة
+    text = text.replace(/\s+/g, ' ').trim();
+    
+    return text;
+}
+
+// دالة البحث الرئيسية المحسنة
+function performSearch(query) {
+    const results = document.getElementById('searchResults');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (!query || !query.trim()) {
+        if (results) results.style.display = 'none';
+        // إظهار جميع المنتجات عند مسح البحث
+        showingFavorites = false;
+        showingFeatured = false;
+        activeCategory = 'all';
+        resetDisplayedProducts();
+        renderMainContent();
+        return;
+    }
+    
+    // تطبيع نص البحث
+    const normalizedQueryAr = normalizeArabic(query);
+    const normalizedQueryEn = normalizeEnglish(query);
+    
+    // البحث في جميع المنتجات مع دعم العربية والإنجليزية
+    const filtered = allProducts.filter(product => {
+        // تطبيع بيانات المنتج للبحث
+        const normalizedNameAr = normalizeArabic(product.name);
+        const normalizedDescAr = normalizeArabic(product.description);
+        const normalizedCategoryAr = normalizeArabic(product.category);
+        const normalizedSubcategoryAr = normalizeArabic(product.subcategory);
+        
+        const normalizedNameEn = normalizeEnglish(product.name);
+        const normalizedDescEn = normalizeEnglish(product.description);
+        const normalizedCategoryEn = normalizeEnglish(product.category);
+        const normalizedSubcategoryEn = normalizeEnglish(product.subcategory);
+        
+        // البحث بالعربية
+        const arabicMatch = 
+            normalizedNameAr.includes(normalizedQueryAr) ||
+            normalizedDescAr.includes(normalizedQueryAr) ||
+            normalizedCategoryAr.includes(normalizedQueryAr) ||
+            normalizedSubcategoryAr.includes(normalizedQueryAr);
+        
+        // البحث بالإنجليزية
+        const englishMatch = 
+            normalizedNameEn.includes(normalizedQueryEn) ||
+            normalizedDescEn.includes(normalizedQueryEn) ||
+            normalizedCategoryEn.includes(normalizedQueryEn) ||
+            normalizedSubcategoryEn.includes(normalizedQueryEn);
+        
+        // البحث المختلط (عربي في نص إنجليزي والعكس)
+        const mixedMatch = 
+            normalizedNameEn.includes(normalizedQueryAr) ||
+            normalizedNameAr.includes(normalizedQueryEn);
+        
+        return arabicMatch || englishMatch || mixedMatch;
+    }).slice(0, 8);
+    
+    // عرض نتائج البحث
+    if (results) {
+        if (filtered.length === 0) {
+            results.innerHTML = '<div class="no-results">لا توجد نتائج مطابقة</div>';
+        } else {
+            results.innerHTML = filtered.map(p => `
+                <div class="search-result-item" onclick="showProductDetails(${p.id}); document.getElementById('searchResults').style.display='none'; if(searchInput) searchInput.value='';">
+                    <img src="${getCDNUrl(p.image)}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
+                    <div class="search-result-info">
+                        <h4>${p.name}</h4>
+                        <p class="result-price">${formatPrice(p.price)}</p>
+                        <small>${p.category} - ${p.subcategory}</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+        results.style.display = 'block';
+    }
+    
+    // إذا كان البحث من شريط البحث الرئيسي، قم بتصفية المنتجات المعروضة
+    if (searchInput && searchInput.value === query) {
+        showingFavorites = false;
+        showingFeatured = false;
+        activeCategory = 'all';
+        priceFilter = { min: 0, max: Infinity };
+        
+        // إذا كانت هناك نتائج، قم بعرضها
+        if (filtered.length > 0) {
+            // تحديث العرض بالمنتجات المصفاة
+            const container = document.getElementById('dynamic-sections');
+            if (container) {
+                resetDisplayedProducts();
+                currentProducts = filtered.slice(0, productsPerLoad);
+                displayedProductsCount = currentProducts.length;
+                displayProducts(currentProducts);
+                
+                // تحديث عنوان القسم
+                const sectionTitle = container.querySelector('.section-title');
+                if (sectionTitle) {
+                    sectionTitle.innerHTML = `نتائج البحث: "${query}" <span class="results-count">(${filtered.length} منتج)</span>`;
+                }
+            }
+        } else {
+            // عرض رسالة عدم وجود نتائج
+            showNoSearchResults(query);
+        }
+    }
+}
+
+function showNoSearchResults(query) {
+    const container = document.getElementById('dynamic-sections');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="no-products">
+            <i class="fas fa-search"></i>
+            <h3>لا توجد نتائج للبحث</h3>
+            <p>لم يتم العثور على أي منتجات تطابق "${query}".</p>
+            <div style="margin-top: 20px;">
+                <button onclick="resetFilters()" class="primary-btn">عرض جميع المنتجات</button>
+                <button onclick="document.getElementById('searchInput').value=''; document.getElementById('searchInput').focus();" class="secondary-btn" style="margin-right: 10px;">بحث جديد</button>
+            </div>
+            <div style="margin-top: 15px; font-size: 0.9rem; color: #666;">
+                <p><strong>نصائح للبحث:</strong></p>
+                <ul style="text-align: right; padding-right: 20px;">
+                    <li>تأكد من صحة كتابة الكلمات</li>
+                    <li>جرب كلمات بحث أقصر أو أكثر عمومية</li>
+                    <li>يمكنك البحث باللغة العربية أو الإنجليزية</li>
+                    <li>استخدم الفلاتر على اليسار للبحث الدقيق</li>
+                </ul>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================
 // إعداد معالجي الأحداث
 // ============================================
 
@@ -1289,12 +1705,20 @@ function setupSearch() {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 performSearch(e.target.value);
-            }, 300);
+            }, 500); // زيادة المهلة لتفادي البحث مع كل حرف
         });
         
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
+                clearTimeout(searchTimeout);
                 performSearch(e.target.value);
+            }
+        });
+        
+        // مسح البحث عند النقر على أيقونة المسح (إذا أضفناها)
+        searchInput.addEventListener('search', (e) => {
+            if (e.target.value === '') {
+                performSearch('');
             }
         });
     }
@@ -1314,6 +1738,7 @@ function setupSearch() {
             if (e.key === 'Enter') {
                 performSearch(e.target.value);
                 document.getElementById('mobileMenu').classList.remove('active');
+                mobileSearchInput.value = '';
             }
         });
     }
@@ -1322,50 +1747,56 @@ function setupSearch() {
         mobileSearchBtn.addEventListener('click', () => {
             performSearch(mobileSearchInput.value);
             document.getElementById('mobileMenu').classList.remove('active');
+            mobileSearchInput.value = '';
         });
     }
     
     // إغلاق نتائج البحث عند النقر خارجها
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-container') && !e.target.closest('.search-results')) {
-            const results = document.getElementById('searchResults');
-            if (results) results.style.display = 'none';
+        const searchContainer = document.querySelector('.search-container');
+        const searchResults = document.getElementById('searchResults');
+        
+        if (searchContainer && searchResults && 
+            !searchContainer.contains(e.target) && 
+            !searchResults.contains(e.target)) {
+            searchResults.style.display = 'none';
         }
     });
-}
-
-function performSearch(query) {
-    const results = document.getElementById('searchResults');
-    const searchInput = document.getElementById('searchInput');
     
-    if (!query || !query.trim()) {
-        if (results) results.style.display = 'none';
-        return;
+    // البحث في الشريط الجانبي
+    const sidebarSearchInput = document.getElementById('sidebarSearchInput');
+    const sidebarSearchBtn = document.getElementById('sidebarSearchBtn');
+    
+    if (sidebarSearchInput) {
+        sidebarSearchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch(e.target.value);
+                sidebarSearchInput.value = '';
+                
+                // إغلاق الشريط الجانبي على الجوال
+                if (window.innerWidth <= 992) {
+                    const drawer = document.getElementById('drawer');
+                    if (drawer && drawer.classList.contains('active')) {
+                        closeDrawer();
+                    }
+                }
+            }
+        });
     }
     
-    const filtered = allProducts.filter(p => 
-        p.name.toLowerCase().includes(query.toLowerCase()) ||
-        p.description.toLowerCase().includes(query.toLowerCase()) ||
-        p.category.toLowerCase().includes(query.toLowerCase()) ||
-        p.subcategory.toLowerCase().includes(query.toLowerCase())
-    ).slice(0, 8);
-    
-    if (results) {
-        if (filtered.length === 0) {
-            results.innerHTML = '<div class="no-results">لا توجد نتائج مطابقة</div>';
-        } else {
-            results.innerHTML = filtered.map(p => `
-                <div class="search-result-item" onclick="showProductDetails(${p.id}); document.getElementById('searchResults').style.display='none'; if(searchInput) searchInput.value='';">
-                    <img src="${getCDNUrl(p.image)}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
-                    <div class="search-result-info">
-                        <h4>${p.name}</h4>
-                        <p class="result-price">${formatPrice(p.price)}</p>
-                        <small>${p.category} - ${p.subcategory}</small>
-                    </div>
-                </div>
-            `).join('');
-        }
-        results.style.display = 'block';
+    if (sidebarSearchBtn) {
+        sidebarSearchBtn.addEventListener('click', () => {
+            performSearch(sidebarSearchInput.value);
+            sidebarSearchInput.value = '';
+            
+            // إغلاق الشريط الجانبي على الجوال
+            if (window.innerWidth <= 992) {
+                const drawer = document.getElementById('drawer');
+                if (drawer && drawer.classList.contains('active')) {
+                    closeDrawer();
+                }
+            }
+        });
     }
 }
 
@@ -1423,7 +1854,15 @@ function closeAllModals() {
     document.getElementById('mobileMenu').classList.remove('active');
     document.getElementById('drawer').classList.remove('active');
     document.getElementById('drawerOverlay').classList.remove('active');
+    
+    // إغلاق أي نافذة مشاركة مفتوحة
+    const shareModal = document.querySelector('.modal .share-modal');
+    if (shareModal) {
+        shareModal.closest('.modal').remove();
+    }
+    
     document.body.style.overflow = 'auto';
+    currentProductInModal = null;
 }
 
 // ============================================
@@ -1606,6 +2045,60 @@ style.textContent = `
             min-width: 160px;
         }
     }
+    
+    /* أنماط زر المشاركة */
+    .share-btn {
+        background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+        color: white;
+        padding: 12px 20px;
+        border-radius: var(--border-radius-xl);
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: var(--transition);
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 10px;
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+    }
+    
+    .share-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(33, 150, 243, 0.3);
+        background: linear-gradient(135deg, #1976D2 0%, #03A9F4 100%);
+    }
+    
+    /* أنماط رسالة عدم وجود نتائج بحث */
+    .no-results {
+        padding: 20px;
+        text-align: center;
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .results-count {
+        font-size: 0.8rem;
+        color: var(--gray-color);
+        font-weight: normal;
+        margin-right: 8px;
+    }
+    
+    /* تحسينات للبحث على الجوال */
+    @media (max-width: 768px) {
+        .search-results {
+            position: fixed !important;
+            top: 70px !important;
+            left: 10px !important;
+            right: 10px !important;
+            width: auto !important;
+            max-height: 300px !important;
+            z-index: 1001 !important;
+        }
+    }
 `;
 document.head.appendChild(style);
 
@@ -1627,6 +2120,12 @@ window.addEventListener('resize', () => {
         if (window.innerWidth > 768) {
             document.getElementById('mobileMenu').classList.remove('active');
             document.body.style.overflow = 'auto';
+        }
+        
+        // إخفاء نتائج البحث عند تغيير حجم الشاشة
+        const searchResults = document.getElementById('searchResults');
+        if (searchResults) {
+            searchResults.style.display = 'none';
         }
     }, 250);
 });
