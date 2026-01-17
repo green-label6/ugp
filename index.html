@@ -2,16 +2,10 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>كوزمتك بين يديك - جمالك في مكان واحد</title>
     <meta name="description" content="كوزمتك بين يديك - علامتك الرائدة في مستحضرات التجميل والعناية الشخصية.">
-    <meta name="theme-color" content="#6200EE">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle cx='256' cy='256' r='256' fill='%239c27b0'/><path d='M256 128c-70.7 0-128 57.3-128 128s57.3 128 128 128 128-57.3 128-128-57.3-128-128-128zm0 192c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64z' fill='white'/></svg>">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="كوزمتك">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -30,33 +24,14 @@
                 
                 <!-- شريط البحث -->
                 <div class="search-container">
-                    <div class="search-box" role="search">
-                        <label for="searchInput" class="sr-only">البحث عن منتج</label>
-                        <i class="fas fa-search search-icon" aria-hidden="true"></i>
-                        <input type="text" id="searchInput" placeholder="ابحث عن منتج أو وصف..." aria-describedby="searchHelp">
-                        <button class="search-btn" id="searchBtn" aria-label="بحث">
-                            <i class="fas fa-search" aria-hidden="true"></i>
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchInput" placeholder="ابحث عن منتج أو وصف...">
+                        <button class="search-btn" id="searchBtn">
+                            <i class="fas fa-search"></i>
                         </button>
-                        <div class="search-results" id="searchResults" role="listbox" aria-label="نتائج البحث"></div>
+                        <div class="search-results" id="searchResults"></div>
                     </div>
-                    <div id="searchHelp" class="sr-only">اكتب اسم المنتج أو وصف للبحث</div>
-                </div>
-
-                <!-- خيارات العرض والترتيب -->
-                <div class="view-options">
-                    <div class="sort-container">
-                        <select id="sortSelect" class="sort-select">
-                            <option value="default">الترتيب الافتراضي</option>
-                            <option value="price-asc">السعر: من الأقل للأعلى</option>
-                            <option value="price-desc">السعر: من الأعلى للأقل</option>
-                            <option value="name-asc">الأسماء: أ-ي</option>
-                            <option value="name-desc">الأسماء: ي-أ</option>
-                        </select>
-                    </div>
-                    <button class="view-btn active" data-view="grid-2" title="عمودين"><i class="fas fa-th-large"></i></button>
-                    <button class="view-btn" data-view="grid-3" title="3 أعمدة"><i class="fas fa-th"></i></button>
-                    <button class="view-btn" data-view="list" title="قائمة"><i class="fas fa-list"></i></button>
-                    <button class="view-btn" id="favToggle" title="المفضلة"><i class="fas fa-heart"></i></button>
                 </div>
                 
                 <ul class="nav-links" id="mainNavLinks">
@@ -64,13 +39,6 @@
                     <!-- سيتم ملؤها ديناميكياً بالأقسام الرئيسية -->
                 </ul>
                 <div class="nav-icons">
-                    <button class="theme-toggle" id="themeToggle" title="تبديل الوضع">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    <button class="compare-toggle" id="compareBtn" title="مقارنة المنتجات" onclick="showComparePage()" style="display: none;">
-                        <i class="fas fa-exchange-alt"></i>
-                        <span class="compare-count">0</span>
-                    </button>
                     <a href="https://instagram.com/ah_._ay" target="_blank" class="social-link-top" title="انستجرام">
                         <i class="fab fa-instagram"></i>
                     </a>
@@ -120,10 +88,6 @@
                             <i class="fas fa-shopping-bag"></i>
                             اكتشف المنتجات
                         </a>
-                        <a href="#features" class="secondary-btn">
-                            <i class="fas fa-star"></i>
-                            لماذا نحن؟
-                        </a>
                     </div>
                 </div>
                 <div class="hero-image">
@@ -136,85 +100,13 @@
         </section>
 
         <!-- حاوية الأقسام الديناميكية -->
-        <div class="main-content-wrapper container">
-            <aside class="sidebar" id="sidebar">
-                <div class="sidebar-header">
-                    <h3><i class="fas fa-filter"></i> تصفية المنتجات</h3>
-                </div>
-                <div class="filter-group">
-                    <h4><i class="fas fa-tags"></i> نطاق السعر</h4>
-                    <div class="price-range-inputs">
-                        <input type="number" id="minPrice" placeholder="الأقل" min="0">
-                        <span>-</span>
-                        <input type="number" id="maxPrice" placeholder="الأعلى" min="0">
-                    </div>
-                    <button id="applyPriceFilter" class="filter-btn">تطبيق</button>
-                </div>
-                <div class="filter-group">
-                    <h4><i class="fas fa-list"></i> الأقسام</h4>
-                    <ul id="sidebarCategories" class="sidebar-cat-list">
-                        <!-- سيتم ملؤها ديناميكياً -->
-                    </ul>
-                </div>
-                <div class="filter-group">
-                    <h4><i class="fas fa-palette"></i> اللون</h4>
-                    <div class="color-filters">
-                        <button class="color-filter" data-color="أحمر" style="background: #ff0000;"></button>
-                        <button class="color-filter" data-color="أزرق" style="background: #0000ff;"></button>
-                        <button class="color-filter" data-color="أخضر" style="background: #00ff00;"></button>
-                        <button class="color-filter" data-color="أصفر" style="background: #ffff00;"></button>
-                        <button class="color-filter" data-color="أسود" style="background: #000000;"></button>
-                        <button class="color-filter" data-color="أبيض" style="background: #ffffff; border: 1px solid #ddd;"></button>
-                        <button class="color-filter" data-color="وردي" style="background: #ff69b4;"></button>
-                        <button class="color-filter" data-color="بني" style="background: #8b4513;"></button>
-                    </div>
-                </div>
-                <div class="filter-group">
-                    <h4><i class="fas fa-ruler"></i> الحجم</h4>
-                    <div class="size-filters">
-                        <button class="size-filter" data-size="صغير">S</button>
-                        <button class="size-filter" data-size="وسط">M</button>
-                        <button class="size-filter" data-size="كبير">L</button>
-                        <button class="size-filter" data-size="كبير جداً">XL</button>
-                    </div>
-                </div>
-                <div class="filter-group">
-                    <h4><i class="fas fa-star"></i> التقييم</h4>
-                    <div class="rating-filters">
-                        <button class="rating-filter" data-rating="4">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>+
-                        </button>
-                        <button class="rating-filter" data-rating="3">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>+
-                        </button>
-                        <button class="rating-filter" data-rating="2">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i>+
-                        </button>
-                    </div>
-                </div>
-                <div class="filter-group">
-                    <h4><i class="fas fa-building"></i> الماركة</h4>
-                    <select id="brandFilter" class="brand-select">
-                        <option value="">جميع الماركات</option>
-                        <option value="ماركة 1">ماركة 1</option>
-                        <option value="ماركة 2">ماركة 2</option>
-                        <option value="ماركة 3">ماركة 3</option>
-                    </select>
-                </div>
-            </aside>
-            
-            <div id="dynamic-sections" class="dynamic-content">
-                <!-- سيتم إنشاء الأقسام والفئات الفرعية هنا عبر JS -->
-            </div>
+        <div id="dynamic-sections">
+            <!-- سيتم إنشاء الأقسام والفئات الفرعية هنا عبر JS -->
         </div>
 
         <!-- قسم المميزات -->
-        <section class="features-section" id="features">
+        <section class="features-section">
             <div class="container">
-                <div class="section-header">
-                    <h2 class="section-title">لماذا تختارنا؟</h2>
-                    <p class="section-subtitle">نحن نقدم الأفضل لرعاية جمالك</p>
-                </div>
                 <div class="features-grid">
                     <div class="feature-card">
                         <div class="feature-icon">
@@ -276,7 +168,6 @@
                     <ul class="footer-links">
                         <li><a href="#home">الرئيسية</a></li>
                         <li><a href="#" id="cartLinkFooter">سلة المشتريات</a></li>
-                        <li><a href="#" id="showFavFooter">المفضلة</a></li>
                     </ul>
                 </div>
                 
@@ -299,7 +190,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; <span id="currentYear"></span> كوزمتك بين يديك. جميع الحقوق محفوظة.</p>
+                <p>&copy; 2024 كوزمتك بين يديك. جميع الحقوق محفوظة.</p>
             </div>
         </div>
     </footer>
@@ -318,9 +209,7 @@
                 <span>الإجمالي:</span>
                 <span id="cartTotalValue">0 د.ع</span>
             </div>
-            <button class="checkout-btn" id="checkoutBtn">
-                <i class="fab fa-whatsapp"></i> إتمام الطلب عبر واتساب
-            </button>
+            <button class="checkout-btn" id="checkoutBtn">إتمام الطلب عبر واتساب</button>
             <button class="continue-shopping" id="continueShopping">متابعة التسوق</button>
         </div>
     </div>
@@ -337,35 +226,19 @@
                     <span id="modalCategory" class="product-category"></span>
                     <h2 id="modalName"></h2>
                     <div id="modalPrice" class="product-price-large"></div>
-                    <div class="product-description-full">
-                        <h4><i class="fas fa-info-circle"></i> الوصف الكامل:</h4>
-                        <div id="modalDescription" class="description-content"></div>
-                    </div>
+                    <p id="modalDescription"></p>
                     <div class="product-details-actions">
                         <div class="quantity-control">
                             <button class="qty-btn minus">-</button>
                             <input type="number" id="productQty" value="1" min="1">
                             <button class="qty-btn plus">+</button>
                         </div>
-                        <button id="modalAddToCart" class="primary-btn">
-                            <i class="fas fa-cart-plus"></i> إضافة للسلة
-                        </button>
+                        <button id="modalAddToCart" class="primary-btn">إضافة للسلة</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- نافذة تحميل -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner-container">
-            <div class="spinner"></div>
-            <p>جاري التحميل...</p>
-        </div>
-    </div>
-
-    <!-- رسائل التنبيه -->
-    <div class="notification-container" id="notificationContainer"></div>
 
     <div class="back-to-top" id="backToTop">
         <i class="fas fa-chevron-up"></i>
