@@ -1,6 +1,8 @@
 // البيانات والمتغيرات العامة
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+let ratings = JSON.parse(localStorage.getItem('ratings')) || {};
+let compareList = JSON.parse(localStorage.getItem('compareList')) || [];
 let categoriesData = {};
 let allProducts = [];
 let filteredProducts = [];
@@ -11,6 +13,14 @@ let currentSort = 'default';
 let priceFilter = { min: 0, max: Infinity };
 let activeCategory = 'all';
 let featuredProducts = [1, 3, 5, 7, 9, 11]; // IDs للمنتجات المميزة
+let currentPage = 1;
+let productsPerPage = 12;
+let isLoading = false;
+// فلاتر متقدمة جديدة
+let colorFilter = '';
+let sizeFilter = '';
+let ratingFilter = 0;
+let brandFilter = '';
 
 // تهيئة الموقع عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', () => {
@@ -44,6 +54,9 @@ function initializeApp() {
     setupModal();
     setupNotifications();
     setupLazyLoading();
+    setupInfiniteScroll();
+    updateCompareUI();
+    setupAdvancedFilters();
 }
 
 // تعيين السنة الحالية في الفوتر
@@ -51,29 +64,69 @@ function setCurrentYear() {
     document.getElementById('currentYear').textContent = new Date().getFullYear();
 }
 
-// إعداد Lazy Loading للصور
-function setupLazyLoading() {
-    const imageObserver = new IntersectionObserver((entries, observer) => {
+// إعداد التحميل التدريجي (Infinite Scroll)
+function setupInfiniteScroll() {
+    const observerOptions = {
+        root: null,
+        rootMargin: '100px',
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const img = entry.target;
-                img.src = img.dataset.src;
-                img.addEventListener('load', () => {
-                    img.classList.add('loaded');
-                });
-                img.classList.remove('lazy-img');
-                observer.unobserve(img);
+            if (entry.isIntersecting && !isLoading) {
+                loadMoreProducts();
             }
         });
-    }, {
-        rootMargin: '50px 0px',
-        threshold: 0.01
-    });
+    }, observerOptions);
 
-    // مراقبة جميع الصور ذات التحميل الكسول
-    document.querySelectorAll('.lazy-img').forEach(img => {
-        imageObserver.observe(img);
-    });
+    // إنشاء عنصر التحميل
+    const loadMoreTrigger = document.createElement('div');
+    loadMoreTrigger.id = 'loadMoreTrigger';
+    loadMoreTrigger.style.height = '20px';
+    document.querySelector('.main-content-wrapper').appendChild(loadMoreTrigger);
+
+    observer.observe(loadMoreTrigger);
+}
+
+// تحميل المزيد من المنتجات
+function loadMoreProducts() {
+    if (isLoading || currentPage * productsPerPage >= filteredProducts.length) return;
+
+    isLoading = true;
+    currentPage++;
+
+    // إظهار مؤشر التحميل
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'loading-indicator';
+    loadingIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';
+    document.querySelector('.products-grid').appendChild(loadingIndicator);
+
+    setTimeout(() => {
+        const startIndex = (currentPage - 1) * productsPerPage;
+        const endIndex = Math.min(currentPage * productsPerPage, filteredProducts.length);
+        const newProducts = filteredProducts.slice(startIndex, endIndex);
+
+        // إزالة مؤشر التحميل
+        loadingIndicator.remove();
+
+        // إضافة المنتجات الجديدة
+        const productsGrid = document.querySelector('.products-grid');
+        newProducts.forEach(product => {
+            const productCard = createProductCard(product);
+            productsGrid.appendChild(productCard);
+        });
+
+        // إعداد lazy loading للصور الجديدة
+        setupLazyLoading();
+
+        isLoading = false;
+
+        // إخفاء trigger إذا انتهت المنتجات
+        if (endIndex >= filteredProducts.length) {
+            document.getElementById('loadMoreTrigger').style.display = 'none';
+        }
+    }, 500); // محاكاة تأخير التحميل
 }
 
 // إظهار إشعار
@@ -97,36 +150,175 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
-// الحصول على أيقونة الإشعار المناسبة
-function getNotificationIcon(type) {
-    switch(type) {
-        case 'error': return 'exclamation-circle';
-        case 'warning': return 'exclamation-triangle';
-        case 'info': return 'info-circle';
-        default: return 'check-circle';
-    }
+// الحصول على متوسط التقييم لمنتج
+function getProductRating(productId) {
+    if (!ratings[productId] || ratings[productId].length === 0) return 0;
+    const sum = ratings[productId].reduce((a, b) => a + b, 0);
+    return sum / ratings[productId].length;
 }
 
-// إعداد النافذة المنبثقة للمنتج
-function setupModal() {
-    const modal = document.getElementById('productModal');
-    const closeModal = document.getElementById('closeModal');
-    
-    if (!modal || !closeModal) return;
-    
-    closeModal.addEventListener('click', () => {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-    });
-    
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
+// إضافة تقييم لمنتج
+function addRating(productId, rating) {
+    if (!ratings[productId]) {
+        ratings[productId] = [];
+    }
+    ratings[productId].push(rating);
+    localStorage.setItem('ratings', JSON.stringify(ratings));
+    updateProductRating(productId);
+    showNotification('تم إضافة تقييمك بنجاح!', 'success');
+}
+
+// تحديث عرض التقييم لمنتج
+function updateProductRating(productId) {
+    const rating = getProductRating(productId);
+    const stars = document.querySelectorAll(`.rating-stars[data-product="${productId}"] .star`);
+    stars.forEach((star, index) => {
+        if (index < Math.floor(rating)) {
+            star.classList.add('active');
+        } else {
+            star.classList.remove('active');
         }
     });
+}
+
+// إنشاء عناصر النجوم للتقييم
+function createRatingStars(productId, interactive = false) {
+    const rating = getProductRating(productId);
+    let starsHtml = '<div class="rating-stars" data-product="' + productId + '">';
     
-    // عناصر التحكم في الكمية
+    for (let i = 1; i <= 5; i++) {
+        const activeClass = i <= rating ? 'active' : '';
+        const clickHandler = interactive ? ` onclick="addRating(${productId}, ${i})"` : '';
+        starsHtml += `<span class="star ${activeClass}"${clickHandler}><i class="fas fa-star"></i></span>`;
+    }
+    
+    starsHtml += '</div>';
+    return starsHtml;
+}
+
+// إضافة/إزالة منتج من قائمة المقارنة
+function toggleCompare(productId, event) {
+    if (event) event.stopPropagation();
+    
+    const index = compareList.indexOf(productId);
+    if (index > -1) {
+        compareList.splice(index, 1);
+        showNotification('تم إزالة المنتج من المقارنة', 'info');
+    } else {
+        if (compareList.length >= 4) {
+            showNotification('يمكنك مقارنة حتى 4 منتجات فقط', 'warning');
+            return;
+        }
+        compareList.push(productId);
+        showNotification('تم إضافة المنتج للمقارنة', 'success');
+    }
+    
+    localStorage.setItem('compareList', JSON.stringify(compareList));
+    updateCompareUI();
+}
+
+// تحديث واجهة المقارنة
+function updateCompareUI() {
+    const compareBtn = document.getElementById('compareBtn');
+    if (compareBtn) {
+        compareBtn.style.display = compareList.length > 0 ? 'flex' : 'none';
+        compareBtn.querySelector('.compare-count').textContent = compareList.length;
+    }
+    
+    // تحديث أزرار المقارنة في المنتجات
+    document.querySelectorAll('.compare-btn').forEach(btn => {
+        const productId = parseInt(btn.dataset.id);
+        const isInCompare = compareList.includes(productId);
+        btn.classList.toggle('active', isInCompare);
+    });
+}
+
+// عرض صفحة المقارنة
+function showComparePage() {
+    if (compareList.length === 0) {
+        showNotification('لا توجد منتجات للمقارنة', 'warning');
+        return;
+    }
+    
+    const compareProducts = allProducts.filter(product => compareList.includes(product.id));
+    
+    let compareHtml = `
+        <div class="compare-container">
+            <div class="compare-header">
+                <h2>مقارنة المنتجات</h2>
+                <button onclick="clearCompare()" class="clear-compare-btn">
+                    <i class="fas fa-trash"></i> مسح الكل
+                </button>
+            </div>
+            <div class="compare-grid">
+    `;
+    
+    // إنشاء جدول المقارنة
+    const features = ['الاسم', 'السعر', 'الوصف', 'التقييم', 'الإجراءات'];
+    
+    features.forEach(feature => {
+        compareHtml += `<div class="compare-row">`;
+        compareHtml += `<div class="compare-feature">${feature}</div>`;
+        
+        compareProducts.forEach(product => {
+            switch(feature) {
+                case 'الاسم':
+                    compareHtml += `<div class="compare-value">${product.name}</div>`;
+                    break;
+                case 'السعر':
+                    compareHtml += `<div class="compare-value">${product.price} د.ع</div>`;
+                    break;
+                case 'الوصف':
+                    compareHtml += `<div class="compare-value">${product.description.substring(0, 100)}...</div>`;
+                    break;
+                case 'التقييم':
+                    compareHtml += `<div class="compare-value">${createRatingStars(product.id)}</div>`;
+                    break;
+                case 'الإجراءات':
+                    compareHtml += `
+                        <div class="compare-value">
+                            <button onclick="addToCart(${product.id}, 1)" class="add-to-cart">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                            <button onclick="toggleCompare(${product.id})" class="compare-btn active" data-id="${product.id}">
+                                <i class="fas fa-exchange-alt"></i>
+                            </button>
+                        </div>
+                    `;
+                    break;
+            }
+        });
+        
+        compareHtml += `</div>`;
+    });
+    
+    compareHtml += `
+            </div>
+        </div>
+    `;
+    
+    // إنشاء modal للمقارنة
+    const modal = document.createElement('div');
+    modal.className = 'modal compare-modal';
+    modal.innerHTML = `
+        <div class="modal-content compare-modal-content">
+            <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+            ${compareHtml}
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.style.display = 'block';
+}
+
+// مسح قائمة المقارنة
+function clearCompare() {
+    compareList = [];
+    localStorage.setItem('compareList', JSON.stringify(compareList));
+    updateCompareUI();
+    document.querySelector('.compare-modal').remove();
+    showNotification('تم مسح قائمة المقارنة', 'info');
+}
     const plusBtn = document.querySelector('.qty-btn.plus');
     const minusBtn = document.querySelector('.qty-btn.minus');
     const qtyInput = document.getElementById('productQty');
@@ -393,6 +585,9 @@ function renderMainContent() {
     // تصفية حسب السعر
     products = products.filter(p => p.priceNum >= priceFilter.min && p.priceNum <= priceFilter.max);
     
+    // تطبيق الفلاتر المتقدمة
+    products = applyAdvancedFilters(products);
+    
     // الترتيب
     products = sortProducts(products);
     
@@ -412,7 +607,11 @@ function renderMainContent() {
     }
 
     if (showingFavorites || showingFeatured || activeCategory !== 'all' || currentSort !== 'default' || priceFilter.min > 0 || priceFilter.max < Infinity) {
-        // عرض نتائج البحث/التصفية في شبكة واحدة
+        // عرض نتائج البحث/التصفية في شبكة واحدة مع تحميل تدريجي
+        const initialProducts = products.slice(0, productsPerPage);
+        filteredProducts = products; // حفظ جميع المنتجات المفلترة
+        currentPage = 1;
+        
         container.innerHTML = `
             <section class="products-section">
                 <div class="section-header">
@@ -422,10 +621,16 @@ function renderMainContent() {
                     </h2>
                 </div>
                 <div class="products-grid ${currentView}">
-                    ${products.map(p => createProductCardHtml(p)).join('')}
+                    ${initialProducts.map(p => createProductCardHtml(p)).join('')}
                 </div>
+                ${products.length > productsPerPage ? '<div id="loadMoreTrigger"></div>' : ''}
             </section>
         `;
+        
+        // إعداد التحميل التدريجي إذا كان هناك المزيد من المنتجات
+        if (products.length > productsPerPage) {
+            setTimeout(() => setupInfiniteScroll(), 100);
+        }
     } else {
         // العرض الافتراضي المقسم حسب الأقسام
         renderDefaultSections();
@@ -590,12 +795,17 @@ function createProductCardHtml(product) {
     const cdnUrl = getCDNUrl(product.image);
     const isFav = favorites.includes(product.id);
     const isFeatured = product.featured;
+    const isInCompare = compareList.includes(product.id);
+    const ratingStars = createRatingStars(product.id, true);
     
     return `
         <div class="product-card" onclick="showProductDetails(${product.id})">
             ${isFeatured ? `<div class="featured-badge"><i class="fas fa-crown"></i> مميز</div>` : ''}
             <button class="fav-btn ${isFav ? 'active' : ''}" data-id="${product.id}" onclick="toggleFavorite(${product.id}, event)">
                 <i class="fas fa-heart"></i>
+            </button>
+            <button class="compare-btn ${isInCompare ? 'active' : ''}" data-id="${product.id}" onclick="toggleCompare(${product.id}, event)">
+                <i class="fas fa-exchange-alt"></i>
             </button>
             <div class="product-img">
                 <img data-src="${cdnUrl}" 
@@ -606,6 +816,10 @@ function createProductCardHtml(product) {
             <div class="product-info">
                 <span class="product-category">${product.subcategory}</span>
                 <h3 class="product-name">${product.name}</h3>
+                <div class="product-rating">
+                    ${ratingStars}
+                    <span class="rating-count">(${ratings[product.id] ? ratings[product.id].length : 0})</span>
+                </div>
                 <p class="product-description">${product.description.substring(0, 100)}${product.description.length > 100 ? '...' : ''}</p>
                 <div class="product-footer">
                     <div class="product-price">${formattedPrice}</div>
@@ -618,16 +832,14 @@ function createProductCardHtml(product) {
     `;
 }
 
-// تنسيق السعر
-function formatPrice(price) {
-    const p = parseFloat(price);
-    if (isNaN(p) || p === 0) return "يحدد لاحقاً";
-    
-    // تنسيق مع فواصل الآلاف للدينار العراقي
-    return p.toLocaleString('ar-IQ', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }) + " د.ع";
+// الحصول على رابط CDN للصورة مع ضغط تلقائي
+function getCDNUrl(imageUrl) {
+    // استخدام خدمة CDN مجانية لضغط الصور
+    if (imageUrl && imageUrl.startsWith('http')) {
+        // تحويل إلى WebP مع ضغط
+        return `https://images.weserv.nl/?url=${encodeURIComponent(imageUrl)}&w=400&h=400&fit=cover&output=webp&q=80`;
+    }
+    return imageUrl;
 }
 
 // عرض تفاصيل المنتج (الخاصية الرئيسية المطلوبة)
