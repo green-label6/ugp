@@ -12,17 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- زر الوصول السريع للمفضلة للهواتف -->
-    <div class="quick-fav-mobile" id="quickFavMobile">
-        <i class="fas fa-heart"></i>
-        <span class="fav-count" id="mobileFavCount">0</span>
-    </div>
-
-    <!-- زر الوصول السريع للواتساب للهواتف -->
-    <a href="https://wa.me/9647839277919" target="_blank" class="quick-whatsapp-mobile" id="quickWhatsappMobile">
-        <i class="fab fa-whatsapp"></i>
-    </a>
-
     <header class="header">
         <div class="container">
             <nav class="navbar">
@@ -51,7 +40,7 @@
                     <div class="sort-container">
                         <select id="sortSelect" class="sort-select">
                             <option value="default">الترتيب الافتراضي</option>
-                            <option value="price-asc">السعر: من الأقل للأقل</option>
+                            <option value="price-asc">السعر: من الأقل للأعلى</option>
                             <option value="price-desc">السعر: من الأعلى للأقل</option>
                             <option value="name-asc">الأسماء: أ-ي</option>
                             <option value="name-desc">الأسماء: ي-أ</option>
@@ -60,10 +49,7 @@
                     <button class="view-btn active" data-view="grid-2" title="عمودين"><i class="fas fa-th-large"></i></button>
                     <button class="view-btn" data-view="grid-3" title="3 أعمدة"><i class="fas fa-th"></i></button>
                     <button class="view-btn" data-view="list" title="قائمة"><i class="fas fa-list"></i></button>
-                    <button class="view-btn" id="favToggle" title="المفضلة">
-                        <i class="fas fa-heart"></i>
-                        <span class="fav-count-header" id="headerFavCount">0</span>
-                    </button>
+                    <button class="view-btn" id="favToggle" title="المفضلة"><i class="fas fa-heart"></i></button>
                 </div>
                 
                 <ul class="nav-links" id="mainNavLinks">
@@ -73,9 +59,6 @@
                 <div class="nav-icons">
                     <a href="https://instagram.com/ah_._ay" target="_blank" class="social-link-top" title="انستجرام">
                         <i class="fab fa-instagram"></i>
-                    </a>
-                    <a href="https://wa.me/9647839277919" target="_blank" class="social-link-top" title="واتساب">
-                        <i class="fab fa-whatsapp"></i>
                     </a>
                     <a href="#" class="cart-icon" id="cartIcon" title="سلة المشتريات">
                         <i class="fas fa-shopping-bag"></i>
@@ -108,7 +91,28 @@
         <div class="mobile-social">
             <a href="https://instagram.com/ah_._ay" target="_blank"><i class="fab fa-instagram"></i></a>
             <a href="https://wa.me/9647839277919" target="_blank"><i class="fab fa-whatsapp"></i></a>
-            <a href="#" id="mobileFavBtn"><i class="fas fa-heart"></i> المفضلة (<span id="mobileMenuFavCount">0</span>)</a>
+        </div>
+    </div>
+
+    <!-- Drawer جديد للتنقل بين الأقسام -->
+    <div class="drawer" id="drawer">
+        <div class="drawer-overlay" id="drawerOverlay"></div>
+        <div class="drawer-content">
+            <div class="drawer-header">
+                <h3><i class="fas fa-th-list"></i> جميع الأقسام</h3>
+                <button class="close-drawer" id="closeDrawer">&times;</button>
+            </div>
+            <div class="drawer-body">
+                <ul class="drawer-categories" id="drawerCategories">
+                    <!-- سيتم ملؤها ديناميكياً -->
+                </ul>
+                <div class="drawer-quick-links">
+                    <h4><i class="fas fa-star"></i> روابط سريعة</h4>
+                    <a href="#" id="drawerFavorites"><i class="fas fa-heart"></i> المفضلة</a>
+                    <a href="#" id="drawerCart"><i class="fas fa-shopping-bag"></i> سلة المشتريات</a>
+                    <a href="#features"><i class="fas fa-info-circle"></i> لماذا نحن؟</a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -124,28 +128,10 @@
                             <i class="fas fa-shopping-bag"></i>
                             اكتشف المنتجات
                         </a>
-                        <a href="https://wa.me/9647839277919" target="_blank" class="secondary-btn whatsapp-btn">
-                            <i class="fab fa-whatsapp"></i>
-                            تواصل معنا
+                        <a href="#features" class="secondary-btn">
+                            <i class="fas fa-star"></i>
+                            لماذا نحن؟
                         </a>
-                    </div>
-                    <!-- طرق التواصل السريعة -->
-                    <div class="quick-contact">
-                        <h3><i class="fas fa-headset"></i> تواصل معنا مباشرة:</h3>
-                        <div class="contact-methods">
-                            <a href="https://wa.me/9647839277919" target="_blank" class="contact-method whatsapp">
-                                <i class="fab fa-whatsapp"></i>
-                                <span>واتساب: 9647839277919</span>
-                            </a>
-                            <a href="tel:+9647839277919" class="contact-method phone">
-                                <i class="fas fa-phone"></i>
-                                <span>اتصال: 9647839277919</span>
-                            </a>
-                            <a href="https://instagram.com/ah_._ay" target="_blank" class="contact-method instagram">
-                                <i class="fab fa-instagram"></i>
-                                <span>انستجرام: ah_._ay</span>
-                            </a>
-                        </div>
                     </div>
                 </div>
                 <div class="hero-image">
@@ -183,8 +169,8 @@
                     <button id="showFeatured" class="filter-btn special">
                         <i class="fas fa-crown"></i> المنتجات المميزة
                     </button>
-                    <button id="showFavoritesSidebar" class="filter-btn favorites-btn">
-                        <i class="fas fa-heart"></i> المفضلة (<span id="sidebarFavCount">0</span>)
+                    <button id="showFavorites" class="filter-btn">
+                        <i class="fas fa-heart"></i> المنتجات المفضلة
                     </button>
                 </div>
             </aside>
@@ -254,9 +240,6 @@
                         <a href="https://wa.me/9647839277919" target="_blank" class="social-link">
                             <i class="fab fa-whatsapp"></i>
                         </a>
-                        <a href="tel:+9647839277919" class="social-link">
-                            <i class="fas fa-phone"></i>
-                        </a>
                     </div>
                 </div>
                 
@@ -266,7 +249,7 @@
                         <li><a href="#home">الرئيسية</a></li>
                         <li><a href="#" id="cartLinkFooter">سلة المشتريات</a></li>
                         <li><a href="#" id="showFavFooter">المفضلة</a></li>
-                        <li><a href="#features">لماذا تختارنا؟</a></li>
+                        <li><a href="#" id="openDrawerFooter">جميع الأقسام</a></li>
                     </ul>
                 </div>
                 
@@ -285,37 +268,36 @@
                             <i class="fab fa-instagram"></i>
                             <span>انستجرام: ah_._ay</span>
                         </li>
-                        <li>
-                            <i class="fas fa-envelope"></i>
-                            <span>البريد الإلكتروني: info@example.com</span>
-                        </li>
                     </ul>
-                </div>
-                
-                <div class="footer-col">
-                    <h3 class="footer-title">طرق الدفع</h3>
-                    <div class="payment-methods">
-                        <div class="payment-method">
-                            <i class="fas fa-money-bill-wave"></i>
-                            <span>الدفع عند الاستلام</span>
-                        </div>
-                        <div class="payment-method">
-                            <i class="fas fa-university"></i>
-                            <span>حوالة بنكية</span>
-                        </div>
-                        <div class="payment-method">
-                            <i class="fas fa-mobile-alt"></i>
-                            <span>محفظة إلكترونية</span>
-                        </div>
-                    </div>
                 </div>
             </div>
             <div class="footer-bottom">
                 <p>&copy; <span id="currentYear"></span> كوزمتك بين يديك. جميع الحقوق محفوظة.</p>
-                <p class="footer-credit">تم التطوير بدقة ليعمل على جميع الأجهزة والمتصفحات</p>
             </div>
         </div>
     </footer>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <a href="#home" class="bottom-nav-item" data-section="home">
+            <i class="fas fa-home"></i>
+            <span>الرئيسية</span>
+        </a>
+        <a href="#" class="bottom-nav-item" id="bottomNavDrawer">
+            <i class="fas fa-th-list"></i>
+            <span>الأقسام</span>
+        </a>
+        <a href="#" class="bottom-nav-item" id="bottomNavFavorites">
+            <i class="fas fa-heart"></i>
+            <span>المفضلة</span>
+            <span class="favorites-count" id="bottomFavCount">0</span>
+        </a>
+        <a href="#" class="bottom-nav-item" id="bottomNavCart">
+            <i class="fas fa-shopping-bag"></i>
+            <span>السلة</span>
+            <span class="cart-count-bottom" id="bottomCartCount">0</span>
+        </a>
+    </nav>
 
     <!-- سلة المشتريات الجانبية -->
     <div class="cart-sidebar" id="cartSidebar">
@@ -360,7 +342,7 @@
                             <input type="number" id="productQty" value="1" min="1">
                             <button class="qty-btn plus">+</button>
                         </div>
-                        <div class="modal-buttons">
+                        <div class="modal-actions-row">
                             <button id="modalAddToCart" class="primary-btn">
                                 <i class="fas fa-cart-plus"></i> إضافة للسلة
                             </button>
@@ -374,20 +356,6 @@
         </div>
     </div>
 
-    <!-- نافذة المفضلة -->
-    <div class="favorites-sidebar" id="favoritesSidebar">
-        <div class="favorites-header">
-            <h3><i class="fas fa-heart"></i> منتجاتك المفضلة</h3>
-            <button class="close-favorites" id="closeFavorites">&times;</button>
-        </div>
-        <div class="favorites-items" id="favoritesItems">
-            <!-- سيتم ملؤها عبر JavaScript -->
-        </div>
-        <div class="favorites-footer">
-            <button class="primary-btn" id="continueShoppingFromFav">متابعة التسوق</button>
-        </div>
-    </div>
-
     <!-- نافذة تحميل -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner-container">
@@ -398,24 +366,6 @@
 
     <!-- رسائل التنبيه -->
     <div class="notification-container" id="notificationContainer"></div>
-
-    <!-- أزرار الوصول السريع للجوال -->
-    <div class="mobile-quick-buttons">
-        <button class="mobile-quick-btn" id="mobileQuickHome" title="الرئيسية">
-            <i class="fas fa-home"></i>
-        </button>
-        <button class="mobile-quick-btn" id="mobileQuickCart" title="سلة المشتريات">
-            <i class="fas fa-shopping-bag"></i>
-            <span class="quick-badge" id="mobileQuickCartCount">0</span>
-        </button>
-        <button class="mobile-quick-btn" id="mobileQuickFav" title="المفضلة">
-            <i class="fas fa-heart"></i>
-            <span class="quick-badge" id="mobileQuickFavCount">0</span>
-        </button>
-        <a href="https://wa.me/9647839277919" target="_blank" class="mobile-quick-btn whatsapp-quick" title="تواصل عبر واتساب">
-            <i class="fab fa-whatsapp"></i>
-        </a>
-    </div>
 
     <div class="back-to-top" id="backToTop">
         <i class="fas fa-chevron-up"></i>
