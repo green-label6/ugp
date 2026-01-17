@@ -19,7 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // دالة التهيئة الرئيسية
-function initializeApp() {
+async function initializeApp() {
+    console.log('تهيئة التطبيق...');
+
+    // تشخيص المشاكل أولاً
+    await startDiagnostics();
+
     setCurrentYear();
     loadProducts();
     setupEventListeners();
@@ -37,15 +42,85 @@ function setCurrentYear() {
     document.getElementById('currentYear').textContent = new Date().getFullYear();
 }
 
-// إعداد إشعارات الموقع
-function setupNotifications() {
-    const notificationContainer = document.getElementById('notificationContainer');
-    if (!notificationContainer) {
-        const container = document.createElement('div');
-        container.id = 'notificationContainer';
-        container.className = 'notification-container';
-        document.body.appendChild(container);
+// دالة التحقق من حالة الشبكة والـ CDN
+async function checkNetworkAndCDN() {
+    const results = {
+        online: navigator.onLine,
+        fontAwesome: false,
+        googleFonts: false,
+        jsonFile: false
+    };
+
+    // التحقق من Font Awesome
+    try {
+        const faResponse = await fetch('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css', {
+            method: 'HEAD',
+            mode: 'no-cors'
+        });
+        results.fontAwesome = true;
+    } catch (e) {
+        console.warn('Font Awesome غير متاح');
     }
+
+    // التحقق من Google Fonts
+    try {
+        const gfResponse = await fetch('https://fonts.googleapis.com/css2?family=Cairo:wght@400&display=swap', {
+            method: 'HEAD',
+            mode: 'no-cors'
+        });
+        results.googleFonts = true;
+    } catch (e) {
+        console.warn('Google Fonts غير متاح');
+    }
+
+    // التحقق من ملف البيانات
+    try {
+        const jsonResponse = await fetch('./products_by_category.json', {
+            method: 'HEAD'
+        });
+        results.jsonFile = jsonResponse.ok;
+    } catch (e) {
+        console.warn('ملف البيانات غير متاح');
+    }
+
+    console.log('نتائج فحص الشبكة:', results);
+    return results;
+}
+
+// دالة بدء التشخيص
+async function startDiagnostics() {
+    console.log('بدء تشخيص المشاكل...');
+    const diagnostics = await checkNetworkAndCDN();
+
+    let issues = [];
+    let recommendations = [];
+
+    if (!diagnostics.online) {
+        issues.push('لا يوجد اتصال بالإنترنت');
+        recommendations.push('تحقق من اتصال الإنترنت');
+    }
+
+    if (!diagnostics.fontAwesome) {
+        issues.push('Font Awesome غير متاح');
+        recommendations.push('سيتم تحميل الأيقونات محلياً');
+    }
+
+    if (!diagnostics.googleFonts) {
+        issues.push('Google Fonts غير متاح');
+        recommendations.push('سيتم استخدام الخط الافتراضي');
+    }
+
+    if (!diagnostics.jsonFile) {
+        issues.push('ملف البيانات غير متاح');
+        recommendations.push('تحقق من وجود ملف products_by_category.json', 'تأكد من تشغيل الخادم المحلي');
+    }
+
+    if (issues.length > 0) {
+        console.warn('تم اكتشاف المشاكل التالية:', issues);
+        showNotification(`تم اكتشاف ${issues.length} مشاكل - جاري حلها تلقائياً`, 'warning');
+    }
+
+    return diagnostics;
 }
 
 // إظهار إشعار
@@ -215,34 +290,385 @@ function toggleFavorite(id, event) {
 }
 
 // تحميل المنتجات
+// دالة تحميل المنتجات المحسّنة مع التحقق من CDN
 async function loadProducts() {
     try {
         showLoading();
-        const response = await fetch('products_by_category.json');
-        if (!response.ok) throw new Error('فشل في تحميل البيانات');
+        console.log('بدء تحميل البيانات...');
+
+        // التحقق من تحميل Font Awesome
+        if (typeof FontAwesome === 'undefined') {
+            console.warn('Font Awesome غير محمل، سيتم تحميله محلياً...');
+            await loadFontAwesomeLocally();
+        }
+
+        // التحقق من تحميل Google Fonts
+        if (!document.fonts.check('12px Cairo')) {
+            console.warn('خط Cairo غير محمل، سيتم تحميله محلياً...');
+            await loadGoogleFontsLocally();
+        }
+
+        const response = await fetch('./products_by_category.json', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache'
+            },
+            // إضافة timeout
+            signal: AbortSignal.timeout(10000) // 10 ثواني timeout
+        });
+
+        if (!response.ok) {
+            throw new Error(`فشل في تحميل البيانات: ${response.status} ${response.statusText}`);
+        }
+
         const data = await response.json();
+        console.log('تم تحميل البيانات بنجاح:', data);
+
+        if (!data.categories || typeof data.categories !== 'object') {
+            throw new Error('تنسيق البيانات غير صحيح - لا توجد أقسام');
+        }
+
         categoriesData = data.categories;
+        console.log('عدد الأقسام:', Object.keys(categoriesData).length);
+
+        // التحقق من وجود منتجات
+        let totalProducts = 0;
+        Object.values(categoriesData).forEach(category => {
+            if (category.products && Array.isArray(category.products)) {
+                totalProducts += category.products.length;
+            }
+        });
+
+        if (totalProducts === 0) {
+            throw new Error('لا توجد منتجات في البيانات');
+        }
+
+        console.log('إجمالي المنتجات:', totalProducts);
+
         flattenProducts();
+        console.log('عدد المنتجات المسطحة:', allProducts.length);
+
         renderNavigation();
         renderSidebarCategories();
         renderCategoriesGrid();
         renderFeaturedCarousel();
         renderMainContent();
+
         hideLoading();
+        showNotification('تم تحميل المنتجات بنجاح! (' + totalProducts + ' منتج)', 'success');
+
     } catch (error) {
-        console.error('Error loading products:', error);
+        console.error('خطأ في تحميل البيانات:', error);
+        hideLoading();
+
+        let errorMessage = error.message;
+        let suggestions = [];
+
+        if (error.name === 'TimeoutError') {
+            errorMessage = 'انتهت مهلة تحميل البيانات';
+            suggestions = ['تحقق من سرعة اتصال الإنترنت', 'جرب إعادة تحميل الصفحة'];
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            errorMessage = 'مشكلة في الشبكة أو الخادم';
+            suggestions = ['تحقق من اتصال الإنترنت', 'تأكد من تشغيل الخادم المحلي', 'تحقق من مسار ملف البيانات'];
+        } else if (error.message.includes('تنسيق البيانات')) {
+            errorMessage = 'مشكلة في تنسيق ملف البيانات';
+            suggestions = ['تحقق من صحة ملف products_by_category.json', 'تأكد من أن الملف يحتوي على بيانات صحيحة'];
+        }
+
+        // عرض رسالة خطأ محسّنة
         document.getElementById('dynamic-sections').innerHTML = `
             <div class="error-msg">
                 <i class="fas fa-exclamation-triangle"></i>
                 <h3>حدث خطأ في تحميل البيانات</h3>
-                <p>الرجاء التحقق من اتصال الإنترنت والمحاولة مرة أخرى.</p>
-                <button onclick="loadProducts()" class="primary-btn">
-                    <i class="fas fa-redo"></i> إعادة المحاولة
-                </button>
+                <p><strong>الخطأ:</strong> ${errorMessage}</p>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 0 0 10px 0; font-weight: bold;">اقتراحات الحل:</p>
+                    <ul style="text-align: right; margin: 0; padding: 0; list-style: none;">
+                        ${suggestions.map(suggestion => `<li style="padding: 5px 0;"><i class="fas fa-check-circle" style="color: #4CAF50; margin-left: 8px;"></i>${suggestion}</li>`).join('')}
+                    </ul>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="loadProducts()" class="primary-btn" style="flex: 1; min-width: 120px;">
+                        <i class="fas fa-redo"></i> إعادة المحاولة
+                    </button>
+                    <button onclick="loadSampleData()" class="secondary-btn" style="flex: 1; min-width: 120px;">
+                        <i class="fas fa-database"></i> تحميل بيانات تجريبية
+                    </button>
+                </div>
             </div>
         `;
-        hideLoading();
+
+        // محاولة تلقائية بعد 5 ثواني
+        setTimeout(() => {
+            console.log('محاولة إعادة التحميل التلقائية...');
+            loadProducts();
+        }, 5000);
     }
+}
+
+// دالة تحميل Font Awesome محلياً كبديل
+async function loadFontAwesomeLocally() {
+    return new Promise((resolve, reject) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+        link.onload = () => {
+            console.log('تم تحميل Font Awesome محلياً');
+            resolve();
+        };
+        link.onerror = () => {
+            console.warn('فشل في تحميل Font Awesome، سيتم استخدام أيقونات نصية');
+            resolve(); // لا نرفض لأن هذا ليس خطأ حرج
+        };
+        document.head.appendChild(link);
+    });
+}
+
+// دالة تحميل Google Fonts محلياً كبديل
+async function loadGoogleFontsLocally() {
+    return new Promise((resolve, reject) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap';
+        link.onload = () => {
+            console.log('تم تحميل خط Cairo محلياً');
+            resolve();
+        };
+        link.onerror = () => {
+            console.warn('فشل في تحميل خط Cairo، سيتم استخدام الخط الافتراضي');
+            resolve(); // لا نرفض لأن هذا ليس خطأ حرج
+        };
+        document.head.appendChild(link);
+    });
+}
+
+// دالة إنشاء ملف بيانات تجريبي
+function createSampleDataFile() {
+    const sampleData = {
+        "categories": {
+            "المكياج": {
+                "name": "المكياج",
+                "icon": "💄",
+                "description": "مجموعة شاملة من منتجات المكياج المهنية",
+                "products": [
+                    {
+                        "id": 1,
+                        "name": "أحمر شفاه لامع",
+                        "description": "أحمر شفاه لامع عالي الجودة مع تركيبة مرطبة تحافظ على الشفاه ناعمة ولامعة لساعات طويلة",
+                        "price": 25000,
+                        "originalPrice": 30000,
+                        "image": "images/placeholder.jpg",
+                        "category": "المكياج",
+                        "subcategory": "أحمر الشفاه",
+                        "rating": 4.5,
+                        "reviews": 128,
+                        "inStock": true,
+                        "brand": "MAC",
+                        "tags": ["أحمر شفاه", "لامع", "طويل الأمد"]
+                    },
+                    {
+                        "id": 2,
+                        "name": "ماسكارا مائية",
+                        "description": "ماسكارا مقاومة للماء لرموش طويلة وكثيفة مع تركيبة سهلة الإزالة",
+                        "price": 30000,
+                        "image": "images/placeholder.jpg",
+                        "category": "المكياج",
+                        "subcategory": "العيون",
+                        "rating": 4.2,
+                        "reviews": 95,
+                        "inStock": true,
+                        "brand": "L'Oréal",
+                        "tags": ["ماسكارا", "مائية", "رموش"]
+                    },
+                    {
+                        "id": 3,
+                        "name": "كريم أساس",
+                        "description": "كريم أساس خفيف الوزن مع تغطية طبيعية ومتوسطة للبشرة اليومية",
+                        "price": 45000,
+                        "image": "images/placeholder.jpg",
+                        "category": "المكياج",
+                        "subcategory": "كريم الأساس",
+                        "rating": 4.7,
+                        "reviews": 203,
+                        "inStock": true,
+                        "brand": "Maybelline",
+                        "tags": ["كريم أساس", "تغطية طبيعية", "خفيف"]
+                    }
+                ]
+            },
+            "العناية_بالبشرة": {
+                "name": "العناية بالبشرة",
+                "icon": "🧴",
+                "description": "منتجات العناية بالبشرة الفاخرة لجميع أنواع البشرة",
+                "products": [
+                    {
+                        "id": 4,
+                        "name": "كريم مرطب",
+                        "description": "كريم مرطب للبشرة الجافة والحساسة مع فيتامين E وحمض الهيالورونيك",
+                        "price": 35000,
+                        "image": "images/placeholder.jpg",
+                        "category": "العناية بالبشرة",
+                        "subcategory": "المرطبات",
+                        "rating": 4.7,
+                        "reviews": 156,
+                        "inStock": true,
+                        "brand": "Cetaphil",
+                        "tags": ["مرطب", "فيتامين E", "حمض الهيالورونيك"]
+                    },
+                    {
+                        "id": 5,
+                        "name": "غسول وجه",
+                        "description": "غسول وجه لطيف لإزالة الشوائب والزيوت الزائدة دون جفاف البشرة",
+                        "price": 28000,
+                        "image": "images/placeholder.jpg",
+                        "category": "العناية بالبشرة",
+                        "subcategory": "التنظيف",
+                        "rating": 4.3,
+                        "reviews": 89,
+                        "inStock": true,
+                        "brand": "CeraVe",
+                        "tags": ["غسول", "تنظيف", "لطيف"]
+                    }
+                ]
+            },
+            "العناية_بالشعر": {
+                "name": "العناية بالشعر",
+                "icon": "💇‍♀️",
+                "description": "منتجات العناية بالشعر لجميع أنواع الشعر",
+                "products": [
+                    {
+                        "id": 6,
+                        "name": "شامبو مرطب",
+                        "description": "شامبو مرطب للشعر الجاف و التالف مع زيوت طبيعية",
+                        "price": 32000,
+                        "image": "images/placeholder.jpg",
+                        "category": "العناية بالشعر",
+                        "subcategory": "الشامبو",
+                        "rating": 4.4,
+                        "reviews": 112,
+                        "inStock": true,
+                        "brand": "Garnier",
+                        "tags": ["شامبو", "مرطب", "زيوت طبيعية"]
+                    }
+                ]
+            },
+            "العطور": {
+                "name": "العطور",
+                "icon": "🌸",
+                "description": "مجموعة من أرقى العطور العالمية والمحلية",
+                "products": [
+                    {
+                        "id": 7,
+                        "name": "عطر فاخر",
+                        "description": "عطر فاخر للرجال برائحة خشبية أنيقة تدوم لساعات طويلة",
+                        "price": 85000,
+                        "image": "images/placeholder.jpg",
+                        "category": "العطور",
+                        "subcategory": "عطور رجالية",
+                        "rating": 4.8,
+                        "reviews": 67,
+                        "inStock": true,
+                        "brand": "Dior",
+                        "tags": ["عطر", "فاخر", "خشبي"]
+                    }
+                ]
+            },
+            "الأدوات_والفرش": {
+                "name": "الأدوات والفرش",
+                "icon": "🖌️",
+                "description": "أدوات وفرش المكياج المهنية عالية الجودة",
+                "products": [
+                    {
+                        "id": 8,
+                        "name": "فرشة مكياج",
+                        "description": "مجموعة فرش مكياج مهنية مصنوعة من أجود الأنواع",
+                        "price": 55000,
+                        "image": "images/placeholder.jpg",
+                        "category": "الأدوات والفرش",
+                        "subcategory": "الفرش",
+                        "rating": 4.6,
+                        "reviews": 78,
+                        "inStock": true,
+                        "brand": "EcoTools",
+                        "tags": ["فرش", "مكياج", "مهنية"]
+                    }
+                ]
+            },
+            "العناية_بالجسم": {
+                "name": "العناية بالجسم",
+                "icon": "🧼",
+                "description": "منتجات العناية بالجسم والاستحمام",
+                "products": [
+                    {
+                        "id": 9,
+                        "name": "صابون سائل",
+                        "description": "صابون سائل مرطب للجسم برائحة منعشة",
+                        "price": 22000,
+                        "image": "images/placeholder.jpg",
+                        "category": "العناية بالجسم",
+                        "subcategory": "الاستحمام",
+                        "rating": 4.1,
+                        "reviews": 45,
+                        "inStock": true,
+                        "brand": "Dove",
+                        "tags": ["صابون", "مرطب", "منعش"]
+                    }
+                ]
+            },
+            "العناية_بالأظافر": {
+                "name": "العناية بالأظافر",
+                "icon": "💅",
+                "description": "منتجات العناية بالأظافر والطلاء",
+                "products": [
+                    {
+                        "id": 10,
+                        "name": "طلاء أظافر",
+                        "description": "طلاء أظافر سريع الجفاف بألوان عصرية",
+                        "price": 18000,
+                        "image": "images/placeholder.jpg",
+                        "category": "العناية بالأظافر",
+                        "subcategory": "الطلاء",
+                        "rating": 4.3,
+                        "reviews": 134,
+                        "inStock": true,
+                        "brand": "OPI",
+                        "tags": ["طلاء أظافر", "سريع الجفاف", "ألوان عصرية"]
+                    }
+                ]
+            }
+        }
+    };
+
+    // حفظ الملف كـ JSON (في المتصفحات الحديثة)
+    const dataStr = JSON.stringify(sampleData, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(dataBlob);
+    link.download = 'products_by_category.json';
+    link.click();
+
+    console.log('تم إنشاء ملف البيانات التجريبية');
+    return sampleData;
+}
+
+// دالة تحميل بيانات تجريبية في حالة فشل التحميل
+function loadSampleData() {
+    console.log('تحميل البيانات التجريبية...');
+
+    const sampleData = createSampleDataFile();
+    categoriesData = sampleData.categories;
+
+    flattenProducts();
+    renderNavigation();
+    renderSidebarCategories();
+    renderCategoriesGrid();
+    renderFeaturedCarousel();
+    renderMainContent();
+
+    hideLoading();
+    showNotification('تم تحميل البيانات التجريبية بنجاح! (10 منتجات)', 'success');
 }
 
 // إظهار مؤشر التحميل
