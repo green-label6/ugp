@@ -23,64 +23,6 @@
         <i class="fab fa-whatsapp"></i>
     </a>
 
-    <!-- البحث المتقدم للجوال -->
-    <div class="mobile-advanced-search" id="mobileAdvancedSearch">
-        <div class="mobile-search-header">
-            <h3><i class="fas fa-search"></i> البحث المتقدم</h3>
-            <button class="close-mobile-search" id="closeMobileSearch">&times;</button>
-        </div>
-        <div class="mobile-search-filters">
-            <div class="search-filter-group">
-                <h4><i class="fas fa-tags"></i> نطاق السعر</h4>
-                <div class="price-range-container">
-                    <div class="price-inputs">
-                        <input type="number" id="mobileMinPrice" placeholder="السعر الأدنى" min="0">
-                        <span class="price-separator">إلى</span>
-                        <input type="number" id="mobileMaxPrice" placeholder="السعر الأقصى" min="0">
-                    </div>
-                    <div class="price-range-display">
-                        <span id="mobilePriceRangeText">الكل</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="search-filter-group">
-                <h4><i class="fas fa-filter"></i> الأقسام</h4>
-                <div class="category-checkboxes" id="mobileCategoryFilters">
-                    <!-- سيتم ملؤها ديناميكياً -->
-                </div>
-            </div>
-            
-            <div class="search-filter-group">
-                <h4><i class="fas fa-star"></i> خيارات خاصة</h4>
-                <div class="special-filters">
-                    <label class="filter-checkbox">
-                        <input type="checkbox" id="mobileFeaturedOnly">
-                        <span class="checkbox-label">
-                            <i class="fas fa-crown"></i>
-                            المنتجات المميزة فقط
-                        </span>
-                    </label>
-                    <label class="filter-checkbox">
-                        <input type="checkbox" id="mobileInStockOnly">
-                        <span class="checkbox-label">
-                            <i class="fas fa-check-circle"></i>
-                            المتوفر في المخزون
-                        </span>
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="mobile-search-actions">
-            <button class="search-apply-btn" id="applyMobileSearch">
-                <i class="fas fa-search"></i> تطبيق البحث
-            </button>
-            <button class="search-reset-btn" id="resetMobileSearch">
-                <i class="fas fa-redo"></i> إعادة تعيين
-            </button>
-        </div>
-    </div>
-
     <header class="header">
         <div class="container">
             <nav class="navbar">
@@ -92,26 +34,15 @@
                     </div>
                 </a>
                 
-                <!-- شريط البحث المحسن -->
+                <!-- شريط البحث -->
                 <div class="search-container">
                     <div class="search-box">
                         <i class="fas fa-search search-icon"></i>
-                        <input type="text" id="searchInput" placeholder="ابحث عن منتج، سعر، أو وصف...">
+                        <input type="text" id="searchInput" placeholder="ابحث عن منتج أو وصف...">
                         <button class="search-btn" id="searchBtn">
                             <i class="fas fa-search"></i>
                         </button>
-                        <button class="advanced-search-btn" id="advancedSearchBtn" title="بحث متقدم">
-                            <i class="fas fa-sliders-h"></i>
-                        </button>
                         <div class="search-results" id="searchResults"></div>
-                    </div>
-                    
-                    <!-- خيارات البحث السريع -->
-                    <div class="quick-search-tags" id="quickSearchTags">
-                        <span class="search-tag" data-search="أقل من 50000">أقل من 50,000 د.ع</span>
-                        <span class="search-tag" data-search="أكثر من 100000">أكثر من 100,000 د.ع</span>
-                        <span class="search-tag" data-search="مميز">منتجات مميزة</span>
-                        <span class="search-tag" data-search="جديد">منتجات جديدة</span>
                     </div>
                 </div>
 
@@ -120,26 +51,15 @@
                     <div class="sort-container">
                         <select id="sortSelect" class="sort-select">
                             <option value="default">الترتيب الافتراضي</option>
-                            <option value="price-asc">السعر: من الأقل للأعلى</option>
+                            <option value="price-asc">السعر: من الأقل للأقل</option>
                             <option value="price-desc">السعر: من الأعلى للأقل</option>
                             <option value="name-asc">الأسماء: أ-ي</option>
                             <option value="name-desc">الأسماء: ي-أ</option>
-                            <option value="newest">الأحدث أولاً</option>
-                            <option value="popular">الأكثر شيوعاً</option>
                         </select>
                     </div>
-                    <button class="view-btn active" data-view="grid-2" title="عمودين">
-                        <i class="fas fa-th-large"></i>
-                        <span class="view-label">عمودين</span>
-                    </button>
-                    <button class="view-btn" data-view="grid-3" title="3 أعمدة">
-                        <i class="fas fa-th"></i>
-                        <span class="view-label">3 أعمدة</span>
-                    </button>
-                    <button class="view-btn" data-view="list" title="قائمة">
-                        <i class="fas fa-list"></i>
-                        <span class="view-label">قائمة</span>
-                    </button>
+                    <button class="view-btn active" data-view="grid-2" title="عمودين"><i class="fas fa-th-large"></i></button>
+                    <button class="view-btn" data-view="grid-3" title="3 أعمدة"><i class="fas fa-th"></i></button>
+                    <button class="view-btn" data-view="list" title="قائمة"><i class="fas fa-list"></i></button>
                     <button class="view-btn" id="favToggle" title="المفضلة">
                         <i class="fas fa-heart"></i>
                         <span class="fav-count-header" id="headerFavCount">0</span>
@@ -184,9 +104,6 @@
         <div class="mobile-search">
             <input type="text" id="mobileSearchInput" placeholder="ابحث عن منتج...">
             <button id="mobileSearchBtn"><i class="fas fa-search"></i></button>
-            <button class="mobile-advanced-search-btn" id="mobileAdvancedSearchBtn">
-                <i class="fas fa-sliders-h"></i>
-            </button>
         </div>
         <div class="mobile-social">
             <a href="https://instagram.com/ah_._ay" target="_blank"><i class="fab fa-instagram"></i></a>
@@ -196,116 +113,313 @@
     </div>
 
     <main>
-        <!-- ... باقي المحتوى كما هو ... -->
-    </main>
-
-    <!-- ... باقي الأكواد ... -->
-
-    <!-- البحث المتقدم للكمبيوتر -->
-    <div class="advanced-search-modal" id="advancedSearchModal">
-        <div class="advanced-search-content">
-            <div class="advanced-search-header">
-                <h3><i class="fas fa-search-plus"></i> البحث المتقدم</h3>
-                <button class="close-advanced-search" id="closeAdvancedSearch">&times;</button>
-            </div>
-            <div class="advanced-search-filters">
-                <div class="filter-column">
-                    <div class="filter-section">
-                        <h4><i class="fas fa-money-bill-wave"></i> نطاق السعر</h4>
-                        <div class="price-range-slider">
-                            <div class="price-range-labels">
-                                <span id="minPriceLabel">0 د.ع</span>
-                                <span id="maxPriceLabel">1,000,000 د.ع</span>
-                            </div>
-                            <div class="slider-container">
-                                <input type="range" min="0" max="1000000" step="1000" value="0" class="slider" id="priceRangeMin">
-                                <input type="range" min="0" max="1000000" step="1000" value="1000000" class="slider" id="priceRangeMax">
-                            </div>
-                            <div class="price-input-fields">
-                                <input type="number" id="searchMinPrice" placeholder="الحد الأدنى">
-                                <span class="price-to">إلى</span>
-                                <input type="number" id="searchMaxPrice" placeholder="الحد الأقصى">
-                            </div>
+        <section class="hero" id="home">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="hero-title">كوزمتك <span class="hero-highlight">بين يديك</span></h1>
+                    <h2 class="hero-subtitle">جمالك الطبيعي يبدأ من هنا</h2>
+                    <p class="hero-description">نقدم لكم أفضل مستحضرات التجميل والعناية الشخصية المختارة بعناية من أفضل الماركات العالمية، لرعاية خاصة ببشرتك وشعرك.</p>
+                    <div class="hero-buttons">
+                        <a href="#dynamic-sections" class="primary-btn">
+                            <i class="fas fa-shopping-bag"></i>
+                            اكتشف المنتجات
+                        </a>
+                        <a href="https://wa.me/9647839277919" target="_blank" class="secondary-btn whatsapp-btn">
+                            <i class="fab fa-whatsapp"></i>
+                            تواصل معنا
+                        </a>
+                    </div>
+                    <!-- طرق التواصل السريعة -->
+                    <div class="quick-contact">
+                        <h3><i class="fas fa-headset"></i> تواصل معنا مباشرة:</h3>
+                        <div class="contact-methods">
+                            <a href="https://wa.me/9647839277919" target="_blank" class="contact-method whatsapp">
+                                <i class="fab fa-whatsapp"></i>
+                                <span>واتساب: 9647839277919</span>
+                            </a>
+                            <a href="tel:+9647839277919" class="contact-method phone">
+                                <i class="fas fa-phone"></i>
+                                <span>اتصال: 9647839277919</span>
+                            </a>
+                            <a href="https://instagram.com/ah_._ay" target="_blank" class="contact-method instagram">
+                                <i class="fab fa-instagram"></i>
+                                <span>انستجرام: ah_._ay</span>
+                            </a>
                         </div>
                     </div>
-                    
-                    <div class="filter-section">
-                        <h4><i class="fas fa-list"></i> الأقسام</h4>
-                        <div class="category-filters" id="categoryFilters">
-                            <!-- سيتم ملؤها ديناميكياً -->
+                </div>
+                <div class="hero-image">
+                    <div class="floating-badge">
+                        <i class="fas fa-star"></i>
+                        <span>منتجات مميزة</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- حاوية الأقسام الديناميكية -->
+        <div class="main-content-wrapper container">
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h3><i class="fas fa-filter"></i> تصفية المنتجات</h3>
+                </div>
+                <div class="filter-group">
+                    <h4><i class="fas fa-tags"></i> نطاق السعر</h4>
+                    <div class="price-range-inputs">
+                        <input type="number" id="minPrice" placeholder="الأقل" min="0">
+                        <span>-</span>
+                        <input type="number" id="maxPrice" placeholder="الأعلى" min="0">
+                    </div>
+                    <button id="applyPriceFilter" class="filter-btn">تطبيق</button>
+                </div>
+                <div class="filter-group">
+                    <h4><i class="fas fa-list"></i> الأقسام</h4>
+                    <ul id="sidebarCategories" class="sidebar-cat-list">
+                        <!-- سيتم ملؤها ديناميكياً -->
+                    </ul>
+                </div>
+                <div class="filter-group">
+                    <h4><i class="fas fa-fire"></i> خاص</h4>
+                    <button id="showFeatured" class="filter-btn special">
+                        <i class="fas fa-crown"></i> المنتجات المميزة
+                    </button>
+                    <button id="showFavoritesSidebar" class="filter-btn favorites-btn">
+                        <i class="fas fa-heart"></i> المفضلة (<span id="sidebarFavCount">0</span>)
+                    </button>
+                </div>
+            </aside>
+            
+            <div id="dynamic-sections" class="dynamic-content">
+                <!-- سيتم إنشاء الأقسام والفئات الفرعية هنا عبر JS -->
+            </div>
+        </div>
+
+        <!-- قسم المميزات -->
+        <section class="features-section" id="features">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">لماذا تختارنا؟</h2>
+                    <p class="section-subtitle">نحن نقدم الأفضل لرعاية جمالك</p>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shipping-fast"></i>
                         </div>
+                        <h3>شحن سريع</h3>
+                        <p>توصيل لجميع المحافظات خلال 2-5 أيام عمل</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>منتجات أصلية</h3>
+                        <p>ضمان الجودة والأصالة لكل المنتجات</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <h3>دعم فني</h3>
+                        <p>دعم ومساعدة على مدار الساعة</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-undo-alt"></i>
+                        </div>
+                        <h3>إرجاع سهل</h3>
+                        <p>سياسة إرجاع بسيطة خلال 7 أيام</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="footer-logo">
+                        <div class="logo-icon"><i class="fas fa-spa"></i></div>
+                        <div class="logo-text">
+                            <span class="logo-main">كوزمتك</span>
+                            <span class="logo-sub">بين يديك</span>
+                        </div>
+                    </div>
+                    <p class="footer-description">جمالك يستحق الأفضل دائماً. نحن هنا لنوفر لك منتجات التجميل والعناية الشخصية الأصلية بأسعار مناسبة.</p>
+                    <div class="footer-social">
+                        <a href="https://instagram.com/ah_._ay" target="_blank" class="social-link">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="https://wa.me/9647839277919" target="_blank" class="social-link">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="tel:+9647839277919" class="social-link">
+                            <i class="fas fa-phone"></i>
+                        </a>
                     </div>
                 </div>
                 
-                <div class="filter-column">
-                    <div class="filter-section">
-                        <h4><i class="fas fa-star"></i> خيارات خاصة</h4>
-                        <div class="special-options">
-                            <label class="option-checkbox">
-                                <input type="checkbox" id="featuredOnly">
-                                <span class="checkmark"></span>
-                                <span class="option-text">
-                                    <i class="fas fa-crown"></i>
-                                    المنتجات المميزة فقط
-                                </span>
-                            </label>
-                            <label class="option-checkbox">
-                                <input type="checkbox" id="inStockOnly">
-                                <span class="checkmark"></span>
-                                <span class="option-text">
-                                    <i class="fas fa-check-circle"></i>
-                                    المتوفر في المخزون فقط
-                                </span>
-                            </label>
-                            <label class="option-checkbox">
-                                <input type="checkbox" id="discountOnly">
-                                <span class="checkmark"></span>
-                                <span class="option-text">
-                                    <i class="fas fa-percentage"></i>
-                                    المنتجات المخفضة
-                                </span>
-                            </label>
+                <div class="footer-col">
+                    <h3 class="footer-title">روابط سريعة</h3>
+                    <ul class="footer-links">
+                        <li><a href="#home">الرئيسية</a></li>
+                        <li><a href="#" id="cartLinkFooter">سلة المشتريات</a></li>
+                        <li><a href="#" id="showFavFooter">المفضلة</a></li>
+                        <li><a href="#features">لماذا تختارنا؟</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3 class="footer-title">تواصل معنا</h3>
+                    <ul class="footer-contact">
+                        <li>
+                            <i class="fas fa-phone-alt"></i>
+                            <span>9647839277919+</span>
+                        </li>
+                        <li>
+                            <i class="fab fa-whatsapp"></i>
+                            <span>واتساب: 9647839277919+</span>
+                        </li>
+                        <li>
+                            <i class="fab fa-instagram"></i>
+                            <span>انستجرام: ah_._ay</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <span>البريد الإلكتروني: info@example.com</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3 class="footer-title">طرق الدفع</h3>
+                    <div class="payment-methods">
+                        <div class="payment-method">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>الدفع عند الاستلام</span>
                         </div>
-                    </div>
-                    
-                    <div class="filter-section">
-                        <h4><i class="fas fa-sort-amount-down"></i> خيارات إضافية</h4>
-                        <div class="additional-options">
-                            <div class="form-group">
-                                <label for="searchSortBy">ترتيب حسب:</label>
-                                <select id="searchSortBy" class="form-select">
-                                    <option value="relevance">الأكثر صلة</option>
-                                    <option value="price_low">السعر: من الأقل للأعلى</option>
-                                    <option value="price_high">السعر: من الأعلى للأقل</option>
-                                    <option value="newest">الأحدث أولاً</option>
-                                    <option value="popular">الأكثر شيوعاً</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="searchLimit">عدد النتائج:</label>
-                                <select id="searchLimit" class="form-select">
-                                    <option value="12">12 منتج</option>
-                                    <option value="24">24 منتج</option>
-                                    <option value="48">48 منتج</option>
-                                    <option value="all">جميع المنتجات</option>
-                                </select>
-                            </div>
+                        <div class="payment-method">
+                            <i class="fas fa-university"></i>
+                            <span>حوالة بنكية</span>
+                        </div>
+                        <div class="payment-method">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>محفظة إلكترونية</span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="advanced-search-footer">
-                <button class="search-action-btn secondary" id="resetAdvancedSearch">
-                    <i class="fas fa-redo"></i> إعادة تعيين
-                </button>
-                <button class="search-action-btn primary" id="applyAdvancedSearch">
-                    <i class="fas fa-search"></i> تطبيق البحث
-                </button>
+            <div class="footer-bottom">
+                <p>&copy; <span id="currentYear"></span> كوزمتك بين يديك. جميع الحقوق محفوظة.</p>
+                <p class="footer-credit">تم التطوير بدقة ليعمل على جميع الأجهزة والمتصفحات</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- سلة المشتريات الجانبية -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>سلة المشتريات</h3>
+            <button class="close-cart" id="closeCart">&times;</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- سيتم ملؤها عبر JavaScript -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>الإجمالي:</span>
+                <span id="cartTotalValue">0 د.ع</span>
+            </div>
+            <button class="checkout-btn" id="checkoutBtn">
+                <i class="fab fa-whatsapp"></i> إتمام الطلب عبر واتساب
+            </button>
+            <button class="continue-shopping" id="continueShopping">متابعة التسوق</button>
+        </div>
+    </div>
+
+    <!-- نافذة تفاصيل المنتج -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModal">&times;</button>
+            <div class="product-details-grid">
+                <div class="product-details-img">
+                    <img id="modalImage" src="" alt="">
+                </div>
+                <div class="product-details-info">
+                    <span id="modalCategory" class="product-category"></span>
+                    <h2 id="modalName"></h2>
+                    <div id="modalPrice" class="product-price-large"></div>
+                    <div class="product-description-full">
+                        <h4><i class="fas fa-info-circle"></i> الوصف الكامل:</h4>
+                        <div id="modalDescription" class="description-content"></div>
+                    </div>
+                    <div class="product-details-actions">
+                        <div class="quantity-control">
+                            <button class="qty-btn minus">-</button>
+                            <input type="number" id="productQty" value="1" min="1">
+                            <button class="qty-btn plus">+</button>
+                        </div>
+                        <div class="modal-buttons">
+                            <button id="modalAddToCart" class="primary-btn">
+                                <i class="fas fa-cart-plus"></i> إضافة للسلة
+                            </button>
+                            <button id="modalAddToFav" class="secondary-btn">
+                                <i class="fas fa-heart"></i> المفضلة
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ... باقي الأكواد ... -->
+    <!-- نافذة المفضلة -->
+    <div class="favorites-sidebar" id="favoritesSidebar">
+        <div class="favorites-header">
+            <h3><i class="fas fa-heart"></i> منتجاتك المفضلة</h3>
+            <button class="close-favorites" id="closeFavorites">&times;</button>
+        </div>
+        <div class="favorites-items" id="favoritesItems">
+            <!-- سيتم ملؤها عبر JavaScript -->
+        </div>
+        <div class="favorites-footer">
+            <button class="primary-btn" id="continueShoppingFromFav">متابعة التسوق</button>
+        </div>
+    </div>
+
+    <!-- نافذة تحميل -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <p>جاري التحميل...</p>
+        </div>
+    </div>
+
+    <!-- رسائل التنبيه -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- أزرار الوصول السريع للجوال -->
+    <div class="mobile-quick-buttons">
+        <button class="mobile-quick-btn" id="mobileQuickHome" title="الرئيسية">
+            <i class="fas fa-home"></i>
+        </button>
+        <button class="mobile-quick-btn" id="mobileQuickCart" title="سلة المشتريات">
+            <i class="fas fa-shopping-bag"></i>
+            <span class="quick-badge" id="mobileQuickCartCount">0</span>
+        </button>
+        <button class="mobile-quick-btn" id="mobileQuickFav" title="المفضلة">
+            <i class="fas fa-heart"></i>
+            <span class="quick-badge" id="mobileQuickFavCount">0</span>
+        </button>
+        <a href="https://wa.me/9647839277919" target="_blank" class="mobile-quick-btn whatsapp-quick" title="تواصل عبر واتساب">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+    </div>
+
+    <div class="back-to-top" id="backToTop">
+        <i class="fas fa-chevron-up"></i>
+    </div>
 
     <script src="script.js"></script>
 </body>
