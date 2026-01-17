@@ -783,7 +783,7 @@ function createProductCardHtml(product) {
                     ${createStarRating(product.rating)}
                     <span class="rating-text">(${product.rating})</span>
                 </div>
-                <p class="product-description">${product.description.substring(0, 100)}${product.description.length > 100 ? '...' : ''}</p>
+                <p class="product-description">${product.description.substring(0, 80)}${product.description.length > 80 ? '...' : ''}</p>
                 <div class="product-footer">
                     <div class="product-price">${formattedPrice}</div>
                     <button class="add-to-cart" onclick="addToCart(${product.id}, 1); event.stopPropagation();">
@@ -849,10 +849,48 @@ function showProductDetails(id) {
     document.getElementById('modalName').textContent = product.name;
     document.getElementById('modalPrice').textContent = formatPrice(product.price);
     
-    // عرض الوصف الكامل مع الحفاظ على التنسيق
+    // عرض الوصف الكامل مع الحفاظ على التنسيق والروابط
     const description = product.description || 'لا يوجد وصف متاح لهذا المنتج.';
-    const formattedDescription = description.replace(/\n/g, '<br>');
-    document.getElementById('modalDescription').innerHTML = formattedDescription;
+    const formattedDescription = description
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/__(.*?)__/g, '<u>$1</u>')
+        .replace(/~~(.*?)~~/g, '<del>$1</del>');
+    
+    document.getElementById('modalDescription').innerHTML = `
+        <div class="product-description-full-content">
+            ${formattedDescription}
+        </div>
+        <div class="product-details-meta">
+            <div class="meta-item">
+                <i class="fas fa-tag"></i>
+                <span>القسم: ${product.category}</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-list"></i>
+                <span>الفئة: ${product.subcategory}</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-star"></i>
+                <span>التقييم: ${product.rating}/5</span>
+            </div>
+        </div>
+        <div class="product-share-section">
+            <h4><i class="fas fa-share-alt"></i> شارك المنتج</h4>
+            <div class="share-buttons">
+                <button class="share-btn whatsapp" onclick="shareOnWhatsApp('${product.name}', '${window.location.href}')">
+                    <i class="fab fa-whatsapp"></i> واتساب
+                </button>
+                <button class="share-btn facebook" onclick="shareOnFacebook('${product.name}', '${window.location.href}')">
+                    <i class="fab fa-facebook-f"></i> فيسبوك
+                </button>
+                <button class="share-btn copy" onclick="copyProductLink('${window.location.href}')">
+                    <i class="fas fa-link"></i> نسخ الرابط
+                </button>
+            </div>
+        </div>
+    `;
     
     document.getElementById('productQty').value = 1;
     
@@ -870,6 +908,11 @@ function showProductDetails(id) {
     
     // التمرير إلى أعلى النافذة
     modal.scrollTop = 0;
+    
+    // إضافة تأثير fade in
+    setTimeout(() => {
+        modal.classList.add('modal-active');
+    }, 10);
 }
 
 // إضافة إلى سلة المشتريات
@@ -1282,6 +1325,33 @@ window.addEventListener('resize', () => {
         }
     }, 250);
 });
+
+// دوال المشاركة
+function shareOnWhatsApp(productName, url) {
+    const text = `تحقق من هذا المنتج: ${productName}\n${url}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+function shareOnFacebook(productName, url) {
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(`تحقق من هذا المنتج: ${productName}`)}`;
+    window.open(facebookUrl, '_blank');
+}
+
+function copyProductLink(url) {
+    navigator.clipboard.writeText(url).then(() => {
+        showNotification('تم نسخ الرابط بنجاح!', 'success');
+    }).catch(() => {
+        // Fallback للمتصفحات القديمة
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showNotification('تم نسخ الرابط بنجاح!', 'success');
+    });
+}
 
 // التهيئة النهائية
 updateCartUI();
