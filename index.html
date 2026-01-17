@@ -47,6 +47,60 @@
         .nav-link.open-drawer:hover {
             background: rgba(156, 39, 176, 0.1);
         }
+        
+        /* أنماط زر عرض المزيد */
+        .load-more-container {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 50px;
+            padding: 20px 0;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .load-more-btn {
+            background: linear-gradient(135deg, #9c27b0 0%, #ff4081 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 24px;
+            font-weight: 700;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(156, 39, 176, 0.2);
+            min-width: 200px;
+        }
+        
+        .load-more-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(156, 39, 176, 0.3);
+        }
+        
+        .load-more-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        @media (max-width: 768px) {
+            .load-more-btn {
+                padding: 12px 25px;
+                font-size: 0.9rem;
+                min-width: 180px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .load-more-btn {
+                padding: 10px 20px;
+                font-size: 0.85rem;
+                min-width: 160px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -63,7 +117,7 @@
                     </div>
                 </a>
                 
-                <!-- شريط البحث -->
+                <!-- شريط البحث - سيتم نقله بالقرب من الفلاتر -->
                 <div class="search-container">
                     <div class="search-box">
                         <i class="fas fa-search search-icon"></i>
@@ -196,6 +250,19 @@
                 <div class="sidebar-header">
                     <h3><i class="fas fa-filter"></i> تصفية المنتجات</h3>
                 </div>
+                
+                <!-- شريط البحث في الشريط الجانبي -->
+                <div class="filter-group">
+                    <h4><i class="fas fa-search"></i> بحث سريع</h4>
+                    <div class="search-box-in-filter">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="sidebarSearchInput" placeholder="ابحث عن منتج...">
+                        <button class="search-btn-in-filter" id="sidebarSearchBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
                 <div class="filter-group">
                     <h4><i class="fas fa-tags"></i> نطاق السعر</h4>
                     <div class="price-range-inputs">
@@ -225,6 +292,11 @@
             <!-- المحتوى الديناميكي -->
             <div id="dynamic-sections" class="dynamic-content">
                 <!-- سيتم إنشاء الأقسام والفئات الفرعية هنا عبر JavaScript -->
+            </div>
+            
+            <!-- حاوية زر عرض المزيد (ستتم إضافتها ديناميكياً) -->
+            <div id="loadMoreContainerGlobal" style="display: none;">
+                <!-- سيتم إضافة زر عرض المزيد هنا ديناميكياً -->
             </div>
         </div>
 
@@ -423,5 +495,145 @@
 
     <!-- ملفات JavaScript -->
     <script src="script.js"></script>
+    
+    <script>
+        // كود JavaScript إضافي لربط شريط البحث في الشريط الجانبي
+        document.addEventListener('DOMContentLoaded', function() {
+            // ربط شريط البحث في الشريط الجانبي
+            const sidebarSearchInput = document.getElementById('sidebarSearchInput');
+            const sidebarSearchBtn = document.getElementById('sidebarSearchBtn');
+            
+            if (sidebarSearchInput && sidebarSearchBtn) {
+                sidebarSearchBtn.addEventListener('click', function() {
+                    const query = sidebarSearchInput.value;
+                    if (query.trim()) {
+                        performSearch(query);
+                        sidebarSearchInput.value = '';
+                    }
+                });
+                
+                sidebarSearchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        const query = sidebarSearchInput.value;
+                        if (query.trim()) {
+                            performSearch(query);
+                            sidebarSearchInput.value = '';
+                        }
+                    }
+                });
+            }
+            
+            // وظيفة البحث (يجب أن تكون موجودة في script.js)
+            function performSearch(query) {
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.value = query;
+                    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                
+                // إغلاق الشريط الجانبي على الجوال
+                if (window.innerWidth <= 992) {
+                    const drawer = document.getElementById('drawer');
+                    if (drawer && drawer.classList.contains('active')) {
+                        closeDrawer();
+                    }
+                }
+                
+                // التمرير إلى قسم المنتجات
+                setTimeout(() => {
+                    const dynamicSections = document.getElementById('dynamic-sections');
+                    if (dynamicSections) {
+                        dynamicSections.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 300);
+            }
+            
+            // إضافة أنماط إضافية للبحث في الشريط الجانبي
+            const style = document.createElement('style');
+            style.textContent = `
+                .search-box-in-filter {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    background: #f5f5f7;
+                    border-radius: 16px;
+                    padding: 8px 12px;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    border: 2px solid transparent;
+                    margin-bottom: 15px;
+                }
+                
+                .search-box-in-filter:focus-within {
+                    border-color: #9c27b0;
+                    background: white;
+                    box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.1);
+                }
+                
+                .search-box-in-filter .search-icon {
+                    color: #757575;
+                    margin-left: 8px;
+                    font-size: 0.9rem;
+                }
+                
+                .search-box-in-filter input {
+                    flex: 1;
+                    border: none;
+                    padding: 8px 0;
+                    font-size: 0.9rem;
+                    background: transparent;
+                    color: #212121;
+                    font-family: 'Cairo', sans-serif;
+                    width: 100%;
+                }
+                
+                .search-box-in-filter input:focus {
+                    outline: none;
+                }
+                
+                .search-box-in-filter input::placeholder {
+                    color: #a0a0a0;
+                }
+                
+                .search-btn-in-filter {
+                    background: linear-gradient(135deg, #9c27b0 0%, #ff4081 100%);
+                    color: white;
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.9rem;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    border: none;
+                    cursor: pointer;
+                    flex-shrink: 0;
+                    margin-right: 5px;
+                }
+                
+                .search-btn-in-filter:hover {
+                    transform: scale(1.05);
+                    box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
+                }
+                
+                @media (max-width: 768px) {
+                    .search-box-in-filter {
+                        padding: 6px 10px;
+                    }
+                    
+                    .search-box-in-filter input {
+                        font-size: 0.85rem;
+                    }
+                    
+                    .search-btn-in-filter {
+                        width: 32px;
+                        height: 32px;
+                        font-size: 0.85rem;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
 </body>
 </html>
