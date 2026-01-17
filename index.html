@@ -399,28 +399,25 @@
     <!-- رسائل التنبيه -->
     <div class="notification-container" id="notificationContainer"></div>
 
-    <!-- أزرار الوصول السريع للجوال -->
-    <div class="mobile-quick-buttons">
-        <button class="mobile-quick-btn" id="mobileQuickHome" title="الرئيسية">
-            <i class="fas fa-home"></i>
-        </button>
-        <button class="mobile-quick-btn" id="mobileQuickCart" title="سلة المشتريات">
-            <i class="fas fa-shopping-bag"></i>
-            <span class="quick-badge" id="mobileQuickCartCount">0</span>
-        </button>
-        <button class="mobile-quick-btn" id="mobileQuickFav" title="المفضلة">
-            <i class="fas fa-heart"></i>
-            <span class="quick-badge" id="mobileQuickFavCount">0</span>
-        </button>
-        <a href="https://wa.me/9647839277919" target="_blank" class="mobile-quick-btn whatsapp-quick" title="تواصل عبر واتساب">
-            <i class="fab fa-whatsapp"></i>
-        </a>
-    </div>
+    <!-- شريط التنقل السفلي الجديد للجوال -->
+    <nav class="bottom-nav">
+        <ul>
+            <li><button class="nav-item" id="mobileQuickHome"><i class="fas fa-home"></i><span>الرئيسية</span></button></li>
+            <li><button class="nav-item" id="mobileQuickCart"><i class="fas fa-shopping-bag"></i><span>السلة</span><span class="quick-badge" id="mobileQuickCartCount">0</span></button></li>
+            <li><button class="nav-item" id="mobileQuickFav"><i class="fas fa-heart"></i><span>المفضلة</span><span class="quick-badge" id="mobileQuickFavCount">0</span></button></li>
+            <li>
+                <select class="nav-item" id="mobileCategorySelect" style="width:100%;background:transparent;border:none;color:white;font-size:16px;padding:0 8px;">
+                    <option value="all">كل الأقسام</option>
+                </select>
+            </li>
+        </ul>
+    </nav>
 
     <div class="back-to-top" id="backToTop">
         <i class="fas fa-chevron-up"></i>
     </div>
 
+    <!-- خاصية الترجمة التلقائية للعربية سيتم تفعيلها تلقائياً -->
     <script src="script.js"></script>
 </body>
 </html>

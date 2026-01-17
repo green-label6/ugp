@@ -216,6 +216,26 @@ function setupViewOptions() {
             showFavoritesSidebar();
         });
     }
+    // خاصية الترجمة التلقائية للعربية عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        translatePageToArabic();
+    });
+
+    function translatePageToArabic() {
+        // ترجمة جميع النصوص في الصفحة للعربية
+        const elements = document.querySelectorAll('body *:not(script):not(style):not([translate-ignore])');
+        elements.forEach(el => {
+            if (el.childNodes.length === 1 && el.childNodes[0].nodeType === 3 && el.textContent.trim().length > 0) {
+                fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ar&dt=t&q=${encodeURIComponent(el.textContent)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data[0] && data[0][0] && data[0][0][0]) {
+                            el.textContent = data[0][0][0];
+                        }
+                    });
+            }
+        });
+    }
 }
 
 // عرض نافذة المفضلة
