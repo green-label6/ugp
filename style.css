@@ -2306,7 +2306,7 @@ body {
         font-size: 1rem;
     }
 }
-}
+
 
 /* طباعة */
 @media print {
@@ -2711,13 +2711,12 @@ body {
         font-size: 1.1rem;
     }
 }
-        font-size: 1.75rem;
-    }
+    
     
     .category-name {
         font-size: 1.1rem;
     }
-}
+
 
 @media (max-width: 576px) {
     .categories-section {
