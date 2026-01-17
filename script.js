@@ -15,7 +15,21 @@ let featuredProducts = [1, 3, 5, 7, 9, 11]; // IDs للمنتجات المميز
 // تهيئة الموقع عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
+    registerServiceWorker();
 });
+
+// تسجيل Service Worker للـ PWA
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+                console.log('Service Worker registered successfully:', registration);
+            })
+            .catch((error) => {
+                console.log('Service Worker registration failed:', error);
+            });
+    }
+}
 
 // دالة التهيئة الرئيسية
 function initializeApp() {
@@ -29,6 +43,7 @@ function initializeApp() {
     setupSortAndFilter();
     setupModal();
     setupNotifications();
+    setupLazyLoading();
 }
 
 // تعيين السنة الحالية في الفوتر
@@ -36,15 +51,29 @@ function setCurrentYear() {
     document.getElementById('currentYear').textContent = new Date().getFullYear();
 }
 
-// إعداد إشعارات الموقع
-function setupNotifications() {
-    const notificationContainer = document.getElementById('notificationContainer');
-    if (!notificationContainer) {
-        const container = document.createElement('div');
-        container.id = 'notificationContainer';
-        container.className = 'notification-container';
-        document.body.appendChild(container);
-    }
+// إعداد Lazy Loading للصور
+function setupLazyLoading() {
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.src = img.dataset.src;
+                img.addEventListener('load', () => {
+                    img.classList.add('loaded');
+                });
+                img.classList.remove('lazy-img');
+                observer.unobserve(img);
+            }
+        });
+    }, {
+        rootMargin: '50px 0px',
+        threshold: 0.01
+    });
+
+    // مراقبة جميع الصور ذات التحميل الكسول
+    document.querySelectorAll('.lazy-img').forEach(img => {
+        imageObserver.observe(img);
+    });
 }
 
 // إظهار إشعار
@@ -1058,5 +1087,36 @@ window.addEventListener('resize', () => {
     }, 250);
 });
 
+// إعداد تبديل الوضع المظلم
+function setupThemeToggle() {
+    const themeToggle = document.getElementById('themeToggle');
+    if (!themeToggle) return;
+    
+    // التحقق من الوضع المحفوظ
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeToggle.classList.add('dark');
+    }
+    
+    themeToggle.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        
+        themeToggle.classList.toggle('dark');
+        
+        showNotification(
+            newTheme === 'dark' ? 'تم تفعيل الوضع المظلم' : 'تم تفعيل الوضع الفاتح',
+            'info'
+        );
+    });
+}
+
 // التهيئة النهائية
+setupThemeToggle();
 updateCartUI();

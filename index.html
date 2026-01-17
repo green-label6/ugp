@@ -7,6 +7,11 @@
     <title>كوزمتك بين يديك - جمالك في مكان واحد</title>
     <meta name="description" content="كوزمتك بين يديك - علامتك الرائدة في مستحضرات التجميل والعناية الشخصية.">
     <meta name="theme-color" content="#6200EE">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle cx='256' cy='256' r='256' fill='%239c27b0'/><path d='M256 128c-70.7 0-128 57.3-128 128s57.3 128 128 128 128-57.3 128-128-57.3-128-128-128zm0 192c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64z' fill='white'/></svg>">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="كوزمتك">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -25,14 +30,16 @@
                 
                 <!-- شريط البحث -->
                 <div class="search-container">
-                    <div class="search-box">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" id="searchInput" placeholder="ابحث عن منتج أو وصف...">
-                        <button class="search-btn" id="searchBtn">
-                            <i class="fas fa-search"></i>
+                    <div class="search-box" role="search">
+                        <label for="searchInput" class="sr-only">البحث عن منتج</label>
+                        <i class="fas fa-search search-icon" aria-hidden="true"></i>
+                        <input type="text" id="searchInput" placeholder="ابحث عن منتج أو وصف..." aria-describedby="searchHelp">
+                        <button class="search-btn" id="searchBtn" aria-label="بحث">
+                            <i class="fas fa-search" aria-hidden="true"></i>
                         </button>
-                        <div class="search-results" id="searchResults"></div>
+                        <div class="search-results" id="searchResults" role="listbox" aria-label="نتائج البحث"></div>
                     </div>
+                    <div id="searchHelp" class="sr-only">اكتب اسم المنتج أو وصف للبحث</div>
                 </div>
 
                 <!-- خيارات العرض والترتيب -->
@@ -57,6 +64,9 @@
                     <!-- سيتم ملؤها ديناميكياً بالأقسام الرئيسية -->
                 </ul>
                 <div class="nav-icons">
+                    <button class="theme-toggle" id="themeToggle" title="تبديل الوضع">
+                        <i class="fas fa-moon"></i>
+                    </button>
                     <a href="https://instagram.com/ah_._ay" target="_blank" class="social-link-top" title="انستجرام">
                         <i class="fab fa-instagram"></i>
                     </a>
