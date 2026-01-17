@@ -461,6 +461,10 @@ async function loadProducts() {
         renderNavigation();
         renderSidebarCategories();
         renderMainContent();
+        // تحديث قائمة الأقسام في شريط التنقل السفلي
+        if (typeof updateMobileCategorySelect === 'function') {
+            updateMobileCategorySelect();
+        }
         hideLoading();
     } catch (error) {
         console.error('Error loading products:', error);
