@@ -1513,8 +1513,103 @@ body {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 5px;
 }
 
+.sidebar-cat-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-cat-list::-webkit-scrollbar-track {
+    background: var(--gray-lighter);
+    border-radius: 2px;
+}
+
+.sidebar-cat-list::-webkit-scrollbar-thumb {
+    background: var(--gray-light);
+    border-radius: 2px;
+}
+
+.sidebar-cat-list::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+/* أنماط الأقسام القابلة للطي الجديدة */
+.category-item {
+    margin-bottom: 4px;
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    background: var(--gray-lighter);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    border: 1px solid var(--gray-light);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.category-header:hover {
+    background: rgba(156, 39, 176, 0.05);
+    border-color: var(--primary-color);
+}
+
+.category-header.expanded {
+    background: rgba(156, 39, 176, 0.08);
+    border-color: var(--primary-color);
+}
+
+.category-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--dark-color);
+}
+
+.category-toggle-icon {
+    font-size: 0.8rem;
+    color: var(--gray-color);
+    transition: transform 0.3s ease;
+}
+
+.subcategory-list {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    padding: 0;
+    margin: 0;
+}
+
+.subcategory-item {
+    padding: 10px 25px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gray-color);
+    border: 1px solid transparent;
+    margin-top: 2px;
+}
+
+.subcategory-item:hover {
+    background: rgba(156, 39, 176, 0.05);
+    color: var(--primary-color);
+    border-color: rgba(156, 39, 176, 0.1);
+}
+
+.subcategory-item.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* إعادة تعريف sidebar-cat-item */
 .sidebar-cat-item {
     padding: 10px 12px;
     border-radius: var(--border-radius);
@@ -1536,6 +1631,57 @@ body {
     background: var(--primary-color);
     color: white;
     border-color: var(--primary-color);
+}
+
+.sidebar-cat-item {
+    padding: 10px 12px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gray-color);
+    border: 1px solid transparent;
+}
+
+.sidebar-cat-item:hover {
+    background: rgba(156, 39, 176, 0.05);
+    color: var(--primary-color);
+    border-color: rgba(156, 39, 176, 0.1);
+}
+
+/* أنماط تظليل البحث */
+.search-highlight {
+    background: linear-gradient(135deg, rgba(255, 235, 59, 0.4) 0%, rgba(255, 193, 7, 0.4) 100%);
+    color: var(--dark-color);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.search-result-item h4 .search-highlight {
+    background: linear-gradient(135deg, rgba(255, 235, 59, 0.6) 0%, rgba(255, 193, 7, 0.6) 100%);
+}
+
+.product-name .search-highlight {
+    background: linear-gradient(135deg, rgba(255, 235, 59, 0.5) 0%, rgba(255, 193, 7, 0.5) 100%);
+    padding: 1px 3px;
+    border-radius: 4px;
+}
+
+/* تحسينات التمرير للصفحة */
+.dynamic-content {
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+    padding: 5px;
+}
+
+@media (max-width: 992px) {
+    .dynamic-content {
+        max-height: none;
+        overflow-y: visible;
+    }
 }
 
 .dynamic-content {
@@ -3459,294 +3605,5 @@ ul, ol {
         box-shadow: none;
         border: 1px solid #ddd;
         min-height: auto;
-    }
-}
-/* ============================================
-   أنماط التصفية الهرمية (الطي/التوسيع)
-   ============================================ */
-
-.filter-tree-btn {
-    background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%) !important;
-    color: white !important;
-    border: none !important;
-}
-
-.tree-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
-    z-index: 1399;
-    display: none;
-}
-
-.category-tree {
-    position: fixed;
-    top: 0;
-    right: -100%;
-    width: 100%;
-    height: 100vh;
-    max-width: 380px;
-    background: white;
-    box-shadow: -5px 0 30px rgba(0, 0, 0, 0.15);
-    z-index: 1400;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    flex-direction: column;
-}
-
-.category-tree.active {
-    right: 0;
-}
-
-.tree-header {
-    padding: 20px 15px;
-    background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-}
-
-.tree-header h3 {
-    font-size: 1.3rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.close-tree {
-    font-size: 1.8rem;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.close-tree:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: rotate(90deg);
-}
-
-.tree-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 15px;
-    -webkit-overflow-scrolling: touch;
-}
-
-.tree-body::-webkit-scrollbar {
-    width: 4px;
-}
-
-.tree-body::-webkit-scrollbar-track {
-    background: var(--gray-lighter);
-}
-
-.tree-body::-webkit-scrollbar-thumb {
-    background: var(--gray-light);
-    border-radius: 2px;
-}
-
-.category-tree-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.tree-category {
-    border: 1px solid var(--gray-light);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    background: white;
-    transition: all 0.3s ease;
-}
-
-.tree-category.expanded {
-    border-color: var(--primary-color);
-    box-shadow: 0 4px 12px rgba(156, 39, 176, 0.1);
-}
-
-.tree-category-header {
-    padding: 15px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: all 0.3s ease;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.tree-category-header:hover {
-    background: rgba(156, 39, 176, 0.05);
-}
-
-.tree-arrow {
-    font-size: 0.9rem;
-    color: var(--gray-color);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    width: 20px;
-    text-align: center;
-}
-
-.tree-category.expanded .tree-arrow {
-    color: var(--primary-color);
-}
-
-.tree-category-name {
-    flex: 1;
-    font-weight: 700;
-    font-size: 1rem;
-    color: var(--dark-color);
-}
-
-.tree-count {
-    font-size: 0.8rem;
-    color: var(--gray-color);
-    background: var(--gray-lighter);
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-weight: 600;
-}
-
-.tree-subcategories {
-    display: none;
-    background: var(--gray-lighter);
-}
-
-.tree-subcategory {
-    padding: 12px 15px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-    border-right: 3px solid transparent;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.tree-subcategory:hover {
-    background: rgba(156, 39, 176, 0.08);
-    border-right-color: var(--primary-color);
-}
-
-.tree-subcategory i {
-    color: var(--primary-color);
-    font-size: 0.9rem;
-    width: 16px;
-}
-
-.tree-subcategory span {
-    flex: 1;
-    font-weight: 600;
-    color: var(--dark-color);
-    font-size: 0.9rem;
-}
-
-/* تظليل البحث في أسماء المنتجات */
-.search-highlight {
-    background: linear-gradient(135deg, #ffeb3b 0%, #ffc107 100%);
-    color: var(--dark-color);
-    font-weight: 800;
-    padding: 0 2px;
-    border-radius: 2px;
-}
-
-/* تحسين شريط التمرير للعناصر الطويلة */
-.products-grid, .tree-body, .drawer-body {
-    scrollbar-width: thin;
-    scrollbar-color: var(--primary-color) var(--gray-lighter);
-}
-
-.products-grid::-webkit-scrollbar,
-.tree-body::-webkit-scrollbar,
-.drawer-body::-webkit-scrollbar {
-    width: 6px;
-}
-
-.products-grid::-webkit-scrollbar-track,
-.tree-body::-webkit-scrollbar-track,
-.drawer-body::-webkit-scrollbar-track {
-    background: var(--gray-lighter);
-}
-
-.products-grid::-webkit-scrollbar-thumb,
-.tree-body::-webkit-scrollbar-thumb,
-.drawer-body::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 3px;
-}
-
-/* تحسينات للجوال */
-@media (max-width: 576px) {
-    .category-tree {
-        max-width: 280px;
-    }
-    
-    .tree-header {
-        padding: 15px;
-    }
-    
-    .tree-header h3 {
-        font-size: 1.2rem;
-    }
-    
-    .close-tree {
-        width: 32px;
-        height: 32px;
-        font-size: 1.5rem;
-    }
-    
-    .tree-body {
-        padding: 12px;
-    }
-    
-    .tree-category-header {
-        padding: 12px;
-    }
-    
-    .tree-category-name {
-        font-size: 0.9rem;
-    }
-    
-    .tree-count {
-        font-size: 0.75rem;
-        padding: 3px 6px;
-    }
-    
-    .tree-subcategory {
-        padding: 10px 12px;
-    }
-    
-    .tree-subcategory span {
-        font-size: 0.85rem;
-    }
-}
-
-/* تحسين سرعة التفاعل على اللمس */
-@media (hover: none) and (pointer: coarse) {
-    .tree-category-header,
-    .tree-subcategory {
-        -webkit-tap-highlight-color: rgba(156, 39, 176, 0.1);
-    }
-    
-    .tree-category-header:active,
-    .tree-subcategory:active {
-        background: rgba(156, 39, 176, 0.15);
     }
 }
