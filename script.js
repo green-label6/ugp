@@ -13,15 +13,15 @@ let showingFeatured = false;
 let currentSort = 'default';
 let priceFilter = { min: 0, max: Infinity };
 let activeCategory = 'all';
-let activeSubcategory = 'all'; // جديد: تتبع القسم الفرعي النشط
+let activeSubcategory = 'all';
 let featuredProducts = [1, 3, 5, 7, 9, 11];
 
-// متغيرات جديدة للتحميل التدريجي
+// متغيرات التحميل التدريجي
 let productsPerLoad = 10;
 let displayedProductsCount = 0;
 let currentProducts = [];
 
-// متغير لحفظ المنتج الحالي في النافذة المنبثقة
+// متغير حفظ المنتج الحالي في النافذة المنبثقة
 let currentProductInModal = null;
 
 // ============================================
@@ -654,7 +654,7 @@ function updateFavoritesUI() {
 async function loadProducts() {
     try {
         showLoading();
-        const response = await fetch('products_by_category.json');
+        const response = await fetch('https://raw.githubusercontent.com/cosmetics-beatuy/ugp/master/products_by_category.json');
         if (!response.ok) throw new Error('فشل في تحميل البيانات');
         const data = await response.json();
         categoriesData = data.categories;
@@ -1121,11 +1121,13 @@ function getSectionTitle() {
 // إنشاء HTML لبطاقات المنتج
 // ============================================
 
+// تم تعديل دالة getCDNUrl لتستخدم المستودع الجديد
 function getCDNUrl(path) {
     if (!path) return 'https://via.placeholder.com/300x300?text=No+Image';
     let cleanPath = path.startsWith('/') ? path.substring(1) : path;
     const encodedPath = cleanPath.split('/').map(part => encodeURIComponent(part)).join('/');
-    return 'https://cdn.jsdelivr.net/gh/green-label6/ugp@master/' + encodedPath;
+    // تغيير المستودع من green-label6/ugp إلى cosmetics-beatuy/ugp
+    return `https://cdn.jsdelivr.net/gh/cosmetics-beatuy/ugp@master/${encodedPath}`;
 }
 
 function createProductCardHtml(product) {
