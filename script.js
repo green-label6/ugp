@@ -282,6 +282,32 @@ function initializeApp() {
     setupShareButton();
     createCategoriesHierarchy();
     renderMainCategories();
+    setupMobileSearch();
+}
+
+// إعداد البحث على الجوال (overlay)
+function setupMobileSearch() {
+    const mobileSearchInput = document.getElementById('mobileSearchInput');
+    if (!mobileSearchInput) return;
+    // عند التركيز على حقل البحث، أظهر overlay البحث
+    mobileSearchInput.addEventListener('focus', () => {
+        // إظهار overlay فارغ إذا لم يكن هناك نتائج
+        const results = document.getElementById('searchResults');
+        if (results) {
+            results.innerHTML = '<button class="close-search-results" id="closeSearchResults">&times;</button>';
+            showSearchResults();
+            setTimeout(() => {
+                const closeBtnEl = document.getElementById('closeSearchResults');
+                if (closeBtnEl) closeBtnEl.onclick = hideSearchResults;
+            }, 10);
+        }
+    });
+    // عند فقدان التركيز، أخفِ overlay (إلا إذا تم النقر على النتائج نفسها)
+    mobileSearchInput.addEventListener('blur', () => {
+        setTimeout(() => {
+            hideSearchResults();
+        }, 200);
+    });
 }
 
 // ============================================
@@ -1757,8 +1783,10 @@ function normalizeEnglish(text) {
 function performSearch(query) {
     const results = document.getElementById('searchResults');
     const searchInput = document.getElementById('searchInput');
+    // دعم overlay على الجوال
+    const isMobile = window.innerWidth <= 992;
     if (!query || !query.trim()) {
-        if (results) results.style.display = 'none';
+        hideSearchResults();
         // إظهار جميع المنتجات عند مسح البحث
         showingFavorites = false;
         showingFeatured = false;
@@ -1779,11 +1807,15 @@ function performSearch(query) {
     }).slice(0, 8);
     // عرض نتائج البحث
     if (results) {
+        let closeBtn = '';
+        if (isMobile) {
+            closeBtn = '<button class="close-search-results" id="closeSearchResults">&times;</button>';
+        }
         if (filtered.length === 0) {
-            results.innerHTML = '<div class="no-results">لا توجد نتائج مطابقة</div>';
+            results.innerHTML = closeBtn + '<div class="no-results">لا توجد نتائج مطابقة</div>';
         } else {
-            results.innerHTML = filtered.map(p => `
-                <div class="search-result-item" onclick="showProductDetails(${p.id}); document.getElementById('searchResults').style.display='none'; if(searchInput) searchInput.value='';">
+            results.innerHTML = closeBtn + filtered.map(p => `
+                <div class="search-result-item" onclick="showProductDetails(${p.id}); hideSearchResults(); if(searchInput) searchInput.value='';">
                     <img src="${getCDNUrl(p.image)}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
                     <div class="search-result-info">
                         <h4>${p.name}</h4>
@@ -1793,7 +1825,16 @@ function performSearch(query) {
                 </div>
             `).join('');
         }
-        results.style.display = 'block';
+        showSearchResults();
+        // إضافة حدث زر الإغلاق على الجوال
+        if (isMobile) {
+            setTimeout(() => {
+                const closeBtnEl = document.getElementById('closeSearchResults');
+                if (closeBtnEl) {
+                    closeBtnEl.onclick = hideSearchResults;
+                }
+            }, 10);
+        }
     }
     // إذا كان البحث من شريط البحث الرئيسي، قم بتصفية المنتجات المعروضة
     if (searchInput && searchInput.value === query) {
@@ -1822,7 +1863,32 @@ function performSearch(query) {
             // عرض رسالة عدم وجود نتائج
             showNoSearchResults(query);
         }
+        // إخفاء overlay البحث على الجوال بعد اختيار نتيجة
+        if (isMobile && results) {
+            hideSearchResults();
+        }
     }
+}
+
+// دالة إظهار نتائج البحث كـ overlay على الجوال
+function showSearchResults() {
+    const results = document.getElementById('searchResults');
+    if (!results) return;
+    const isMobile = window.innerWidth <= 992;
+    results.classList.add('show');
+    results.style.display = 'block';
+    if (isMobile) {
+        document.body.classList.add('search-results-open');
+    }
+}
+
+// دالة إخفاء نتائج البحث overlay
+function hideSearchResults() {
+    const results = document.getElementById('searchResults');
+    if (!results) return;
+    results.classList.remove('show');
+    results.style.display = 'none';
+    document.body.classList.remove('search-results-open');
 }
 
 // دالة لعرض رسالة عدم وجود نتائج بحث

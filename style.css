@@ -1,4 +1,170 @@
 /* ============================================
+   إصلاح عرض نتائج البحث على الجوال
+   ============================================ */
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    margin-top: 5px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    border: 1px solid var(--gray-light);
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.search-results.show {
+    display: block !important;
+}
+
+@media (max-width: 992px) {
+    .search-results {
+        position: fixed !important;
+        top: 70px !important;
+        left: 15px !important;
+        right: 15px !important;
+        width: auto !important;
+        max-height: 60vh !important;
+        z-index: 1100 !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+        border-radius: 16px !important;
+        margin-top: 10px !important;
+        border: 1px solid #e0e0e0 !important;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        background: rgba(255, 255, 255, 0.98);
+    }
+    .search-results::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.3);
+        z-index: -1;
+        display: none;
+    }
+    .search-results.show::before {
+        display: block;
+    }
+    .search-container {
+        position: static !important;
+        width: 100%;
+        margin: 0 10px;
+    }
+    .search-box {
+        background: #f8f9fa;
+        border: 2px solid #e0e0e0;
+        border-radius: 20px;
+    }
+    .search-box:focus-within {
+        border-color: var(--primary-color);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.1);
+    }
+}
+
+@media (max-width: 576px) {
+    .search-results {
+        top: 65px !important;
+        left: 10px !important;
+        right: 10px !important;
+        max-height: 55vh !important;
+    }
+    .search-result-item {
+        padding: 12px 15px;
+    }
+    .search-result-item img {
+        width: 45px;
+        height: 45px;
+    }
+    .search-result-info h4 {
+        font-size: 0.9rem;
+    }
+}
+
+body.search-results-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+.close-search-results {
+    display: none;
+}
+
+@media (max-width: 992px) {
+    .close-search-results {
+        display: flex;
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 30px;
+        height: 30px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        color: var(--dark-color);
+        font-size: 1.2rem;
+        cursor: pointer;
+        z-index: 1101;
+        border: none;
+    }
+    .close-search-results:hover {
+        background: rgba(0, 0, 0, 0.2);
+    }
+}
+
+/* زر مسح البحث */
+.clear-search-btn {
+    position: absolute;
+    left: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    color: var(--gray-color);
+    border: none;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    opacity: 0.6;
+    transition: var(--transition);
+}
+.clear-search-btn:hover {
+    opacity: 1;
+    color: var(--danger-color);
+}
+@media (max-width: 992px) {
+    .clear-search-btn {
+        left: 45px;
+        font-size: 0.8rem;
+    }
+}
+/* ============================================
    تحسينات البحث الجديدة
    ============================================ */
 
