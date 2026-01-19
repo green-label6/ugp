@@ -790,13 +790,14 @@ function updateFavoritesUI() {
 }
 
 // ============================================
-// تحميل المنتجات
+// تحميل المنتجات من المستودع الجديد
 // ============================================
 
 async function loadProducts() {
     try {
         showLoading();
-        const response = await fetch('products_by_category.json');
+        // تحميل بيانات المنتجات من المستودع الجديد
+        const response = await fetch('https://raw.githubusercontent.com/cosmetics-beatuy/ugp/main/products_by_category.json');
         if (!response.ok) throw new Error('فشل في تحميل البيانات');
         const data = await response.json();
         categoriesData = data.categories;
@@ -1282,11 +1283,13 @@ function showMoreProducts(category, subcategory) {
 // إنشاء HTML لبطاقات المنتج
 // ============================================
 
+// دالة محسّنة لبناء روابط CDN من المستودع الجديد
 function getCDNUrl(path) {
     if (!path) return 'https://via.placeholder.com/300x300?text=No+Image';
     let cleanPath = path.startsWith('/') ? path.substring(1) : path;
     const encodedPath = cleanPath.split('/').map(part => encodeURIComponent(part)).join('/');
-    return `https://cdn.jsdelivr.net/gh/green-label6/ugp@master/${encodedPath}`;
+    // استخدام المستودع الجديد cosmetics-beatuy/ugp
+    return `https://cdn.jsdelivr.net/gh/cosmetics-beatuy/ugp@main/${encodedPath}`;
 }
 
 function createProductCardHtml(product) {
