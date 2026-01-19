@@ -231,14 +231,12 @@ body {
     overflow-y: auto;
     z-index: 1000;
     display: none;
-    border: 1px solid var(--gray-light);
 }
 
-/* تنسيقات نتائج البحث المحسنة */
 .search-result-item {
     display: flex;
     align-items: center;
-    padding: 12px 15px;
+    padding: 10px 15px;
     border-bottom: 1px solid var(--gray-lighter);
     cursor: pointer;
     transition: var(--transition);
@@ -246,11 +244,6 @@ body {
 
 .search-result-item:hover {
     background: var(--gray-lighter);
-    transform: translateX(-5px);
-}
-
-.search-result-item:last-child {
-    border-bottom: none;
 }
 
 .search-result-item img {
@@ -258,39 +251,28 @@ body {
     height: 50px;
     object-fit: cover;
     border-radius: var(--border-radius);
-    margin-left: 12px;
-    flex-shrink: 0;
-    border: 1px solid var(--gray-light);
+    margin-left: 10px;
 }
 
 .search-result-info {
     flex: 1;
-    min-width: 0;
 }
 
 .search-result-info h4 {
     font-size: 0.9rem;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     color: var(--dark-color);
-    font-weight: 700;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .search-result-info .result-price {
     color: var(--secondary-color);
-    font-weight: 800;
+    font-weight: 700;
     font-size: 0.9rem;
 }
 
 .search-result-info small {
     color: var(--gray-color);
-    font-size: 0.75rem;
-    display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.8rem;
 }
 
 .no-results {
@@ -298,20 +280,6 @@ body {
     text-align: center;
     color: var(--gray-color);
     font-size: 0.9rem;
-}
-
-/* أنماط التظليل للبحث */
-.highlighted-text {
-    background: linear-gradient(135deg, #ffeb3b 0%, #ffc107 100%);
-    color: var(--dark-color);
-    font-weight: 800;
-    padding: 0 3px;
-    border-radius: 4px;
-    display: inline-block;
-}
-
-.search-result-item .highlighted-text {
-    background: linear-gradient(135deg, #e1f5fe 0%, #81d4fa 100%);
 }
 
 /* إخفاء عناصر غير ضرورية على الجوال */
@@ -608,6 +576,140 @@ body {
 }
 
 /* ============================================
+   تحسينات الشريط السفلي للجوال
+   ============================================ */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+    border-top: 1px solid var(--gray-light);
+    direction: rtl;
+    display: none;
+}
+
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--gray-color);
+    font-size: 0.75rem;
+    transition: var(--transition);
+    position: relative;
+    padding: 6px 8px;
+    border-radius: var(--border-radius);
+    flex: 1;
+    text-align: center;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.bottom-nav-item:hover,
+.bottom-nav-item.active {
+    color: var(--primary-color);
+    background: rgba(156, 39, 176, 0.05);
+}
+
+.bottom-nav-item i {
+    font-size: 1.1rem;
+    margin-bottom: 3px;
+    transition: var(--transition);
+}
+
+.bottom-nav-item:hover i {
+    transform: translateY(-2px);
+}
+
+.bottom-nav-item span {
+    font-weight: 600;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.favorites-count,
+.cart-count-bottom {
+    position: absolute;
+    top: -3px;
+    left: 50%;
+    background: var(--secondary-color);
+    color: white;
+    font-size: 0.6rem;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    border: 2px solid white;
+    transform: translateX(-50%);
+}
+
+.cart-count-bottom {
+    background: var(--primary-color);
+}
+
+/* إظهار الشريط السفلي فقط على الجوال وإضافة هامش سفلي للصفحة */
+@media (max-width: 768px) {
+    .bottom-nav {
+        display: flex;
+    }
+    
+    body {
+        padding-bottom: 60px;
+    }
+}
+
+@media (max-width: 576px) {
+    .bottom-nav {
+        padding: 6px 0;
+    }
+    
+    .bottom-nav-item {
+        padding: 5px 4px;
+        font-size: 0.7rem;
+    }
+    
+    .bottom-nav-item i {
+        font-size: 1rem;
+        margin-bottom: 2px;
+    }
+    
+    .bottom-nav-item span {
+        font-size: 0.65rem;
+    }
+    
+    .favorites-count,
+    .cart-count-bottom {
+        min-width: 14px;
+        height: 14px;
+        font-size: 0.55rem;
+        top: -2px;
+    }
+}
+
+@media (max-width: 380px) {
+    .bottom-nav-item span {
+        font-size: 0.6rem;
+    }
+    
+    .bottom-nav-item i {
+        font-size: 0.9rem;
+    }
+}
+
+/* ============================================
    تحسينات الـ Drawer للجوال
    ============================================ */
 .drawer {
@@ -716,95 +818,36 @@ body {
     border-radius: 2px;
 }
 
-/* أنماط الـ Accordion في الـ Drawer */
-.accordion-item {
-    margin-bottom: 8px;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid var(--gray-light);
+.drawer-categories {
+    margin-bottom: 20px;
 }
 
-.accordion-header {
-    padding: 12px 15px;
-    background: #f8f9fa;
-    cursor: pointer;
+.drawer-category-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    transition: all 0.3s ease;
-    user-select: none;
-}
-
-.accordion-header:hover {
-    background: #e9ecef;
-}
-
-.accordion-title {
-    font-weight: 700;
-    font-size: 0.9rem;
+    justify-content: space-between;
+    padding: 12px 15px;
+    border-radius: var(--border-radius);
+    margin-bottom: 6px;
     color: var(--dark-color);
+    text-decoration: none;
+    transition: var(--transition);
+    border: 1px solid var(--gray-light);
+    background: var(--gray-lighter);
+    font-size: 0.9rem;
 }
 
-.accordion-arrow {
-    transition: transform 0.3s ease;
-    font-size: 0.8rem;
-    color: var(--gray-color);
-}
-
-.accordion-arrow.expanded {
-    transform: rotate(90deg);
-}
-
-.accordion-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-}
-
-.accordion-content.expanded {
-    max-height: 250px;
-    overflow-y: auto;
-}
-
-.accordion-content.scrollable {
-    overflow-y: auto;
-    padding-right: 5px;
-}
-
-.accordion-content::-webkit-scrollbar {
-    width: 4px;
-}
-
-.accordion-content::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 2px;
-}
-
-.accordion-content::-webkit-scrollbar-thumb {
+.drawer-category-item:hover,
+.drawer-category-item.active {
     background: var(--primary-color);
-    border-radius: 2px;
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateX(-5px);
 }
 
-.subcategory-item {
-    padding: 10px 20px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border-right: 3px solid transparent;
-    font-size: 0.85rem;
-    color: var(--gray-color);
-}
-
-.subcategory-item:hover {
-    background: rgba(156, 39, 176, 0.05);
-    color: var(--primary-color);
-    border-right-color: var(--primary-color);
-}
-
-.subcategory-item.active {
-    background: rgba(156, 39, 176, 0.1);
-    color: var(--primary-color);
-    font-weight: 700;
-    border-right-color: var(--primary-color);
+.drawer-category-item i {
+    font-size: 1rem;
+    opacity: 0.8;
 }
 
 .drawer-quick-links {
@@ -879,21 +922,9 @@ body {
         padding: 12px;
     }
     
-    .accordion-header {
+    .drawer-category-item {
         padding: 10px 12px;
-    }
-    
-    .accordion-title {
         font-size: 0.85rem;
-    }
-    
-    .subcategory-item {
-        padding: 8px 15px;
-        font-size: 0.8rem;
-    }
-    
-    .accordion-content.expanded {
-        max-height: 200px;
     }
     
     .drawer-quick-links {
@@ -2206,7 +2237,9 @@ body {
     }
 }
 
-/* نافذة المشاركة المخصصة */
+/* ============================================
+   نافذة المشاركة المخصصة
+   ============================================ */
 .share-modal {
     padding: 20px;
 }
@@ -2849,140 +2882,6 @@ body {
 }
 
 /* ============================================
-   تحسينات شريط التنقل السفلي للجوال
-   ============================================ */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 8px 0;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
-    z-index: 999;
-    border-top: 1px solid var(--gray-light);
-    direction: rtl;
-    display: none;
-}
-
-.bottom-nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-decoration: none;
-    color: var(--gray-color);
-    font-size: 0.75rem;
-    transition: var(--transition);
-    position: relative;
-    padding: 6px 8px;
-    border-radius: var(--border-radius);
-    flex: 1;
-    text-align: center;
-    min-width: 0;
-    overflow: hidden;
-}
-
-.bottom-nav-item:hover,
-.bottom-nav-item.active {
-    color: var(--primary-color);
-    background: rgba(156, 39, 176, 0.05);
-}
-
-.bottom-nav-item i {
-    font-size: 1.1rem;
-    margin-bottom: 3px;
-    transition: var(--transition);
-}
-
-.bottom-nav-item:hover i {
-    transform: translateY(-2px);
-}
-
-.bottom-nav-item span {
-    font-weight: 600;
-    font-size: 0.7rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-}
-
-.favorites-count,
-.cart-count-bottom {
-    position: absolute;
-    top: -3px;
-    left: 50%;
-    background: var(--secondary-color);
-    color: white;
-    font-size: 0.6rem;
-    min-width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    border: 2px solid white;
-    transform: translateX(-50%);
-}
-
-.cart-count-bottom {
-    background: var(--primary-color);
-}
-
-/* إظهار الشريط السفلي فقط على الجوال وإضافة هامش سفلي للصفحة */
-@media (max-width: 768px) {
-    .bottom-nav {
-        display: flex;
-    }
-    
-    body {
-        padding-bottom: 60px;
-    }
-}
-
-@media (max-width: 576px) {
-    .bottom-nav {
-        padding: 6px 0;
-    }
-    
-    .bottom-nav-item {
-        padding: 5px 4px;
-        font-size: 0.7rem;
-    }
-    
-    .bottom-nav-item i {
-        font-size: 1rem;
-        margin-bottom: 2px;
-    }
-    
-    .bottom-nav-item span {
-        font-size: 0.65rem;
-    }
-    
-    .favorites-count,
-    .cart-count-bottom {
-        min-width: 14px;
-        height: 14px;
-        font-size: 0.55rem;
-        top: -2px;
-    }
-}
-
-@media (max-width: 380px) {
-    .bottom-nav-item span {
-        font-size: 0.6rem;
-    }
-    
-    .bottom-nav-item i {
-        font-size: 0.9rem;
-    }
-}
-
-/* ============================================
    تحسينات إضافية للجوال
    ============================================ */
 .loading-overlay {
@@ -3153,7 +3052,7 @@ body {
     
     .product-card, .modal-content, .cart-sidebar, .sidebar,
     .feature-card, .search-box, .search-results, .error-msg,
-    .no-products, .loading-spinner, .hero, .features-section {
+    .no-products, .loading-spinner {
         background: #1e1e1e;
         border-color: #333333;
         color: #ffffff;
@@ -3173,11 +3072,9 @@ body {
         color: #aaaaaa;
     }
     
-    .search-box input, .mobile-search input, .price-range-inputs input,
-    .sidebar-search input, .modal-content input {
+    .search-box input, .mobile-search input, .price-range-inputs input {
         color: #ffffff;
         background: #1e1e1e;
-        border-color: #444;
     }
     
     .search-box input::placeholder {
@@ -3205,36 +3102,24 @@ body {
         background: rgba(156, 39, 176, 0.2);
     }
     
-    .drawer-content, .mobile-menu {
+    .drawer-content {
         background: #1e1e1e;
         color: white;
     }
     
-    .accordion-header {
+    .drawer-category-item {
         background: #2a2a2a;
+        color: white;
+        border: 1px solid #333;
     }
     
-    .accordion-header:hover {
-        background: #333;
+    .drawer-category-item:hover,
+    .drawer-category-item.active {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
     }
     
-    .accordion-content {
-        background: #1e1e1e;
-    }
-    
-    .subcategory-item {
-        background: #1e1e1e;
-        color: #bbb;
-        border-color: #333;
-    }
-    
-    .subcategory-item:hover,
-    .subcategory-item.active {
-        background: rgba(156, 39, 176, 0.2);
-        color: var(--primary-light);
-    }
-    
-    .drawer-quick-links, .mobile-search {
+    .drawer-quick-links {
         background: #2a2a2a;
         border-color: #333;
     }
@@ -3272,15 +3157,6 @@ body {
     
     .share-btn:hover {
         background: linear-gradient(135deg, #1565C0 0%, #0277BD 100%);
-    }
-    
-    .highlighted-text {
-        background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
-        color: white;
-    }
-    
-    .search-result-item .highlighted-text {
-        background: linear-gradient(135deg, #424242 0%, #616161 100%);
     }
 }
 
@@ -3348,13 +3224,8 @@ body {
     .product-card:hover, .primary-btn:hover, .feature-card:hover,
     .back-to-top:hover, .cart-icon:hover, .bottom-nav-item:hover i,
     .drawer-category-item:hover, .drawer-quick-links a:hover,
-    .close-drawer:hover, .modal-actions-row .secondary-btn:hover,
-    .accordion-arrow, .subcategory-item:hover {
+    .close-drawer:hover, .modal-actions-row .secondary-btn:hover {
         transform: none;
-    }
-    
-    .hero-content {
-        animation: none;
     }
 }
 
@@ -3542,15 +3413,6 @@ ul, ol {
     .feature-card:hover {
         transform: none;
     }
-    
-    .accordion-header:hover {
-        background: #f8f9fa;
-    }
-    
-    .subcategory-item:hover {
-        background: transparent;
-        color: var(--gray-color);
-    }
 }
 
 /* دعم المتصفحات القديمة */
@@ -3577,7 +3439,7 @@ ul, ol {
     .header, .footer, .cart-sidebar, .modal, .back-to-top,
     .search-container, .view-options, .menu-toggle, .add-to-cart, .fav-btn,
     .bottom-nav, .drawer, .drawer-overlay, .modal-actions-row .secondary-btn,
-    .share-btn, .accordion-arrow, .load-more-btn, .show-more-btn {
+    .share-btn {
         display: none !important;
     }
     
@@ -3597,38 +3459,5 @@ ul, ol {
         box-shadow: none;
         border: 1px solid #ddd;
         min-height: auto;
-    }
-    
-    .product-card:hover {
-        transform: none;
-    }
-}
-
-/* تنسيقات إضافية للـ Accordion في الشريط الجانبي */
-.sidebar .accordion-item {
-    margin-bottom: 6px;
-    border-radius: 6px;
-}
-
-.sidebar .accordion-header {
-    padding: 10px 12px;
-}
-
-.sidebar .accordion-title {
-    font-size: 0.85rem;
-}
-
-.sidebar .subcategory-item {
-    padding: 8px 15px;
-    font-size: 0.8rem;
-}
-
-.sidebar .accordion-content.expanded {
-    max-height: 200px;
-}
-
-@media (min-width: 768px) {
-    .sidebar .accordion-content.expanded {
-        max-height: 250px;
     }
 }
