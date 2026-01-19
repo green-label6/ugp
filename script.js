@@ -1104,51 +1104,129 @@ function getFilteredProducts() {
 }
 
 // ============================================
-// تحميل المزيد من المنتجات
+// التحميل التلقائي (Infinite Scroll)
 // ============================================
+
+let infiniteScrollObserver = null;
+let isLoadingMore = false;
+
+function setupInfiniteScroll() {
+    const sentinel = document.getElementById('infiniteScrollSentinel');
+    if (!sentinel) return;
+    
+    // إلغاء المراقبة السابقة إذا كانت موجودة
+    if (infiniteScrollObserver) {
+        infiniteScrollObserver.disconnect();
+    }
+    
+    // إنشاء Intersection Observer جديد
+    infiniteScrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !isLoadingMore) {
+                // المستخدم وصل لنهاية المنتجات - تحميل المزيد تلقائياً
+                loadMoreProducts();
+            }
+        });
+    }, {
+        root: null, // viewport
+        rootMargin: '100px', // تحميل قبل الوصول للنهاية بـ 100px
+        threshold: 0.1
+    });
+    
+    // بدء مراقبة الـ sentinel
+    infiniteScrollObserver.observe(sentinel);
+}
 
 function loadMoreProducts() {
     const products = getFilteredProducts();
     const remainingProducts = products.length - displayedProductsCount;
     
     if (remainingProducts <= 0) {
-        // إخفاء زر "عرض المزيد" إذا لم يكن هناك المزيد
-        const loadMoreBtn = document.querySelector('.load-more-btn');
-        if (loadMoreBtn) {
-            loadMoreBtn.style.display = 'none';
-        }
+        // إخفاء مؤشر التحميل وإظهار رسالة النهاية
+        const sentinel = document.getElementById('infiniteScrollSentinel');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const endOfProducts = document.getElementById('endOfProducts');
+        
+        if (loadingSpinner) loadingSpinner.style.display = 'none';
+        if (endOfProducts) endOfProducts.style.display = 'block';
+        if (sentinel) sentinel.style.display = 'none';
+        
         return;
     }
     
-    // حساب عدد المنتجات الجديدة للتحميل
-    const productsToLoad = Math.min(productsPerLoad, remainingProducts);
+    // تعيين حالة التحميل
+    isLoadingMore = true;
     
-    // إضافة المنتجات الجديدة إلى المنتجات الحالية
-    const newProducts = products.slice(displayedProductsCount, displayedProductsCount + productsToLoad);
-    currentProducts = [...currentProducts, ...newProducts];
-    displayedProductsCount += productsToLoad;
+    // إظهار مؤشر التحميل
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    if (loadingSpinner) loadingSpinner.style.display = 'block';
     
-    // عرض المنتجات الجديدة
-    displayProducts(currentProducts);
+    const endOfProducts = document.getElementById('endOfProducts');
+    if (endOfProducts) endOfProducts.style.display = 'none';
     
-    // تحديث زر "عرض المزيد"
-    updateLoadMoreButton(products.length);
+    // محاكاة تأخير صغير لتحسين التجربة (اختياري)
+    setTimeout(() => {
+        // حساب عدد المنتجات الجديدة للتحميل
+        const productsToLoad = Math.min(productsPerLoad, remainingProducts);
+        
+        // إضافة المنتجات الجديدة إلى المنتجات الحالية
+        const newProducts = products.slice(displayedProductsCount, displayedProductsCount + productsToLoad);
+        
+        // إذا كانت هذه الدفعة الأولى، نعيد تعيين currentProducts
+        if (displayedProductsCount === 0) {
+            currentProducts = newProducts;
+        } else {
+            currentProducts = [...currentProducts, ...newProducts];
+        }
+        displayedProductsCount += productsToLoad;
+        
+        // عرض المنتجات الجديدة
+        const searchQuery = currentSearchQuery || '';
+        appendProducts(newProducts, searchQuery);
+        
+        // إخفاء مؤشر التحميل
+        if (loadingSpinner) loadingSpinner.style.display = 'none';
+        
+        // تحديث رسالة النهاية إذا لم يعد هناك منتجات
+        updateEndOfProductsMessage(products.length);
+        
+        // إلغاء حالة التحميل
+        isLoadingMore = false;
+    }, 300);
 }
 
-function updateLoadMoreButton(totalProducts) {
-    const loadMoreBtn = document.querySelector('.load-more-btn');
-    if (!loadMoreBtn) return;
+function appendProducts(newProducts, searchQuery) {
+    const container = document.getElementById('dynamic-sections');
+    if (!container) return;
     
-    const remainingProducts = totalProducts - displayedProductsCount;
+    const productsGrid = container.querySelector('.products-grid');
+    if (!productsGrid) return;
     
-    if (remainingProducts <= 0) {
-        loadMoreBtn.style.display = 'none';
-        loadMoreBtn.innerHTML = '<i class="fas fa-check"></i> تم عرض جميع المنتجات';
+    // إضافة المنتجات الجديدة
+    const newProductsHtml = newProducts.map(p => createProductCardHtml(p, searchQuery)).join('');
+    productsGrid.insertAdjacentHTML('beforeend', newProductsHtml);
+    
+    // تحديث lazy loading للصور الجديدة
+    initLazyLoading();
+    
+    // تحديث عدد المنتجات المعروضة في العنوان
+    const totalProducts = getFilteredProducts().length;
+    const sectionTitle = container.querySelector('.section-title .results-count');
+    if (sectionTitle) {
+        sectionTitle.textContent = `(${totalProducts} منتج)`;
+    }
+}
+
+function updateEndOfProductsMessage(totalProducts) {
+    const endOfProducts = document.getElementById('endOfProducts');
+    const sentinel = document.getElementById('infiniteScrollSentinel');
+    
+    if (displayedProductsCount >= totalProducts && totalProducts > 0) {
+        if (endOfProducts) endOfProducts.style.display = 'block';
+        if (sentinel) sentinel.style.display = 'none';
     } else {
-        loadMoreBtn.style.display = 'block';
-        loadMoreBtn.innerHTML = `
-            <i class="fas fa-arrow-down"></i> عرض المزيد (${remainingProducts} منتج متبقي)
-        `;
+        if (endOfProducts) endOfProducts.style.display = 'none';
+        if (sentinel) sentinel.style.display = 'block';
     }
 }
 
@@ -1177,27 +1255,31 @@ function displayProducts(products, searchQuery = '') {
                 <div class="products-grid ${currentView}">
                     ${productsHtml}
                 </div>
-                <div class="load-more-container" id="loadMoreContainer">
-                    <button class="load-more-btn" onclick="loadMoreProducts()">
-                        <i class="fas fa-arrow-down"></i> عرض المزيد
-                    </button>
+                <!-- مؤشر التحميل التلقائي (Infinite Scroll Sentinel) -->
+                <div class="infinite-scroll-sentinel" id="infiniteScrollSentinel">
+                    <div class="loading-spinner" id="loadingSpinner" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>جاري تحميل المزيد...</p>
+                    </div>
+                </div>
+                <!-- رسالة نهاية المنتجات -->
+                <div class="end-of-products" id="endOfProducts" style="display: none;">
+                    <p><i class="fas fa-check-circle"></i> تم عرض جميع المنتجات</p>
                 </div>
             </section>
         `;
     } else {
         productsGrid.innerHTML = productsHtml;
-        const loadMoreContainer = container.querySelector('#loadMoreContainer');
-        if (loadMoreContainer) {
-            loadMoreContainer.style.display = 'block';
-        }
     }
     
     applyViewToGrids();
     initLazyLoading();
     
-    // تحديث زر "عرض المزيد"
-    const totalProducts = getFilteredProducts().length;
-    updateLoadMoreButton(totalProducts);
+    // إعداد التحميل التلقائي
+    setupInfiniteScroll();
+    
+    // تحديث رسالة نهاية المنتجات
+    updateEndOfProductsMessage(products.length);
 }
 
 // ============================================
