@@ -3462,126 +3462,224 @@ ul, ol {
     }
 }
 /* ============================================
-   أنماط الأقسام القابلة للطي
+   Accordion Styles for Main Categories
    ============================================ */
-.category-header {
-    cursor: pointer;
-    user-select: none;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: var(--gray-lighter);
-    padding: 15px 20px;
-    border-radius: var(--border-radius-lg);
-    border: 2px solid transparent;
+.accordion-section {
     margin-bottom: 15px;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    border: 1px solid var(--gray-light);
 }
 
-.category-header:hover {
-    border-color: var(--primary-color);
-    background: rgba(156, 39, 176, 0.05);
-}
-
-.category-header.active {
+.accordion-header {
+    padding: 15px 20px;
     background: var(--gradient);
     color: white;
-    border-color: var(--primary-color);
-    box-shadow: 0 6px 15px rgba(156, 39, 176, 0.2);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: var(--transition);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.category-title {
+.accordion-header:hover {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
+}
+
+.accordion-title {
+    font-size: 1.1rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin: 0;
-    font-size: 1.3rem;
-    font-weight: 800;
+    gap: 10px;
 }
 
-.category-icon {
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
+.accordion-icon {
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
 }
 
-.category-icon.rotated {
-    transform: rotate(-90deg);
+.accordion-header.active .accordion-icon {
+    transform: rotate(180deg);
 }
 
-.category-content {
+.accordion-content {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 0 10px;
 }
 
-.category-content.expanded {
-    max-height: none;
-    padding: 10px;
+.accordion-content.active {
+    max-height: 5000px;
+}
+
+.subcategory-group {
+    padding: 15px;
+    border-bottom: 1px solid var(--gray-light);
+}
+
+.subcategory-group:last-child {
+    border-bottom: none;
 }
 
 .subcategory-title {
+    font-size: 1rem;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--gray-light);
+    position: relative;
     cursor: pointer;
-    user-select: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(156, 39, 176, 0.03);
-    padding: 15px 20px;
-    border-radius: var(--border-radius);
-    margin: 10px 0;
-    border: 1px solid var(--gray-light);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    transition: var(--transition);
+}
+
+.subcategory-title::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    right: 0;
+    width: 40px;
+    height: 3px;
+    background: var(--gradient);
+    border-radius: 2px;
 }
 
 .subcategory-title:hover {
-    background: rgba(156, 39, 176, 0.08);
-    border-color: var(--primary-color);
-    transform: translateX(-8px);
+    color: var(--primary-dark);
 }
 
-.subcategory-group.active-subcategory .subcategory-title {
-    background: var(--gradient);
-    color: white;
-    border-color: var(--primary-color);
-}
-
-.category-count, .subcategory-count {
-    font-size: 0.85rem;
-    background: rgba(156, 39, 176, 0.1);
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-weight: normal;
-}
-
-/* تمييز نتائج البحث */
-mark.search-highlight {
-    background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
-    color: white;
-    padding: 0 4px;
-    border-radius: 4px;
-    font-weight: 700;
-}
-
-.product-card.highlighted {
-    border: 2px solid var(--primary-color);
-    transform: scale(1.02);
-}
-
-#dynamic-sections {
-    max-height: 1800px;
+/* ============================================
+   Search Highlight Styles
+   ============================================ */
+.search-highlight-results,
+.mobile-search-highlight-results {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    margin-top: 5px;
+    max-height: 300px;
     overflow-y: auto;
-    padding: 15px;
-    scroll-behavior: smooth;
+    z-index: 1000;
+    display: none;
+    border: 2px solid var(--primary-color);
 }
 
+.search-highlight-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--gray-light);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.search-highlight-item:hover {
+    background: var(--gray-lighter);
+}
+
+.highlighted-text {
+    background: linear-gradient(135deg, #ffeb3b 0%, #ffc107 100%);
+    color: var(--dark-color);
+    font-weight: 700;
+    padding: 2px 4px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.highlight-product-name {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.highlight-category {
+    font-size: 0.75rem;
+    color: var(--primary-color);
+    background: rgba(156, 39, 176, 0.1);
+    padding: 4px 8px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+.highlight-price {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--secondary-color);
+}
+
+.mobile-search-highlight-results {
+    position: fixed;
+    top: 70px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    border-radius: var(--border-radius);
+    border: none;
+}
+
+/* ============================================
+   Mobile Optimizations for Accordion
+   ============================================ */
 @media (max-width: 768px) {
-    .category-title { font-size: 1.1rem; }
-    #dynamic-sections { max-height: 1400px; }
+    .accordion-header {
+        padding: 12px 15px;
+    }
+    
+    .accordion-title {
+        font-size: 1rem;
+    }
+    
+    .accordion-icon {
+        font-size: 0.8rem;
+    }
+    
+    .subcategory-group {
+        padding: 10px;
+    }
+    
+    .subcategory-title {
+        font-size: 0.9rem;
+    }
+    
+    .search-highlight-item {
+        padding: 10px 12px;
+    }
+    
+    .highlight-product-name {
+        font-size: 0.85rem;
+    }
+    
+    .highlight-price,
+    .highlight-category {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .accordion-header {
+        padding: 10px 12px;
+    }
+    
+    .accordion-title {
+        font-size: 0.9rem;
+    }
+    
+    .subcategory-group {
+        padding: 8px;
+    }
+    
+    .subcategory-title {
+        font-size: 0.85rem;
+    }
 }

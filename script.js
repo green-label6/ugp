@@ -1109,16 +1109,8 @@ function renderMainContent() {
         return;
     }
     
-    // إعادة تعيين العدادات
-    resetDisplayedProducts();
-    
-    // تحميل الدفعة الأولى من المنتجات
-    const initialProducts = products.slice(0, productsPerLoad);
-    currentProducts = initialProducts;
-    displayedProductsCount = initialProducts.length;
-    
-    // عرض المنتجات
-    displayProducts(currentProducts);
+    // Render accordion structure
+    renderAccordions();
 }
 
 function showNoProductsMessage() {
@@ -1950,6 +1942,320 @@ function initLazyLoading() {
     }
 }
 
+
+
+// ============================================
+// Render Accordions with Expandable Main Categories
+// ============================================
+
+function renderAccordions() {
+    const container = document.getElementById('dynamic-sections');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // Group products by category and subcategory
+    const grouped = {};
+    allProducts.forEach(product => {
+        if (!grouped[product.category]) grouped[product.category] = {};
+        if (!grouped[product.category][product.subcategory]) {
+            grouped[product.category][product.subcategory] = [];
+        }
+        grouped[product.category][product.subcategory].push(product);
+    });
+    
+    // Create accordion for each main category
+    Object.keys(grouped).forEach((category, index) => {
+        const catId = `cat-${index}`;
+        const accordionSection = createAccordionSection(catId, category, grouped[category]);
+        container.appendChild(accordionSection);
+    });
+    
+    // Initialize first accordion as open
+    setTimeout(() => {
+        const firstHeader = container.querySelector('.accordion-header');
+        if (firstHeader) firstHeader.classList.add('active');
+        const firstContent = container.querySelector('.accordion-content');
+        if (firstContent) firstContent.classList.add('active');
+    }, 100);
+    
+    applyViewToGrids();
+    initLazyLoading();
+}
+
+function createAccordionSection(id, categoryName, subcategories) {
+    const section = document.createElement('section');
+    section.className = 'accordion-section';
+    section.id = id;
+    
+    let subcatHtml = '';
+    Object.keys(subcategories).forEach(subcatName => {
+        const products = subcategories[subcatName];
+        subcatHtml += `
+            <div class="subcategory-group" data-category="${categoryName}" data-subcategory="${subcatName}">
+                <h3 class="subcategory-title" onclick="filterBySubcategory('${categoryName}', '${subcatName}', this)">
+                    ${subcatName} <span class="product-count">(${products.length} منتج)</span>
+                </h3>
+                <div class="products-grid ${currentView}" id="grid-${categoryName}-${subcatName}">
+                    ${products.map(p => createProductCardHtml(p)).join('')}
+                </div>
+            </div>
+        `;
+    });
+    
+    section.innerHTML = `
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <div class="accordion-title">
+                <i class="fas fa-folder"></i>
+                ${categoryName}
+            </div>
+            <i class="fas fa-chevron-down accordion-icon"></i>
+        </div>
+        <div class="accordion-content" id="content-${id}">
+            ${subcatHtml}
+        </div>
+    `;
+    
+    return section;
+}
+
+function toggleAccordion(header) {
+    const content = header.nextElementSibling;
+    const isActive = header.classList.contains('active');
+    
+    // Close all accordions
+    document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('active'));
+    document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('active'));
+    
+    // Open clicked accordion if it wasn't active
+    if (!isActive) {
+        header.classList.add('active');
+        content.classList.add('active');
+    }
+}
+
+function filterBySubcategory(category, subcategory, element) {
+    // Show all products in this subcategory, hide others
+    const allGroups = document.querySelectorAll('.subcategory-group');
+    const targetGroup = element.closest('.subcategory-group');
+    
+    allGroups.forEach(group => {
+        group.style.display = 'block';
+        group.style.opacity = '0.3';
+        group.style.pointerEvents = 'none';
+    });
+    
+    targetGroup.style.opacity = '1';
+    targetGroup.style.pointerEvents = 'auto';
+    
+    // Scroll to the subcategory
+    targetGroup.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    // Show notification
+    showNotification(`عرض منتجات ${subcategory}`, 'info');
+}
+
+function resetSubcategoryFilter() {
+    const allGroups = document.querySelectorAll('.subcategory-group');
+    allGroups.forEach(group => {
+        group.style.display = 'block';
+        group.style.opacity = '1';
+        group.style.pointerEvents = 'auto';
+    });
+}
+
+// ============================================
+// Enhanced Search with Highlighting
+// ============================================
+
+function highlightSearch(text, query) {
+    if (!query) return text;
+    
+    const normalizedText = normalizeArabic(text);
+    const normalizedQuery = normalizeArabic(query);
+    const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    const regex = new RegExp(`(${escapeRegExp(normalizedQuery)})`, 'gi');
+    const highlighted = normalizedText.replace(regex, '<span class="highlighted-text">$1</span>');
+    
+    return highlighted;
+}
+
+function performSearch(query) {
+    const searchResults = document.getElementById('searchResults');
+    const searchHighlightResults = document.getElementById('searchHighlightResults');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (!query || !query.trim()) {
+        if (searchResults) searchResults.style.display = 'none';
+        if (searchHighlightResults) searchHighlightResults.style.display = 'none';
+        resetSubcategoryFilter();
+        return;
+    }
+    
+    // Search ONLY in product names (both Arabic and English)
+    const normalizedQueryAr = normalizeArabic(query);
+    const normalizedQueryEn = normalizeEnglish(query);
+    
+    const filtered = allProducts.filter(product => {
+        const normalizedNameAr = normalizeArabic(product.name);
+        const normalizedNameEn = normalizeEnglish(product.name);
+        
+        // Partial matching in product names only
+        const arabicMatch = normalizedNameAr.includes(normalizedQueryAr);
+        const englishMatch = normalizedNameEn.includes(normalizedQueryEn);
+        const mixedMatch = normalizedNameEn.includes(normalizedQueryAr) || 
+                          normalizedNameAr.includes(normalizedQueryEn);
+        
+        return arabicMatch || englishMatch || mixedMatch;
+    }).slice(0, 10);
+    
+    // Display results in highlight container
+    if (searchHighlightResults) {
+        if (filtered.length === 0) {
+            searchHighlightResults.innerHTML = '<div class="no-results">لا توجد نتائج مطابقة</div>';
+        } else {
+            searchHighlightResults.innerHTML = filtered.map(p => `
+                <div class="search-highlight-item" onclick="showProductDetails(${p.id}); document.getElementById('searchHighlightResults').style.display='none';">
+                    <div class="highlight-product-name">${highlightSearch(p.name, query)}</div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span class="highlight-category">${p.subcategory}</span>
+                        <span class="highlight-price">${formatPrice(p.price)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        searchHighlightResults.style.display = 'block';
+    }
+    
+    // Hide regular search results
+    if (searchResults) searchResults.style.display = 'none';
+    
+    // Filter products view based on search
+    if (searchInput && searchInput.value === query) {
+        showingFavorites = false;
+        showingFeatured = false;
+        activeCategory = 'all';
+        
+        // Show only matching products across all subcategories
+        const allGroups = document.querySelectorAll('.subcategory-group');
+        const allProductCards = document.querySelectorAll('.product-card');
+        
+        allProductCards.forEach(card => {
+            const productId = parseInt(card.getAttribute('onclick').match(/\\d+/)[0]);
+            const product = allProducts.find(p => p.id === productId);
+            
+            if (product) {
+                const normalizedNameAr = normalizeArabic(product.name);
+                const normalizedNameEn = normalizeEnglish(product.name);
+                const normalizedQueryAr = normalizeArabic(query);
+                const normalizedQueryEn = normalizeEnglish(query);
+                
+                const matches = normalizedNameAr.includes(normalizedQueryAr) ||
+                               normalizedNameEn.includes(normalizedQueryEn) ||
+                               normalizedNameAr.includes(normalizedQueryEn) ||
+                               normalizedNameEn.includes(normalizedQueryAr);
+                
+                card.style.display = matches ? 'block' : 'none';
+                
+                // Update product name with highlight
+                const productNameEl = card.querySelector('.product-name');
+                if (productNameEl && matches) {
+                    productNameEl.innerHTML = highlightSearch(product.name, query);
+                }
+            }
+        });
+        
+        // Hide subcategories with no visible products
+        allGroups.forEach(group => {
+            const visibleCards = group.querySelectorAll('.product-card[style*="display: block"], .product-card:not([style*="display: none"])');
+            group.style.display = visibleCards.length === 0 ? 'none' : 'block';
+        });
+        
+        // Close all accordions and open those with results
+        document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('active'));
+        document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('active'));
+        
+        document.querySelectorAll('.accordion-section').forEach(section => {
+            const hasVisibleProducts = section.querySelectorAll('.product-card[style*="display: block"]').length > 0;
+            if (hasVisibleProducts) {
+                section.querySelector('.accordion-header').classList.add('active');
+                section.querySelector('.accordion-content').classList.add('active');
+            }
+        });
+    }
+}
+
+// Override the search input event listener
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        // Remove old listener and add new one
+        const newSearchInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+        
+        newSearchInput.addEventListener('input', (e) => {
+            performSearch(e.target.value);
+        });
+        
+        newSearchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch(e.target.value);
+            }
+        });
+    }
+    
+    // Close search results when clicking outside
+    document.addEventListener('click', (e) => {
+        const searchContainer = document.querySelector('.search-container');
+        const searchHighlightResults = document.getElementById('searchHighlightResults');
+        
+        if (searchContainer && searchHighlightResults &&
+            !searchContainer.contains(e.target) && 
+            !searchHighlightResults.contains(e.target)) {
+            searchHighlightResults.style.display = 'none';
+            resetSubcategoryFilter();
+        }
+    });
+}, { once: true });
+
+// ============================================
+// Mobile-specific optimizations
+// ============================================
+
+function setupMobileOptimizations() {
+    // Prevent zoom on input focus for iOS
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('focus', () => {
+            if (window.innerWidth <= 768) {
+                document.querySelector('meta[name="viewport"]').setAttribute('content', 
+                    'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+            }
+        });
+        
+        input.addEventListener('blur', () => {
+            document.querySelector('meta[name="viewport"]').setAttribute('content', 
+                'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
+        });
+    });
+    
+    // Touch feedback for accordion headers
+    document.querySelectorAll('.accordion-header').forEach(header => {
+        header.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.98)';
+        });
+        
+        header.addEventListener('touchend', function() {
+            this.style.transform = '';
+        });
+    });
+}
+
+// Call mobile optimizations after DOM loaded
+document.addEventListener('DOMContentLoaded', setupMobileOptimizations);
+
+
 // ============================================
 // إضافة CSS للعناصر الجديدة
 // ============================================
@@ -2102,6 +2408,320 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+
+
+// ============================================
+// Render Accordions with Expandable Main Categories
+// ============================================
+
+function renderAccordions() {
+    const container = document.getElementById('dynamic-sections');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // Group products by category and subcategory
+    const grouped = {};
+    allProducts.forEach(product => {
+        if (!grouped[product.category]) grouped[product.category] = {};
+        if (!grouped[product.category][product.subcategory]) {
+            grouped[product.category][product.subcategory] = [];
+        }
+        grouped[product.category][product.subcategory].push(product);
+    });
+    
+    // Create accordion for each main category
+    Object.keys(grouped).forEach((category, index) => {
+        const catId = `cat-${index}`;
+        const accordionSection = createAccordionSection(catId, category, grouped[category]);
+        container.appendChild(accordionSection);
+    });
+    
+    // Initialize first accordion as open
+    setTimeout(() => {
+        const firstHeader = container.querySelector('.accordion-header');
+        if (firstHeader) firstHeader.classList.add('active');
+        const firstContent = container.querySelector('.accordion-content');
+        if (firstContent) firstContent.classList.add('active');
+    }, 100);
+    
+    applyViewToGrids();
+    initLazyLoading();
+}
+
+function createAccordionSection(id, categoryName, subcategories) {
+    const section = document.createElement('section');
+    section.className = 'accordion-section';
+    section.id = id;
+    
+    let subcatHtml = '';
+    Object.keys(subcategories).forEach(subcatName => {
+        const products = subcategories[subcatName];
+        subcatHtml += `
+            <div class="subcategory-group" data-category="${categoryName}" data-subcategory="${subcatName}">
+                <h3 class="subcategory-title" onclick="filterBySubcategory('${categoryName}', '${subcatName}', this)">
+                    ${subcatName} <span class="product-count">(${products.length} منتج)</span>
+                </h3>
+                <div class="products-grid ${currentView}" id="grid-${categoryName}-${subcatName}">
+                    ${products.map(p => createProductCardHtml(p)).join('')}
+                </div>
+            </div>
+        `;
+    });
+    
+    section.innerHTML = `
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <div class="accordion-title">
+                <i class="fas fa-folder"></i>
+                ${categoryName}
+            </div>
+            <i class="fas fa-chevron-down accordion-icon"></i>
+        </div>
+        <div class="accordion-content" id="content-${id}">
+            ${subcatHtml}
+        </div>
+    `;
+    
+    return section;
+}
+
+function toggleAccordion(header) {
+    const content = header.nextElementSibling;
+    const isActive = header.classList.contains('active');
+    
+    // Close all accordions
+    document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('active'));
+    document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('active'));
+    
+    // Open clicked accordion if it wasn't active
+    if (!isActive) {
+        header.classList.add('active');
+        content.classList.add('active');
+    }
+}
+
+function filterBySubcategory(category, subcategory, element) {
+    // Show all products in this subcategory, hide others
+    const allGroups = document.querySelectorAll('.subcategory-group');
+    const targetGroup = element.closest('.subcategory-group');
+    
+    allGroups.forEach(group => {
+        group.style.display = 'block';
+        group.style.opacity = '0.3';
+        group.style.pointerEvents = 'none';
+    });
+    
+    targetGroup.style.opacity = '1';
+    targetGroup.style.pointerEvents = 'auto';
+    
+    // Scroll to the subcategory
+    targetGroup.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    // Show notification
+    showNotification(`عرض منتجات ${subcategory}`, 'info');
+}
+
+function resetSubcategoryFilter() {
+    const allGroups = document.querySelectorAll('.subcategory-group');
+    allGroups.forEach(group => {
+        group.style.display = 'block';
+        group.style.opacity = '1';
+        group.style.pointerEvents = 'auto';
+    });
+}
+
+// ============================================
+// Enhanced Search with Highlighting
+// ============================================
+
+function highlightSearch(text, query) {
+    if (!query) return text;
+    
+    const normalizedText = normalizeArabic(text);
+    const normalizedQuery = normalizeArabic(query);
+    const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    const regex = new RegExp(`(${escapeRegExp(normalizedQuery)})`, 'gi');
+    const highlighted = normalizedText.replace(regex, '<span class="highlighted-text">$1</span>');
+    
+    return highlighted;
+}
+
+function performSearch(query) {
+    const searchResults = document.getElementById('searchResults');
+    const searchHighlightResults = document.getElementById('searchHighlightResults');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (!query || !query.trim()) {
+        if (searchResults) searchResults.style.display = 'none';
+        if (searchHighlightResults) searchHighlightResults.style.display = 'none';
+        resetSubcategoryFilter();
+        return;
+    }
+    
+    // Search ONLY in product names (both Arabic and English)
+    const normalizedQueryAr = normalizeArabic(query);
+    const normalizedQueryEn = normalizeEnglish(query);
+    
+    const filtered = allProducts.filter(product => {
+        const normalizedNameAr = normalizeArabic(product.name);
+        const normalizedNameEn = normalizeEnglish(product.name);
+        
+        // Partial matching in product names only
+        const arabicMatch = normalizedNameAr.includes(normalizedQueryAr);
+        const englishMatch = normalizedNameEn.includes(normalizedQueryEn);
+        const mixedMatch = normalizedNameEn.includes(normalizedQueryAr) || 
+                          normalizedNameAr.includes(normalizedQueryEn);
+        
+        return arabicMatch || englishMatch || mixedMatch;
+    }).slice(0, 10);
+    
+    // Display results in highlight container
+    if (searchHighlightResults) {
+        if (filtered.length === 0) {
+            searchHighlightResults.innerHTML = '<div class="no-results">لا توجد نتائج مطابقة</div>';
+        } else {
+            searchHighlightResults.innerHTML = filtered.map(p => `
+                <div class="search-highlight-item" onclick="showProductDetails(${p.id}); document.getElementById('searchHighlightResults').style.display='none';">
+                    <div class="highlight-product-name">${highlightSearch(p.name, query)}</div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span class="highlight-category">${p.subcategory}</span>
+                        <span class="highlight-price">${formatPrice(p.price)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        searchHighlightResults.style.display = 'block';
+    }
+    
+    // Hide regular search results
+    if (searchResults) searchResults.style.display = 'none';
+    
+    // Filter products view based on search
+    if (searchInput && searchInput.value === query) {
+        showingFavorites = false;
+        showingFeatured = false;
+        activeCategory = 'all';
+        
+        // Show only matching products across all subcategories
+        const allGroups = document.querySelectorAll('.subcategory-group');
+        const allProductCards = document.querySelectorAll('.product-card');
+        
+        allProductCards.forEach(card => {
+            const productId = parseInt(card.getAttribute('onclick').match(/\\d+/)[0]);
+            const product = allProducts.find(p => p.id === productId);
+            
+            if (product) {
+                const normalizedNameAr = normalizeArabic(product.name);
+                const normalizedNameEn = normalizeEnglish(product.name);
+                const normalizedQueryAr = normalizeArabic(query);
+                const normalizedQueryEn = normalizeEnglish(query);
+                
+                const matches = normalizedNameAr.includes(normalizedQueryAr) ||
+                               normalizedNameEn.includes(normalizedQueryEn) ||
+                               normalizedNameAr.includes(normalizedQueryEn) ||
+                               normalizedNameEn.includes(normalizedQueryAr);
+                
+                card.style.display = matches ? 'block' : 'none';
+                
+                // Update product name with highlight
+                const productNameEl = card.querySelector('.product-name');
+                if (productNameEl && matches) {
+                    productNameEl.innerHTML = highlightSearch(product.name, query);
+                }
+            }
+        });
+        
+        // Hide subcategories with no visible products
+        allGroups.forEach(group => {
+            const visibleCards = group.querySelectorAll('.product-card[style*="display: block"], .product-card:not([style*="display: none"])');
+            group.style.display = visibleCards.length === 0 ? 'none' : 'block';
+        });
+        
+        // Close all accordions and open those with results
+        document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('active'));
+        document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('active'));
+        
+        document.querySelectorAll('.accordion-section').forEach(section => {
+            const hasVisibleProducts = section.querySelectorAll('.product-card[style*="display: block"]').length > 0;
+            if (hasVisibleProducts) {
+                section.querySelector('.accordion-header').classList.add('active');
+                section.querySelector('.accordion-content').classList.add('active');
+            }
+        });
+    }
+}
+
+// Override the search input event listener
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        // Remove old listener and add new one
+        const newSearchInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+        
+        newSearchInput.addEventListener('input', (e) => {
+            performSearch(e.target.value);
+        });
+        
+        newSearchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch(e.target.value);
+            }
+        });
+    }
+    
+    // Close search results when clicking outside
+    document.addEventListener('click', (e) => {
+        const searchContainer = document.querySelector('.search-container');
+        const searchHighlightResults = document.getElementById('searchHighlightResults');
+        
+        if (searchContainer && searchHighlightResults &&
+            !searchContainer.contains(e.target) && 
+            !searchHighlightResults.contains(e.target)) {
+            searchHighlightResults.style.display = 'none';
+            resetSubcategoryFilter();
+        }
+    });
+}, { once: true });
+
+// ============================================
+// Mobile-specific optimizations
+// ============================================
+
+function setupMobileOptimizations() {
+    // Prevent zoom on input focus for iOS
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('focus', () => {
+            if (window.innerWidth <= 768) {
+                document.querySelector('meta[name="viewport"]').setAttribute('content', 
+                    'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+            }
+        });
+        
+        input.addEventListener('blur', () => {
+            document.querySelector('meta[name="viewport"]').setAttribute('content', 
+                'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
+        });
+    });
+    
+    // Touch feedback for accordion headers
+    document.querySelectorAll('.accordion-header').forEach(header => {
+        header.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.98)';
+        });
+        
+        header.addEventListener('touchend', function() {
+            this.style.transform = '';
+        });
+    });
+}
+
+// Call mobile optimizations after DOM loaded
+document.addEventListener('DOMContentLoaded', setupMobileOptimizations);
+
+
 // ============================================
 // التعامل مع تغيير حجم النافذة
 // ============================================
@@ -2136,405 +2756,3 @@ window.addEventListener('resize', () => {
 
 updateCartUI();
 updateFavoritesUI();
-
-// ============================================
-// أنماط CSS للميزات الجديدة (يتم إضافتها ديناميكياً)
-// ============================================
-function addCollapsibleStyles() {
-    if (!document.querySelector('#collapsible-styles')) {
-        const style = document.createElement('style');
-        style.id = 'collapsible-styles';
-        style.textContent = `
-            .category-header {
-                cursor: pointer;
-                user-select: none;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                background: var(--gray-lighter);
-                padding: 15px 20px;
-                border-radius: var(--border-radius-lg);
-                border: 2px solid transparent;
-                margin-bottom: 15px;
-            }
-            
-            .category-header:hover {
-                border-color: var(--primary-color);
-                background: rgba(156, 39, 176, 0.05);
-            }
-            
-            .category-header.active {
-                background: var(--gradient);
-                color: white;
-                border-color: var(--primary-color);
-            }
-            
-            .category-title {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                margin: 0;
-                font-size: 1.3rem;
-            }
-            
-            .category-icon {
-                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                width: 24px;
-                height: 24px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            
-            .category-icon.rotated {
-                transform: rotate(-90deg);
-            }
-            
-            .category-content {
-                max-height: 0;
-                overflow: hidden;
-                transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                padding: 0 10px;
-            }
-            
-            .category-content.expanded {
-                max-height: none;
-                padding: 10px;
-            }
-            
-            .subcategory-title {
-                cursor: pointer;
-                user-select: none;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                background: rgba(156, 39, 176, 0.03);
-                padding: 15px 20px;
-                border-radius: var(--border-radius);
-                margin: 10px 0;
-                border: 1px solid var(--gray-light);
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-            }
-            
-            .subcategory-title:hover {
-                background: rgba(156, 39, 176, 0.08);
-                border-color: var(--primary-color);
-                transform: translateX(-8px);
-            }
-            
-            mark.search-highlight {
-                background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
-                color: white;
-                padding: 0 4px;
-                border-radius: 4px;
-                font-weight: 700;
-            }
-            
-            .product-card.highlighted {
-                border: 2px solid var(--primary-color);
-                transform: scale(1.02);
-            }
-            
-            #dynamic-sections {
-                max-height: 1800px;
-                overflow-y: auto;
-                padding: 15px;
-                scroll-behavior: smooth;
-            }
-            
-            @media (max-width: 768px) {
-                .category-title { font-size: 1.1rem; }
-                #dynamic-sections { max-height: 1400px; }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-}
-
-// ============================================
-// عرض الأقسام الافتراضية مع قابلية الطي
-// ============================================
-function renderCollapsibleSections() {
-    const container = document.getElementById('dynamic-sections');
-    if (!container) return;
-    
-    container.innerHTML = '';
-    
-    Object.keys(categoriesData).forEach((categoryName, catIndex) => {
-        const catId = `cat-${catIndex}`;
-        const section = document.createElement('section');
-        section.className = 'products-section category-section';
-        section.id = catId;
-        
-        let subcategoriesCount = Object.keys(categoriesData[categoryName]).length;
-        
-        let sectionHtml = `
-            <div class="section-header category-header" onclick="toggleCategory('${catId}')">
-                <h2 class="section-title category-title">
-                    <i class="fas fa-chevron-down category-icon"></i>
-                    ${categoryName}
-                    <span class="category-count">(${subcategoriesCount} أقسام فرعية)</span>
-                </h2>
-            </div>
-            <div class="category-content" id="content-${catId}">
-        `;
-        
-        for (const subcategoryName in categoriesData[categoryName]) {
-            const subcatProducts = allProducts
-                .filter(p => p.category === categoryName && p.subcategory === subcategoryName)
-                .slice(0, 8);
-            
-            if (subcatProducts.length === 0) continue;
-            
-            sectionHtml += `
-                <div class="subcategory-group" data-category="${categoryName}" data-subcategory="${subcategoryName}">
-                    <h3 class="subcategory-title" onclick="showSubcategoryProducts('${categoryName}', '${subcategoryName}', event)">
-                        ${subcategoryName}
-                        <span class="subcategory-count">(${subcatProducts.length})</span>
-                    </h3>
-                    <div class="products-grid ${currentView}" id="grid-${catId}-${subcategoryName.replace(/\\s+/g, '-')}">
-                        ${subcatProducts.map(p => createProductCardHtml(p)).join('')}
-                    </div>
-                </div>
-            `;
-        }
-        
-        sectionHtml += '</div>';
-        section.innerHTML = sectionHtml;
-        container.appendChild(section);
-    });
-    
-    applyViewToGrids();
-    initLazyLoading();
-    setupCollapsibleCategories();
-}
-
-function setupCollapsibleCategories() {
-    const categories = document.querySelectorAll('.category-content');
-    categories.forEach(cat => {
-        cat.style.maxHeight = cat.scrollHeight + 'px';
-        cat.classList.add('expanded');
-    });
-}
-
-function toggleCategory(categoryId) {
-    const content = document.getElementById(`content-${categoryId}`);
-    const icon = document.querySelector(`#${categoryId} .category-icon`);
-    const header = document.querySelector(`#${categoryId} .category-header`);
-    
-    if (!content) return;
-    
-    content.classList.toggle('expanded');
-    icon.classList.toggle('rotated');
-    
-    if (content.classList.contains('expanded')) {
-        content.style.maxHeight = content.scrollHeight + 'px';
-        header.classList.add('active');
-        
-        setTimeout(() => {
-            content.style.maxHeight = 'none';
-        }, 300);
-    } else {
-        content.style.maxHeight = content.scrollHeight + 'px';
-        setTimeout(() => {
-            content.style.maxHeight = '0px';
-        }, 10);
-        header.classList.remove('active');
-    }
-}
-
-function showSubcategoryProducts(category, subcategory, event) {
-    event.stopPropagation();
-    
-    showingFavorites = false;
-    showingFeatured = false;
-    activeCategory = 'all';
-    
-    hideAllProducts();
-    
-    const targetGroup = document.querySelector(`[data-category="${category}"][data-subcategory="${subcategory}"]`);
-    if (targetGroup) {
-        targetGroup.classList.add('active-subcategory');
-        targetGroup.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    
-    updateFavoritesUI();
-    showNotification(`عرض منتجات ${subcategory}`, 'info');
-}
-
-function hideAllProducts() {
-    document.querySelectorAll('.subcategory-group').forEach(group => {
-        group.classList.remove('active-subcategory');
-    });
-}
-
-function highlightSearchTerm(text, searchTerm) {
-    if (!text || !searchTerm) return text;
-    
-    const normalizedText = normalizeArabic(text);
-    const normalizedSearch = normalizeArabic(searchTerm);
-    
-    let index = normalizedText.indexOf(normalizedSearch);
-    if (index === -1) return text;
-    
-    let result = '';
-    let lastIndex = 0;
-    
-    while (index !== -1) {
-        result += text.substring(lastIndex, index);
-        result += '<mark class="search-highlight">' + 
-                  text.substring(index, index + searchTerm.length) + '</mark>';
-        lastIndex = index + searchTerm.length;
-        index = normalizedText.indexOf(normalizedSearch, lastIndex);
-    }
-    
-    result += text.substring(lastIndex);
-    return result;
-}
-
-function highlightProducts(searchTerm) {
-    if (!searchTerm) return;
-    
-    const normalizedSearch = normalizeArabic(searchTerm);
-    
-    document.querySelectorAll('.product-name').forEach(nameElement => {
-        const productName = nameElement.textContent;
-        const normalizedName = normalizeArabic(productName);
-        
-        if (normalizedName.includes(normalizedSearch)) {
-            nameElement.innerHTML = highlightSearchTerm(productName, searchTerm);
-            nameElement.closest('.product-card').classList.add('highlighted');
-        } else {
-            if (nameElement.querySelector('mark')) {
-                nameElement.textContent = productName;
-            }
-            nameElement.closest('.product-card').classList.remove('highlighted');
-        }
-    });
-}
-
-function clearAllHighlights() {
-    document.querySelectorAll('.product-name').forEach(nameElement => {
-        if (nameElement.querySelector('mark')) {
-            nameElement.textContent = nameElement.textContent.replace(/<mark[^>]*>/g, '').replace(/<\/mark>/g, '');
-        }
-    });
-    document.querySelectorAll('.product-card').forEach(card => {
-        card.classList.remove('highlighted');
-    });
-}
-
-// ============================================
-// دالة بحث محسنة - تبحث فقط في أسماء المنتجات
-// ============================================
-function performSearch(query) {
-    const results = document.getElementById('searchResults');
-    const searchInput = document.getElementById('searchInput');
-    
-    if (!query || !query.trim()) {
-        if (results) results.style.display = 'none';
-        showingFavorites = false;
-        showingFeatured = false;
-        activeCategory = 'all';
-        resetDisplayedProducts();
-        renderMainContent();
-        clearAllHighlights();
-        return;
-    }
-    
-    const normalizedQuery = normalizeArabic(query);
-    const filtered = allProducts.filter(product => {
-        const normalizedProductName = normalizeArabic(product.name);
-        return normalizedProductName.includes(normalizedQuery);
-    }).slice(0, 12);
-    
-    if (results) {
-        if (filtered.length === 0) {
-            results.innerHTML = '<div class="no-results">لا توجد منتجات مطابقة</div>';
-        } else {
-            results.innerHTML = filtered.map(p => `
-                <div class="search-result-item" onclick="showProductDetails(${p.id}); 
-                     document.getElementById('searchResults').style.display='none'; 
-                     if(searchInput) searchInput.value=''">
-                    <img src="${getCDNUrl(p.image)}" alt="${p.name}" 
-                         onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
-                    <div class="search-result-info">
-                        <h4>${highlightSearchTerm(p.name, query)}</h4>
-                        <p class="result-price">${formatPrice(p.price)}</p>
-                        <small>${p.category} - ${p.subcategory}</small>
-                    </div>
-                </div>
-            `).join('');
-        }
-        results.style.display = 'block';
-    }
-    
-    if (searchInput && searchInput.value === query) {
-        showingFavorites = false;
-        showingFeatured = false;
-        activeCategory = 'all';
-        priceFilter = { min: 0, max: Infinity };
-        
-        highlightProducts(query);
-        
-        if (filtered.length > 0) {
-            const container = document.getElementById('dynamic-sections');
-            if (container) {
-                resetDisplayedProducts();
-                currentProducts = filtered.slice(0, productsPerLoad);
-                displayedProductsCount = currentProducts.length;
-                
-                container.innerHTML = `
-                    <section class="products-section">
-                        <div class="section-header">
-                            <h2 class="section-title">
-                                نتائج البحث: "${query}"
-                                <span class="results-count">(${filtered.length} منتج)</span>
-                            </h2>
-                        </div>
-                        <div class="products-grid ${currentView}">
-                            ${currentProducts.map(p => createProductCardHtml(p)).join('')}
-                        </div>
-                        <div class="load-more-container" id="loadMoreContainer">
-                            <button class="load-more-btn" onclick="loadMoreProducts()">
-                                <i class="fas fa-arrow-down"></i> عرض المزيد
-                            </button>
-                        </div>
-                    </section>
-                `;
-                
-                applyViewToGrids();
-                initLazyLoading();
-                highlightProducts(query);
-            }
-        } else {
-            showNoSearchResults(query);
-        }
-    }
-}
-
-// ============================================
-// إعادة كتابة دالة initializeApp لاستدعاء الميزات الجديدة
-// ============================================
-function initializeApp() {
-    setCurrentYear();
-    loadProducts();
-    setupEventListeners();
-    updateCartUI();
-    updateFavoritesUI();
-    setupMobileMenu();
-    setupBackToTop();
-    setupViewOptions();
-    setupSortAndFilter();
-    setupModal();
-    setupNotifications();
-    setupDrawer();
-    setupBottomNavigation();
-    setupDefaultView();
-    setupShareButton();
-    addCollapsibleStyles();
-}
-
-// استدعاء new initialization
-document.addEventListener('DOMContentLoaded', initializeApp);
