@@ -7,18 +7,20 @@ let currentSubcategory = null;
 function createCategoriesHierarchy() {
     categoriesHierarchy = {};
     for (const categoryName in categoriesData) {
-        categoriesHierarchy[categoryName] = {
-            subcategories: [],
-            productsCount: 0
-        };
+        const subcategories = [];
+        let productsCount = 0;
         for (const subcategoryName in categoriesData[categoryName]) {
             const subcatProducts = categoriesData[categoryName][subcategoryName];
-            categoriesHierarchy[categoryName].subcategories.push({
+            subcategories.push({
                 name: subcategoryName,
                 count: subcatProducts.length
             });
-            categoriesHierarchy[categoryName].productsCount += subcatProducts.length;
+            productsCount += subcatProducts.length;
         }
+        categoriesHierarchy[categoryName] = {
+            subcategories: subcategories,
+            productsCount: productsCount
+        };
     }
 }
 
@@ -29,17 +31,118 @@ function renderMainCategories() {
     let html = '<li class="sidebar-cat-item active" onclick="showAllCategories()">جميع الأقسام</li>';
     Object.keys(categoriesHierarchy).forEach((cat, index) => {
         const catId = `main-cat-${index}`;
+        const hasSubcategories = categoriesHierarchy[cat].subcategories.length > 0;
         html += `
-            <li class="sidebar-cat-item has-subcategories" 
-                onclick="showSubcategories('${cat}', ${index})"
+            <li class="sidebar-cat-item ${hasSubcategories ? 'has-subcategories' : ''}" 
+                onclick="${hasSubcategories ? `toggleSubcategories('${cat}')` : `filterByCategory('${cat}', this)`}"
                 data-cat="${cat}">
-                <span>${cat}</span>
-                <i class="fas fa-chevron-left"></i>
-                <span class="cat-count">(${categoriesHierarchy[cat].productsCount})</span>
+                <div class="cat-item-content">
+                    <span>${cat}</span>
+                    ${hasSubcategories ? '<i class=\"fas fa-chevron-down expand-icon\"></i>' : ''}
+                </div>
+                ${hasSubcategories ? `
+                    <div class="subcategories-list" id="subcat-${catId}" style="display: none;">
+                        ${categoriesHierarchy[cat].subcategories.map((subcat, subIndex) => `
+                            <div class="subcategory-item" onclick=\"filterBySubcategory('${cat}', '${subcat.name}', event)\">
+                                <span>${subcat.name}</span>
+                                <span class="subcat-count">${subcat.count}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
             </li>
         `;
     });
     sidebarCats.innerHTML = html;
+}
+
+function toggleSubcategories(categoryName) {
+    const catItem = document.querySelector(`.sidebar-cat-item[data-cat="${categoryName}"]`);
+    if (!catItem) return;
+    const subcatList = catItem.querySelector('.subcategories-list');
+    const expandIcon = catItem.querySelector('.expand-icon');
+    if (subcatList.style.display === 'none' || !subcatList.style.display) {
+        document.querySelectorAll('.subcategories-list').forEach(list => {
+            if (list !== subcatList) list.style.display = 'none';
+        });
+        document.querySelectorAll('.expand-icon').forEach(icon => {
+            if (icon !== expandIcon) {
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        });
+        subcatList.style.display = 'block';
+        expandIcon.classList.remove('fa-chevron-down');
+        expandIcon.classList.add('fa-chevron-up');
+        document.querySelectorAll('.sidebar-cat-item').forEach(item => {
+            item.classList.remove('active');
+        });
+    } else {
+        subcatList.style.display = 'none';
+        expandIcon.classList.remove('fa-chevron-up');
+        expandIcon.classList.add('fa-chevron-down');
+    }
+}
+
+function showAllCategories() {
+    currentMainCategory = null;
+    currentSubcategory = null;
+    activeCategory = 'all';
+    document.querySelectorAll('.subcategories-list').forEach(list => {
+        list.style.display = 'none';
+    });
+    document.querySelectorAll('.expand-icon').forEach(icon => {
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+    });
+    document.querySelectorAll('.sidebar-cat-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    document.querySelector('.sidebar-cat-item').classList.add('active');
+    resetDisplayedProducts();
+    renderMainContent();
+}
+
+function filterBySubcategory(category, subcategory, event) {
+    if (event) event.stopPropagation();
+    currentMainCategory = category;
+    currentSubcategory = subcategory;
+    activeCategory = category;
+    document.querySelectorAll('.subcategory-item').forEach(el => el.classList.remove('active'));
+    if (event) {
+        event.currentTarget.classList.add('active');
+    }
+    const catItem = document.querySelector(`.sidebar-cat-item[data-cat="${category}"]`);
+    if (catItem) {
+        const subcatList = catItem.querySelector('.subcategories-list');
+        const expandIcon = catItem.querySelector('.expand-icon');
+        if (subcatList) subcatList.style.display = 'none';
+        if (expandIcon) {
+            expandIcon.classList.remove('fa-chevron-up');
+            expandIcon.classList.add('fa-chevron-down');
+        }
+    }
+    resetDisplayedProducts();
+    renderMainContent();
+}
+
+function filterByCategory(cat, element) {
+    currentMainCategory = cat;
+    currentSubcategory = null;
+    activeCategory = cat;
+    showingFavorites = false;
+    showingFeatured = false;
+    document.querySelectorAll('.subcategories-list').forEach(list => {
+        list.style.display = 'none';
+    });
+    document.querySelectorAll('.expand-icon').forEach(icon => {
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+    });
+    document.querySelectorAll('.sidebar-cat-item').forEach(el => el.classList.remove('active'));
+    if (element) element.classList.add('active');
+    resetDisplayedProducts();
+    renderMainContent();
 }
 
 // دالة لعرض التصنيفات الفرعية
@@ -178,6 +281,7 @@ function initializeApp() {
     setupDefaultView();
     setupShareButton();
     createCategoriesHierarchy();
+    renderMainCategories();
 }
 
 // ============================================

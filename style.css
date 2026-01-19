@@ -1,3 +1,101 @@
+/* أنماط هيكل الأقسام الجديد */
+.sidebar-cat-item {
+    margin-bottom: 8px;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    border: 1px solid var(--gray-light);
+    transition: var(--transition);
+}
+.sidebar-cat-item.active {
+    border-color: var(--primary-color);
+    background: rgba(156, 39, 176, 0.05);
+}
+.cat-item-content {
+    padding: 12px 15px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    transition: var(--transition);
+}
+.cat-item-content:hover {
+    background: var(--gray-lighter);
+}
+.sidebar-cat-item.active .cat-item-content {
+    background: rgba(156, 39, 176, 0.05);
+}
+.cat-item-content span {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+.expand-icon {
+    font-size: 0.8rem;
+    color: var(--gray-color);
+    transition: var(--transition);
+}
+.sidebar-cat-item.active .expand-icon {
+    color: var(--primary-color);
+}
+.subcategories-list {
+    background: var(--gray-lighter);
+    border-top: 1px solid var(--gray-light);
+    padding: 8px 0;
+    animation: slideDown 0.3s ease;
+}
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 500px;
+    }
+}
+.subcategory-item {
+    padding: 8px 15px 8px 25px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: var(--transition);
+    border-right: 3px solid transparent;
+}
+.subcategory-item:hover {
+    background: rgba(156, 39, 176, 0.08);
+    border-right-color: var(--primary-color);
+}
+.subcategory-item.active {
+    background: var(--primary-color);
+    color: white;
+    border-right-color: var(--primary-dark);
+}
+.subcategory-item.active .subcat-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+.subcat-count {
+    background: white;
+    color: var(--gray-color);
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+@media (max-width: 768px) {
+    .cat-item-content {
+        padding: 10px 12px;
+    }
+    .subcategory-item {
+        padding: 6px 12px 6px 20px;
+        font-size: 0.9rem;
+    }
+    .subcat-count {
+        font-size: 0.65rem;
+        padding: 1px 5px;
+    }
+}
 /* تعديلات لعرض عمودين افتراضيًا على الجوال */
 @media (max-width: 768px) {
     .products-grid.grid-2 {
