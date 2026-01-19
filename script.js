@@ -1176,6 +1176,360 @@ function resetFilters() {
     renderMainContent();
 }
 
+
+// ============================================
+// Global State for Main Display
+// ============================================
+let currentDisplayState = {
+    category: null,
+    subcategory: null,
+    loaded: 0,
+    total: 0,
+    products: []
+};
+
+// ============================================
+// Render Accordions (Categories with Empty Subcategory List)
+// ============================================
+
+function renderAccordions() {
+    const container = document.getElementById('dynamic-sections');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    if (!container) return;
+    
+    // Show loading indicator
+    if (loadingIndicator) {
+        loadingIndicator.classList.add('active');
+    }
+    
+    container.innerHTML = '';
+    
+    // Group products by category and subcategory
+    const grouped = {};
+    allProducts.forEach(product => {
+        if (!grouped[product.category]) grouped[product.category] = {};
+        if (!grouped[product.category][product.subcategory]) {
+            grouped[product.category][product.subcategory] = [];
+        }
+        grouped[product.category][product.subcategory].push(product);
+    });
+    
+    // Create accordion for each main category
+    Object.keys(grouped).forEach((category, index) => {
+        const catId = `cat-${index}`;
+        const accordionSection = createAccordionSection(catId, category, grouped[category]);
+        container.appendChild(accordionSection);
+    });
+    
+    // Initialize first accordion as open
+    setTimeout(() => {
+        const firstHeader = container.querySelector('.accordion-header');
+        if (firstHeader) firstHeader.classList.add('active');
+        const firstContent = container.querySelector('.accordion-content');
+        if (firstContent) firstContent.classList.add('active');
+        
+        // Hide loading indicator
+        if (loadingIndicator) {
+            loadingIndicator.classList.remove('active');
+        }
+    }, 200);
+    
+    applyViewToGrids();
+}
+
+function createAccordionSection(id, categoryName, subcategories) {
+    const section = document.createElement('section');
+    section.className = 'accordion-section';
+    section.id = id;
+    
+    let subcatHtml = '<div class="subcategory-list">';
+    Object.keys(subcategories).forEach((subcatName, index) => {
+        const products = subcategories[subcatName];
+        subcatHtml += `
+            <div class="subcategory-item" onclick="loadProductsInMainDisplay('${categoryName}', '${subcatName}', this)">
+                <span>${subcatName}</span>
+                <span class="product-count">${products.length}</span>
+            </div>
+        `;
+    });
+    subcatHtml += '</div>';
+    
+    section.innerHTML = `
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <div class="accordion-title">
+                <i class="fas fa-folder"></i>
+                ${categoryName}
+            </div>
+            <i class="fas fa-chevron-down accordion-icon"></i>
+        </div>
+        <div class="accordion-content" id="content-${id}">
+            ${subcatHtml}
+        </div>
+    `;
+    
+    return section;
+}
+
+function toggleAccordion(header) {
+    const content = header.nextElementSibling;
+    const isActive = header.classList.contains('active');
+    
+    // Close all accordions
+    document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('active'));
+    document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('active'));
+    
+    // Open clicked accordion if it wasn't active
+    if (!isActive) {
+        header.classList.add('active');
+        content.classList.add('active');
+    }
+}
+
+// ============================================
+// Load Products in Main Display Area
+// ============================================
+
+function loadProductsInMainDisplay(category, subcategory, element) {
+    // Update active state
+    document.querySelectorAll('.subcategory-item').forEach(item => item.classList.remove('active'));
+    element.classList.add('active');
+    
+    // Reset display state
+    currentDisplayState = {
+        category: category,
+        subcategory: subcategory,
+        loaded: 0,
+        total: 0,
+        products: []
+    };
+    
+    // Get all products for this subcategory
+    const products = allProducts.filter(p => p.category === category && p.subcategory === subcategory);
+    currentDisplayState.total = products.length;
+    currentDisplayState.products = products;
+    
+    // Update title
+    const titleEl = document.getElementById('currentDisplayTitle');
+    const countEl = document.getElementById('currentDisplayCount');
+    if (titleEl) titleEl.textContent = `${subcategory}`;
+    if (countEl) countEl.textContent = `(${products.length} منتج)`;
+    
+    // Clear grid
+    const grid = document.getElementById('mainProductsGrid');
+    if (grid) {
+        grid.innerHTML = '';
+        grid.classList.add('empty');
+        grid.innerHTML = '<p>جاري تحميل المنتجات...</p>';
+    }
+    
+    // Load first batch
+    setTimeout(() => {
+        loadMoreProductsInMainDisplay();
+    }, 100);
+    
+    // Scroll to products display
+    const displayArea = document.querySelector('.products-main-display');
+    if (displayArea) {
+        displayArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function loadMoreProductsInMainDisplay() {
+    const state = currentDisplayState;
+    if (state.loaded >= state.total) return;
+    
+    const grid = document.getElementById('mainProductsGrid');
+    const loadingEl = document.getElementById('mainLoadingIndicator');
+    
+    if (!grid) return;
+    
+    // Show loading
+    if (loadingEl) loadingEl.classList.add('active');
+    
+    // Remove empty state
+    if (grid.classList.contains('empty')) {
+        grid.classList.remove('empty');
+        grid.innerHTML = '';
+    }
+    
+    // Calculate products to load
+    const remaining = state.total - state.loaded;
+    const toLoad = Math.min(10, remaining);
+    const productsToLoad = state.products.slice(state.loaded, state.loaded + toLoad);
+    
+    // Add products to grid
+    const productsHtml = productsToLoad.map(p => createProductCardHtml(p)).join('');
+    grid.insertAdjacentHTML('beforeend', productsHtml);
+    
+    // Update state
+    state.loaded += toLoad;
+    
+    // Hide loading
+    setTimeout(() => {
+        if (loadingEl) loadingEl.classList.remove('active');
+        
+        // Reinitialize lazy loading
+        initLazyLoading();
+        
+        // Apply current view
+        applyViewToGrids();
+    }, 300);
+    
+    // If all loaded, hide loading permanently
+    if (state.loaded >= state.total) {
+        setTimeout(() => {
+            if (loadingEl) loadingEl.style.display = 'none';
+        }, 500);
+    }
+}
+
+// ============================================
+// Clear Main Display
+// ============================================
+
+function clearMainDisplay() {
+    currentDisplayState = {
+        category: null,
+        subcategory: null,
+        loaded: 0,
+        total: 0,
+        products: []
+    };
+    
+    const grid = document.getElementById('mainProductsGrid');
+    if (grid) {
+        grid.innerHTML = '<p>اختر تصنيف فرعي لعرض المنتجات</p>';
+        grid.classList.add('empty');
+    }
+    
+    const titleEl = document.getElementById('currentDisplayTitle');
+    const countEl = document.getElementById('currentDisplayCount');
+    if (titleEl) titleEl.textContent = 'اختر تصنيف فرعي لعرض المنتجات';
+    if (countEl) countEl.textContent = '';
+}
+
+// ============================================
+// Setup Infinite Scroll for Main Display
+// ============================================
+
+function setupMainDisplayScroll() {
+    const grid = document.getElementById('mainProductsGrid');
+    if (!grid) return;
+    
+    grid.addEventListener('scroll', function() {
+        const scrollThreshold = 100;
+        
+        if (grid.scrollTop + grid.clientHeight >= grid.scrollHeight - scrollThreshold) {
+            // Don't load if no products or all loaded
+            if (!currentDisplayState.products.length || 
+                currentDisplayState.loaded >= currentDisplayState.total) return;
+            
+            // Don't load if already loading
+            const loadingEl = document.getElementById('mainLoadingIndicator');
+            if (loadingEl && loadingEl.classList.contains('active')) return;
+            
+            loadMoreProductsInMainDisplay();
+        }
+    });
+}
+
+// ============================================
+// Override Search to Work with New Layout
+// ============================================
+
+function performSearch(query) {
+    const searchResults = document.getElementById('searchResults');
+    const searchHighlightResults = document.getElementById('searchHighlightResults');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (!query || !query.trim()) {
+        if (searchResults) searchResults.style.display = 'none';
+        if (searchHighlightResults) searchHighlightResults.style.display = 'none';
+        clearMainDisplay();
+        resetSubcategoryFilter();
+        return;
+    }
+    
+    // Search ONLY in product names
+    const normalizedQueryAr = normalizeArabic(query);
+    const normalizedQueryEn = normalizeEnglish(query);
+    
+    const filtered = allProducts.filter(product => {
+        const normalizedNameAr = normalizeArabic(product.name);
+        const normalizedNameEn = normalizeEnglish(product.name);
+        
+        const arabicMatch = normalizedNameAr.includes(normalizedQueryAr);
+        const englishMatch = normalizedNameEn.includes(normalizedQueryEn);
+        const mixedMatch = normalizedNameEn.includes(normalizedQueryAr) || 
+                          normalizedNameAr.includes(normalizedQueryEn);
+        
+        return arabicMatch || englishMatch || mixedMatch;
+    }).slice(0, 10);
+    
+    // Show results
+    if (searchHighlightResults) {
+        if (filtered.length === 0) {
+            searchHighlightResults.innerHTML = '<div class="no-results">لا توجد نتائج مطابقة</div>';
+        } else {
+            searchHighlightResults.innerHTML = filtered.map(p => `
+                <div class="search-highlight-item" onclick="showProductDetails(${p.id}); document.getElementById('searchHighlightResults').style.display='none';">
+                    <div class="highlight-product-name">${highlightSearch(p.name, query)}</div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span class="highlight-category">${p.subcategory}</span>
+                        <span class="highlight-price">${formatPrice(p.price)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        searchHighlightResults.style.display = 'block';
+    }
+    
+    // Display matching products in main area
+    if (searchInput && searchInput.value === query) {
+        showingFavorites = false;
+        showingFeatured = false;
+        activeCategory = 'all';
+        
+        // Clear previous state
+        currentDisplayState = {
+            category: 'search',
+            subcategory: query,
+            loaded: 0,
+            total: filtered.length,
+            products: filtered
+        };
+        
+        // Clear and load
+        const grid = document.getElementById('mainProductsGrid');
+        if (grid) {
+            grid.innerHTML = '';
+            grid.classList.add('empty');
+        }
+        
+        // Load first batch
+        setTimeout(() => {
+            loadMoreProductsInMainDisplay();
+        }, 50);
+        
+        // Update title
+        const titleEl = document.getElementById('currentDisplayTitle');
+        if (titleEl) titleEl.textContent = `نتائج البحث: "${query}"`;
+    }
+}
+
+// Reset filter function
+function resetSubcategoryFilter() {
+    // Clear active states
+    document.querySelectorAll('.subcategory-item').forEach(item => item.classList.remove('active'));
+    
+    // Clear main display
+    clearMainDisplay();
+}
+
+// Initialize scroll listener on DOM load
+document.addEventListener('DOMContentLoaded', setupMainDisplayScroll);
+
+
 // ============================================
 // عرض الأقسام الافتراضية
 // ============================================
