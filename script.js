@@ -1234,7 +1234,7 @@ function updateEndOfProductsMessage(totalProducts) {
 // عرض المنتجات في الشبكة
 // ============================================
 
-function displayProducts(products, searchQuery = '') {
+function displayProducts(products, isInitialLoad = false, searchQuery = '') {
     const container = document.getElementById('dynamic-sections');
     if (!container) return;
     
@@ -1243,7 +1243,8 @@ function displayProducts(products, searchQuery = '') {
     
     // تحديث أو إنشاء قسم المنتجات
     let productsGrid = container.querySelector('.products-grid');
-    if (!productsGrid) {
+    if (!productsGrid || isInitialLoad) {
+        // إذا كانت الدفعة الأولى أو الشبكة غير موجودة، أنشئ هيكلاً جديداً
         container.innerHTML = `
             <section class="products-section">
                 <div class="section-header">
@@ -1269,7 +1270,8 @@ function displayProducts(products, searchQuery = '') {
             </section>
         `;
     } else {
-        productsGrid.innerHTML = productsHtml;
+        // إضافة المنتجات الجديدة للشبكة الموجودة
+        productsGrid.insertAdjacentHTML('beforeend', productsHtml);
     }
     
     // تحديث عداد المنتجات المعروضة
@@ -1302,11 +1304,11 @@ function renderMainContent() {
     
     // تحميل الدفعة الأولى من المنتجات
     const initialProducts = products.slice(0, productsPerLoad);
-    currentProducts = initialProducts;
+    currentProducts = [...initialProducts];
     displayedProductsCount = initialProducts.length;
     
     // عرض المنتجات
-    displayProducts(currentProducts);
+    displayProducts(currentProducts, true);
 }
 
 function showNoProductsMessage() {
