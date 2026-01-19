@@ -1879,6 +1879,13 @@ function showSearchResults() {
     results.style.display = 'block';
     if (isMobile) {
         document.body.classList.add('search-results-open');
+        const overlay = document.getElementById('searchOverlay');
+        if (overlay) {
+            overlay.style.display = 'block';
+            overlay.onclick = () => {
+                hideSearchResults();
+            };
+        }
     }
 }
 
@@ -1889,6 +1896,11 @@ function hideSearchResults() {
     results.classList.remove('show');
     results.style.display = 'none';
     document.body.classList.remove('search-results-open');
+    const overlay = document.getElementById('searchOverlay');
+    if (overlay) {
+        overlay.style.display = 'none';
+        overlay.onclick = null;
+    }
 }
 
 // دالة لعرض رسالة عدم وجود نتائج بحث
