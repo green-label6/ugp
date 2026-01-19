@@ -1129,8 +1129,8 @@ function setupInfiniteScroll() {
         });
     }, {
         root: null, // viewport
-        rootMargin: '100px', // تحميل قبل الوصول للنهاية بـ 100px
-        threshold: 0.1
+        rootMargin: '300px', // تحميل قبل الوصول للنهاية بـ 300px لتحميل سلس
+        threshold: 0
     });
     
     // بدء مراقبة الـ sentinel
@@ -1147,8 +1147,8 @@ function loadMoreProducts() {
         const loadingSpinner = document.getElementById('loadingSpinner');
         const endOfProducts = document.getElementById('endOfProducts');
         
-        if (loadingSpinner) loadingSpinner.style.display = 'none';
-        if (endOfProducts) endOfProducts.style.display = 'block';
+        if (loadingSpinner) loadingSpinner.classList.remove('visible');
+        if (endOfProducts) endOfProducts.classList.add('visible');
         if (sentinel) sentinel.style.display = 'none';
         
         return;
@@ -1159,10 +1159,10 @@ function loadMoreProducts() {
     
     // إظهار مؤشر التحميل
     const loadingSpinner = document.getElementById('loadingSpinner');
-    if (loadingSpinner) loadingSpinner.style.display = 'block';
+    if (loadingSpinner) loadingSpinner.classList.add('visible');
     
     const endOfProducts = document.getElementById('endOfProducts');
-    if (endOfProducts) endOfProducts.style.display = 'none';
+    if (endOfProducts) endOfProducts.classList.remove('visible');
     
     // محاكاة تأخير صغير لتحسين التجربة (اختياري)
     setTimeout(() => {
@@ -1185,7 +1185,7 @@ function loadMoreProducts() {
         appendProducts(newProducts, searchQuery);
         
         // إخفاء مؤشر التحميل
-        if (loadingSpinner) loadingSpinner.style.display = 'none';
+        if (loadingSpinner) loadingSpinner.classList.remove('visible');
         
         // تحديث رسالة النهاية إذا لم يعد هناك منتجات
         updateEndOfProductsMessage(products.length);
@@ -1222,10 +1222,10 @@ function updateEndOfProductsMessage(totalProducts) {
     const sentinel = document.getElementById('infiniteScrollSentinel');
     
     if (displayedProductsCount >= totalProducts && totalProducts > 0) {
-        if (endOfProducts) endOfProducts.style.display = 'block';
+        if (endOfProducts) endOfProducts.classList.add('visible');
         if (sentinel) sentinel.style.display = 'none';
     } else {
-        if (endOfProducts) endOfProducts.style.display = 'none';
+        if (endOfProducts) endOfProducts.classList.remove('visible');
         if (sentinel) sentinel.style.display = 'block';
     }
 }
@@ -1257,13 +1257,13 @@ function displayProducts(products, searchQuery = '') {
                 </div>
                 <!-- مؤشر التحميل التلقائي (Infinite Scroll Sentinel) -->
                 <div class="infinite-scroll-sentinel" id="infiniteScrollSentinel">
-                    <div class="loading-spinner" id="loadingSpinner" style="display: none;">
+                    <div class="loading-spinner" id="loadingSpinner">
                         <div class="spinner"></div>
-                        <p>جاري تحميل المزيد...</p>
+                        <p class="loading-text">جاري تحميل المزيد...</p>
                     </div>
                 </div>
                 <!-- رسالة نهاية المنتجات -->
-                <div class="end-of-products" id="endOfProducts" style="display: none;">
+                <div class="end-of-products" id="endOfProducts">
                     <p><i class="fas fa-check-circle"></i> تم عرض جميع المنتجات</p>
                 </div>
             </section>
@@ -1271,6 +1271,9 @@ function displayProducts(products, searchQuery = '') {
     } else {
         productsGrid.innerHTML = productsHtml;
     }
+    
+    // تحديث عداد المنتجات المعروضة
+    displayedProductsCount = products.length;
     
     applyViewToGrids();
     initLazyLoading();
