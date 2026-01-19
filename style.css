@@ -1,3 +1,154 @@
+/* ===================== أنماط إضافية للتحسين ===================== */
+.sidebar-cat-item:not(.active):hover {
+    border-color: var(--primary-light);
+    box-shadow: 0 2px 8px rgba(156, 39, 176, 0.1);
+}
+.sidebar-cat-item.active .cat-header span:first-child {
+    color: var(--primary-color);
+    font-weight: 800;
+}
+.subcategory-item span:first-child {
+    font-size: 0.85rem;
+    color: var(--dark-color);
+}
+.subcategory-item.active span:first-child {
+    color: white;
+}
+.subcategories-list {
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+.sidebar-cat-item.expanded .subcategories-list {
+    max-height: 500px;
+    opacity: 1;
+}
+.sidebar-cat-item {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.sidebar-cat-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+/* أنماط مؤقتة للعناصر الجديدة حتى يتم تحميل CSS */
+.featured-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    z-index: 9;
+    box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
+}
+.view-btn.open-drawer {
+    display: flex;
+}
+@media (max-width: 768px) {
+    .view-btn.open-drawer {
+        display: none;
+    }
+}
+.nav-link.open-drawer {
+    color: #9c27b0;
+    font-weight: 700;
+}
+.nav-link.open-drawer:hover {
+    background: rgba(156, 39, 176, 0.1);
+}
+/* أنماط زر عرض المزيد */
+.load-more-container {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 50px;
+    padding: 20px 0;
+    border-top: 1px solid #e0e0e0;
+}
+.load-more-btn {
+    background: linear-gradient(135deg, #9c27b0 0%, #ff4081 100%);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 24px;
+    font-weight: 700;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(156, 39, 176, 0.2);
+    min-width: 200px;
+}
+.load-more-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(156, 39, 176, 0.3);
+}
+.load-more-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+@media (max-width: 768px) {
+    .load-more-btn {
+        padding: 12px 25px;
+        font-size: 0.9rem;
+        min-width: 180px;
+    }
+}
+@media (max-width: 576px) {
+    .load-more-btn {
+        padding: 10px 20px;
+        font-size: 0.85rem;
+        min-width: 160px;
+    }
+}
+/* أنماط زر المشاركة الجديد */
+.share-btn {
+    background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: var(--border-radius-xl);
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+}
+.share-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(33, 150, 243, 0.3);
+    background: linear-gradient(135deg, #1976D2 0%, #03A9F4 100%);
+}
+.modal-actions-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+    flex-direction: column;
+}
+@media (min-width: 768px) {
+    .modal-actions-row {
+        flex-direction: row;
+    }
+    .share-btn {
+        width: 100%;
+        margin-top: 15px;
+    }
+}
 /* ============================================
    إصلاح البحث على الجوال
    ============================================ */
