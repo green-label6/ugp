@@ -683,5 +683,56 @@
             document.head.appendChild(style);
         });
     </script>
+
+<!-- سكريبتات إضافية لتحسينات الجوال -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // منع زوم الإدخال على iOS
+    const metaViewport = document.querySelector('meta[name="viewport"]');
+    if (metaViewport) {
+        metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
+    }
+    
+    // زر مسح البحث على الجوال
+    const searchBoxes = document.querySelectorAll('.search-box');
+    searchBoxes.forEach(box => {
+        const input = box.querySelector('input');
+        const clearBtn = document.createElement('button');
+        clearBtn.className = 'clear-search-btn';
+        clearBtn.innerHTML = '<i class="fas fa-times"></i>';
+        clearBtn.onclick = () => {
+            input.value = '';
+            input.focus();
+            performSearch('');
+        };
+        box.appendChild(clearBtn);
+    });
+    
+    // إغلاق نتائج البحث عند النقر خارجها على الجوال
+    document.addEventListener('click', function(e) {
+        const searchResults = document.getElementById('searchResults');
+        const searchInput = document.getElementById('searchInput');
+        
+        if (searchResults && searchResults.style.display === 'block' && 
+            !searchResults.contains(e.target) && 
+            !searchInput.contains(e.target)) {
+            searchResults.style.display = 'none';
+        }
+    });
+    
+    // تحسين اللمس على الجوال
+    const touchItems = document.querySelectorAll('.drawer-category-item, .drawer-subcategory-item, .search-result-item');
+    touchItems.forEach(item => {
+        item.addEventListener('touchstart', function() {
+            this.style.background = 'rgba(156, 39, 176, 0.1)';
+        });
+        item.addEventListener('touchend', function() {
+            setTimeout(() => {
+                this.style.background = '';
+            }, 150);
+        });
+    });
+});
+</script>
 </body>
 </html>

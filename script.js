@@ -410,25 +410,33 @@ function loadDrawerCategories() {
     if (!drawerCategories) return;
     
     let html = '';
+    
     Object.keys(categoriesData).forEach((cat, index) => {
         const catId = `cat-${index}`;
         const subcategories = Object.keys(categoriesData[cat]);
+        const hasSubcategories = subcategories.length > 0;
         
+        // إنشاء عنصر القسم الرئيسي (قابل للطي)
         html += `
             <li class="drawer-category-wrapper">
-                <div class="drawer-category-item" data-category="${catId}">
-                    <span>${cat}</span>
-                    ${subcategories.length > 0 ? '<i class="fas fa-chevron-left toggle-icon"></i>' : ''}
+                <div class="drawer-category-item ${hasSubcategories ? 'has-children' : ''}" data-category="${catId}">
+                    <div class="category-info">
+                        <i class="fas fa-folder${hasSubcategories ? '' : '-open'} category-icon"></i>
+                        <span>${cat}</span>
+                    </div>
+                    ${hasSubcategories ? '<i class="fas fa-chevron-left toggle-icon"></i>' : ''}
                 </div>
         `;
         
-        // إضافة الأقسام الفرعية كقائمة قابلة للطي
-        if (subcategories.length > 0) {
+        // إضافة الأقسام الفرعية كقائمة منبثقة (dropdown)
+        if (hasSubcategories) {
             html += `
                 <ul class="drawer-subcategories" id="sub-${catId}" style="display: none;">
                     ${subcategories.map(sub => `
                         <li class="drawer-subcategory-item" onclick="filterBySubcategory('${cat}', '${sub}')">
-                            <span>${sub}</span>
+                            <i class="fas fa-tag subcategory-icon"></i>
+                            <span class="subcategory-name">${sub}</span>
+                            <span class="subcategory-count">${categoriesData[cat][sub].length}</span>
                         </li>
                     `).join('')}
                 </ul>
@@ -439,6 +447,92 @@ function loadDrawerCategories() {
     });
     
     drawerCategories.innerHTML = html;
+    
+    // ربط أحداث الطي/التوسيع للأقسام الرئيسية
+    document.querySelectorAll('.drawer-category-item.has-children').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const toggleIcon = this.querySelector('.toggle-icon');
+            const subcategoryList = document.getElementById(`sub-${this.dataset.category}`);
+            
+            if (subcategoryList) {
+                const isExpanded = subcategoryList.style.display === 'block';
+                
+                // إغلاق جميع الأقسام الفرعية المفتوحة أولاً
+                document.querySelectorAll('.drawer-subcategories').forEach(sub => {
+                    sub.style.display = 'none';
+                });
+                document.querySelectorAll('.toggle-icon').forEach(icon => {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-left');
+                });
+                document.querySelectorAll('.drawer-category-item').forEach(cat => {
+                    cat.classList.remove('expanded');
+                });
+                
+                // فتح القسم المطلوب إذا لم يكن مفتوحاً
+                if (!isExpanded) {
+                    subcategoryList.style.display = 'block';
+                    toggleIcon.classList.remove('fa-chevron-left');
+                    toggleIcon.classList.add('fa-chevron-down');
+                    this.classList.add('expanded');
+                    
+                    // التمرير التلقائي للقسم الفرعي إذا كان كبيراً
+                    setTimeout(() => {
+                        subcategoryList.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'nearest' 
+                        });
+                    }, 100);
+                }
+            }
+        });
+    });
+    
+    // ربط أحداث الطي/التوسيع للأقسام الرئيسية
+    document.querySelectorAll('.drawer-category-item.has-children').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const toggleIcon = this.querySelector('.toggle-icon');
+            const subcategoryList = document.getElementById(`sub-${this.dataset.category}`);
+            
+            if (subcategoryList) {
+                const isExpanded = subcategoryList.style.display === 'block';
+                
+                // إغلاق جميع الأقسام الفرعية المفتوحة أولاً
+                document.querySelectorAll('.drawer-subcategories').forEach(sub => {
+                    sub.style.display = 'none';
+                });
+                document.querySelectorAll('.toggle-icon').forEach(icon => {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-left');
+                });
+                document.querySelectorAll('.drawer-category-item').forEach(cat => {
+                    cat.classList.remove('expanded');
+                });
+                
+                // فتح القسم المطلوب إذا لم يكن مفتوحاً
+                if (!isExpanded) {
+                    subcategoryList.style.display = 'block';
+                    toggleIcon.classList.remove('fa-chevron-left');
+                    toggleIcon.classList.add('fa-chevron-down');
+                    this.classList.add('expanded');
+                    
+                    // التمرير التلقائي للقسم الفرعي إذا كان كبيراً
+                    setTimeout(() => {
+                        subcategoryList.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'nearest' 
+                        });
+                    }, 100);
+                }
+            }
+        });
+    });
     
     // ربط الأحداث للطي/التوسيع
     document.querySelectorAll('.drawer-category-item').forEach(item => {
@@ -2148,6 +2242,8 @@ updateCartUI();
 updateFavoritesUI();
 // دالة جديدة للتصفية حسب القسم الفرعي
 function filterBySubcategory(category, subcategory) {
+    // إغلاق الـ Drawer تلقائياً بعد الاختيار (لتحسين تجربة الجوال)
+    // إغلاق الـ Drawer تلقائياً بعد الاختيار (لتحسين تجربة الجوال)
     closeDrawer();
     activeCategory = 'all';
     showingFavorites = false;
