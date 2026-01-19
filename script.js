@@ -56,6 +56,7 @@ function initializeApp() {
     setupDefaultView();
     setupShareButton();
     addHighlightStyles(); // إضافة أنماط التمييل للبحث
+    addDrawerStyles(); // إضافة أنماط الـ drawer
 }
 
 // ============================================
@@ -116,6 +117,7 @@ function addHighlightStyles() {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            cursor: pointer;
         }
         
         .collapse-icon {
@@ -152,6 +154,103 @@ function addHighlightStyles() {
             .drawer-subcategories.expanded {
                 max-height: 150px;
             }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ============================================
+// إضافة أنماط CSS إضافية للـ drawer
+// ============================================
+
+function addDrawerStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .drawer-category-wrapper {
+            margin-bottom: 10px;
+        }
+        
+        .drawer-category-wrapper:last-child {
+            margin-bottom: 0;
+        }
+        
+        .drawer-category-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            color: #212121;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e0e0e0;
+            background: #f5f5f5;
+            font-size: 0.9rem;
+            font-weight: 600;
+            min-height: 44px;
+        }
+        
+        .drawer-category-item:hover,
+        .drawer-category-item.active {
+            background: #9c27b0;
+            color: white;
+            border-color: #9c27b0;
+            transform: translateX(-5px);
+        }
+        
+        .drawer-category-item.has-children {
+            cursor: pointer;
+        }
+        
+        .collapse-icon {
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+            color: #9c27b0;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .drawer-category-item.expanded .collapse-icon {
+            transform: rotate(90deg);
+            color: white;
+        }
+        
+        .drawer-subcategories {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+        
+        .drawer-subcategories.expanded {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .drawer-subcategory-item {
+            padding: 10px 15px;
+            padding-right: 30px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 4px;
+            display: block;
+            text-decoration: none;
+        }
+        
+        .drawer-subcategory-item:hover {
+            background: rgba(156, 39, 176, 0.1);
+            color: #9c27b0;
+            transform: translateX(-5px);
+        }
+        
+        .drawer-subcategory-item:last-child {
+            margin-bottom: 0;
         }
     `;
     document.head.appendChild(style);
@@ -509,6 +608,7 @@ function closeDrawer() {
     document.body.style.overflow = 'auto';
 }
 
+// دالة محدثة لتحميل الأقسام في الـ drawer
 function loadDrawerCategories() {
     const drawerCategories = document.getElementById('drawerCategories');
     if (!drawerCategories) return;
@@ -520,37 +620,69 @@ function loadDrawerCategories() {
         const hasSubcategories = subcategories.length > 0;
         
         if (hasSubcategories) {
+            // إنشاء عنصر القسم الرئيسي مع البيانات الضرورية
             html += `
-                <div class="drawer-category-item has-children ${expandedCategories.has(cat) ? 'expanded' : ''}" 
-                     onclick="toggleCategory('${cat}', ${index}); event.preventDefault(); event.stopPropagation();">
-                    <span><i class="fas fa-folder text-warning"></i> ${cat}</span>
-                    <i class="fas fa-chevron-left collapse-icon"></i>
-                </div>
-                <div class="drawer-subcategories ${expandedCategories.has(cat) ? 'expanded' : ''}" id="subcat-${index}">
+                <div class="drawer-category-wrapper">
+                    <div class="drawer-category-item has-children ${expandedCategories.has(cat) ? 'expanded' : ''}" 
+                         data-category="${cat}" 
+                         data-index="${index}">
+                        <span><i class="fas fa-folder text-warning"></i> ${cat}</span>
+                        <i class="fas fa-chevron-left collapse-icon"></i>
+                    </div>
+                    <div class="drawer-subcategories ${expandedCategories.has(cat) ? 'expanded' : ''}" id="subcat-${index}">
             `;
             
+            // إضافة الأقسام الفرعية
             subcategories.forEach((subcat, subIndex) => {
                 html += `
                     <a href="#${catId}" class="drawer-subcategory-item" 
-                       onclick="navigateToSubcategory('${cat}', '${subcat}', '${catId}'); event.stopPropagation();">
+                       data-category="${cat}" 
+                       data-subcategory="${subcat}">
                         <i class="fas fa-dot-circle text-muted mr-2" style="font-size: 0.6rem;"></i> ${subcat}
                     </a>
                 `;
             });
             
-            html += `</div>`;
+            html += `</div></div>`;
         } else {
+            // قسم بدون أقسام فرعية
             html += `
-                <a href="#${catId}" class="drawer-category-item" onclick="navigateToCategory('${catId}', '${cat}')">
-                    <span><i class="fas fa-folder-open text-primary"></i> ${cat}</span>
-                </a>
+                <div class="drawer-category-wrapper">
+                    <a href="#${catId}" class="drawer-category-item" 
+                       data-category="${cat}">
+                        <span><i class="fas fa-folder-open text-primary"></i> ${cat}</span>
+                    </a>
+                </div>
             `;
         }
     });
     
     drawerCategories.innerHTML = html;
     
-    // ربط روابط الـ Drawer
+    // إضافة event listeners للأقسام الرئيسية
+    document.querySelectorAll('.drawer-category-item.has-children').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const category = this.dataset.category;
+            const index = parseInt(this.dataset.index);
+            toggleCategory(category, index);
+        });
+    });
+    
+    // إضافة event listeners للأقسام الفرعية
+    document.querySelectorAll('.drawer-subcategory-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const category = this.dataset.category;
+            const subcategory = this.dataset.subcategory;
+            const catId = this.getAttribute('href').substring(1); // إزالة #
+            navigateToSubcategory(category, subcategory, catId);
+        });
+    });
+    
+    // ربط روابط الـ Drawer الأخرى
     const drawerFavorites = document.getElementById('drawerFavorites');
     const drawerCart = document.getElementById('drawerCart');
     
@@ -585,11 +717,15 @@ function loadDrawerCategories() {
     }
 }
 
+// دالة محدثة لتبديل القسم الرئيسي
 function toggleCategory(category, index) {
     const subcatElement = document.getElementById(`subcat-${index}`);
-    const categoryElement = document.querySelector(`[onclick="toggleCategory('${category}', ${index})"]`);
+    const categoryElement = document.querySelector(`.drawer-category-item[data-category="${category}"]`);
     
-    if (!subcatElement || !categoryElement) return;
+    if (!subcatElement || !categoryElement) {
+        console.error('Elements not found:', { subcatElement, categoryElement, category, index });
+        return;
+    }
     
     const isExpanded = expandedCategories.has(category);
     
@@ -603,20 +739,16 @@ function toggleCategory(category, index) {
         categoryElement.classList.add('expanded');
     }
     
-    // التمرير إلى القسم الرئيسي
-    setTimeout(() => {
-        const element = document.getElementById(`cat-${index}`);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, 300);
+    // تسجيل الحالة في الـ console للتصحيح
+    console.log(`Category ${category} expanded:`, !isExpanded);
 }
 
+// دالة محدثة للتنقل للقسم الفرعي
 function navigateToSubcategory(category, subcategory, catId) {
     closeDrawer();
-    filterByCategory(category, subcategory);
+    filterByCategory(category, null, subcategory); // تعديل filterByCategory لقبول subcategory
     
-    // التمرير إلى القسم الرئيسي
+    // التمرير إلى القسم
     setTimeout(() => {
         const element = document.getElementById(catId);
         if (element) {
@@ -1119,11 +1251,12 @@ function renderSidebarCategories() {
     
     let html = '<li class="sidebar-cat-item active" onclick="filterByCategory(\'all\', this)">الكل</li>';
     Object.keys(categoriesData).forEach(cat => {
-        html += `<li class="sidebar-cat-item" onclick="filterByCategory('${cat}', this)">${cat}</li>`;
+        html += `<li class="sidebar-cat-item" onclick="filterByCategory(\'${cat}\', this)">${cat}</li>`;
     });
     sidebarCats.innerHTML = html;
 }
 
+// دالة محدثة لتصفية حسب القسم والقسم الفرعي
 function filterByCategory(cat, element, subcat = null) {
     activeCategory = cat;
     activeSubcategory = subcat || 'all';
