@@ -1425,14 +1425,17 @@ function resetFilters() {
     priceFilter = { min: 0, max: Infinity };
     showingFavorites = false;
     showingFeatured = false;
-    if (typeof expandedCategories !== 'undefined') expandedCategories.clear();
+    
     document.getElementById('minPrice').value = '';
     document.getElementById('maxPrice').value = '';
     document.getElementById('sortSelect').value = 'default';
+    
     document.querySelectorAll('.sidebar-cat-item').forEach(el => el.classList.remove('active'));
     document.querySelector('.sidebar-cat-item').classList.add('active');
+    
     const favToggle = document.getElementById('favToggle');
     if (favToggle) favToggle.classList.remove('active');
+    
     resetDisplayedProducts();
     renderMainContent();
 }
