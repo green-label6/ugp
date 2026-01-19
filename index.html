@@ -11,6 +11,91 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        /* تحسينات إضافية للبحث على الجوال */
+        @media (max-width: 768px) {
+            .search-container {
+                position: relative;
+                width: 100%;
+                margin: 0 10px;
+            }
+            .search-box {
+                background: #f8f9fa;
+                border: 2px solid #e0e0e0;
+                border-radius: 20px;
+                padding: 8px 12px;
+            }
+            .search-box:focus-within {
+                border-color: var(--primary-color);
+                background: white;
+                box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.1);
+            }
+            .search-box input {
+                font-size: 0.9rem;
+                padding: 8px 0;
+            }
+            .search-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 0.8rem;
+            }
+            /* تحسينات الشريط الجانبي على الجوال */
+            .sidebar {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 280px;
+                height: 100vh;
+                background: white;
+                z-index: 1000;
+                transition: var(--transition);
+                overflow-y: auto;
+                padding-top: 70px;
+                box-shadow: var(--shadow-lg);
+            }
+            .sidebar.active {
+                right: 0;
+            }
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+                display: none;
+            }
+            .sidebar-overlay.active {
+                display: block;
+            }
+            /* زر فتح الشريط الجانبي */
+            .open-sidebar-btn {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                background: var(--gradient);
+                color: white;
+                border: none;
+                padding: 8px 12px;
+                border-radius: var(--border-radius);
+                font-weight: 600;
+                cursor: pointer;
+                margin-left: 10px;
+            }
+        }
+        /* تحسينات عامة */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        input, button, select, textarea {
+            font-size: 16px !important; /* منع التكبير التلقائي على iOS */
+        }
+        /* تحسينات الأداء */
+        .search-results {
+            will-change: transform, opacity;
+            transform: translateZ(0);
+        }
+    </style>
         /* أنماط إضافية للتحسين */
         .sidebar-cat-item:not(.active):hover {
             border-color: var(--primary-light);
