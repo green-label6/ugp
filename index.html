@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>كوزمتك بين يديك - جمالك في مكان واحد</title>
-    <meta name="description" content="كوزمتك بين يديك - علامتك الرائدة في مستحضرات التجميل احمد والعناية الشخصية.">
+    <meta name="description" content="كوزمتك بين يديك - علامتك الرائدة في مستحضرات التجميل والعناية الشخصية.">
     <meta name="theme-color" content="#6200EE">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -169,12 +169,13 @@
                         <button class="search-btn" id="searchBtn">
                             <i class="fas fa-search"></i>
                         </button>
-                        <div class="search-results" id="searchResults"></div><div id="searchHighlightResults" class="search-highlight-results"></div>
+                        <div class="search-results" id="searchResults"></div>
                     </div>
                 </div>
 
                 <!-- خيارات العرض والترتيب -->
                 <div class="view-options">
+                <button class="view-btn open-drawer" id="drawerBtn" title="جميع الأقسام"><i class="fas fa-layer-group"></i></button>
                     <!-- سيتم إضافة زر الـ Drawer هنا عبر JavaScript -->
                     <div class="sort-container">
                         <select id="sortSelect" class="sort-select">
@@ -334,30 +335,7 @@
             </aside>
             
             <!-- المحتوى الديناميكي -->
-            
-        <div class="products-main-display">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-boxes"></i>
-                    <span id="currentDisplayTitle">اختر تصنيف فرعي لعرض المنتجات</span>
-                    <span class="results-count" id="currentDisplayCount"></span>
-                </h2>
-            </div>
-            <div id="mainProductsGrid" class="products-grid grid-2">
-                <!-- Products will be loaded here -->
-            </div>
-            <div id="mainLoadingIndicator" class="loading-more">
-                <div class="spinner"></div>
-                <p>جاري تحميل المزيد...</p>
-            </div>
-        </div>
-        <div id="dynamic-sections" class="dynamic-content">
-            <div id="loadingIndicator" class="loading-indicator">
-                <div class="spinner"></div>
-                <p>جاري تحميل الأقسام...</p>
-            </div>
-        </div>
-    <div id="loadingIndicator" class="loading-indicator"><div class="spinner"></div><p>جاري التحميل...</p></div><div id="loadingIndicator" class="loading-indicator"><div class="spinner"></div><p>جاري التحميل...</p></div>
+            <div id="dynamic-sections" class="dynamic-content">
                 <!-- سيتم إنشاء الأقسام والفئات الفرعية هنا عبر JavaScript -->
             </div>
             
@@ -368,41 +346,7 @@
         </div>
 
         <!-- قسم المميزات -->
-        
-        <!-- Main Products Display Area -->
-        <section class="products-main-display-section container">
-            <div class="products-main-display">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <i class="fas fa-boxes"></i>
-                        <span id="currentDisplayTitle">اختر تصنيف فرعي لعرض المنتجات</span>
-                        <span class="results-count" id="currentDisplayCount"></span>
-                    </h2>
-                </div>
-                <div id="mainProductsGrid" class="products-grid grid-2">
-                    <div class="empty-display-placeholder">
-                        <i class="fas fa-hand-pointer"></i>
-                        <p>اختر تصنيفاً فرعياً من الأقسام أدناه لعرض المنتجات</p>
-                    </div>
-                </div>
-                <div id="mainLoadingIndicator" class="loading-more">
-                    <div class="spinner"></div>
-                    <p>جاري تحميل المزيد...</p>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Categories Accordion -->
-        <div class="container">
-            <div id="dynamic-sections" class="dynamic-content">
-                <div id="loadingIndicator" class="loading-indicator">
-                    <div class="spinner"></div>
-                    <p>جاري تحميل الأقسام...</p>
-                </div>
-            </div>
-        </div>
         <section class="features-section" id="features">
-    
             <div class="container">
                 <div class="section-header">
                     <h2 class="section-title">لماذا تختارنا؟</h2>
