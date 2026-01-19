@@ -286,6 +286,7 @@ body {
 @media (max-width: 992px) {
     .search-container,
     .nav-links,
+    .view-options,
     .sort-container {
         display: none !important;
     }
@@ -709,7 +710,7 @@ body {
 }
 
 /* ============================================
-   تحسينات الـ Drawer للجوال مع دعم الأقسام الفرعية
+   تحسينات الـ Drawer للجوال
    ============================================ */
 .drawer {
     position: fixed;
@@ -817,15 +818,10 @@ body {
     border-radius: 2px;
 }
 
-/* قائمة الأقسام الرئيسية مع scroll */
 .drawer-categories {
     margin-bottom: 20px;
-    max-height: 70vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
 }
 
-/* عنصر القسم الرئيسي */
 .drawer-category-item {
     display: flex;
     align-items: center;
@@ -836,12 +832,9 @@ body {
     color: var(--dark-color);
     text-decoration: none;
     transition: var(--transition);
-    cursor: pointer;
     border: 1px solid var(--gray-light);
     background: var(--gray-lighter);
     font-size: 0.9rem;
-    font-weight: 600;
-    min-height: 44px; /* Touch target size */
 }
 
 .drawer-category-item:hover,
@@ -852,69 +845,11 @@ body {
     transform: translateX(-5px);
 }
 
-/* أيقونة الطي/التوسيع */
-.collapse-icon {
-    font-size: 0.8rem;
-    transition: transform 0.3s ease;
-    color: var(--primary-color);
-    font-weight: bold;
-    margin-right: 8px;
+.drawer-category-item i {
+    font-size: 1rem;
+    opacity: 0.8;
 }
 
-.drawer-category-item.expanded .collapse-icon {
-    transform: rotate(90deg);
-    color: white;
-}
-
-/* الأقسام التي لديها أقسام فرعية */
-.drawer-category-item.has-children {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-/* قائمة الأقسام الفرعية القابلة للطي */
-.drawer-subcategories {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-    background: #f9f9f9;
-    border-radius: 8px;
-    margin-top: 8px;
-    margin-bottom: 10px;
-}
-
-.drawer-subcategories.expanded {
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-/* عنصر القسم الفرعي */
-.drawer-subcategory-item {
-    padding: 10px 15px;
-    padding-right: 30px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    color: #666;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-bottom: 4px;
-    display: block;
-    text-decoration: none;
-    min-height: 40px; /* Touch target size */
-}
-
-.drawer-subcategory-item:hover {
-    background: rgba(156, 39, 176, 0.1);
-    color: var(--primary-color);
-    transform: translateX(-5px);
-}
-
-.drawer-subcategory-item:last-child {
-    margin-bottom: 0;
-}
-
-/* الروابط السريعة في الـ drawer */
 .drawer-quick-links {
     background: rgba(156, 39, 176, 0.05);
     border-radius: var(--border-radius-lg);
@@ -948,7 +883,6 @@ body {
     background: white;
     border: 1px solid var(--gray-light);
     font-size: 0.9rem;
-    min-height: 44px; /* Touch target size */
 }
 
 .drawer-quick-links a:hover {
@@ -991,22 +925,6 @@ body {
     .drawer-category-item {
         padding: 10px 12px;
         font-size: 0.85rem;
-        min-height: 40px;
-    }
-    
-    .collapse-icon {
-        font-size: 0.75rem;
-    }
-    
-    .drawer-subcategories.expanded {
-        max-height: 200px;
-    }
-    
-    .drawer-subcategory-item {
-        padding: 8px 12px;
-        padding-right: 25px;
-        font-size: 0.8rem;
-        min-height: 38px;
     }
     
     .drawer-quick-links {
@@ -1020,7 +938,6 @@ body {
     .drawer-quick-links a {
         padding: 8px 10px;
         font-size: 0.85rem;
-        min-height: 40px;
     }
 }
 
@@ -1100,7 +1017,6 @@ body {
     color: var(--dark-color);
     text-decoration: none;
     font-size: 0.9rem;
-    min-height: 44px; /* Touch target size */
 }
 
 .mobile-nav-link:hover,
@@ -1203,7 +1119,6 @@ body {
     .mobile-nav-link {
         padding: 10px 12px;
         font-size: 0.85rem;
-        min-height: 40px;
     }
     
     .mobile-search {
@@ -1332,7 +1247,7 @@ body {
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    min-height: 44px; /* Touch target size */
+    min-height: 44px;
 }
 
 .primary-btn:hover {
@@ -1356,7 +1271,7 @@ body {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     border: 2px solid var(--primary-color);
     cursor: pointer;
-    min-height: 44px; /* Touch target size */
+    min-height: 44px;
 }
 
 .secondary-btn:hover {
@@ -1436,6 +1351,12 @@ body {
         margin: 0 auto;
         position: relative;
         animation: float 6s ease-in-out infinite;
+    }
+    
+    .hero-image .floating-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
     }
 }
 
@@ -1565,7 +1486,6 @@ body {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    min-height: 44px; /* Touch target size */
 }
 
 .filter-btn:hover {
@@ -1604,7 +1524,6 @@ body {
     font-weight: 600;
     color: var(--gray-color);
     border: 1px solid transparent;
-    min-height: 40px; /* Touch target size */
 }
 
 .sidebar-cat-item:hover {
@@ -1920,21 +1839,6 @@ body {
     box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
 }
 
-/* تمييل النص المطابق في البحث */
-.highlight-match {
-    background-color: #ffeb3b;
-    color: #000;
-    font-weight: 800;
-    padding: 0 2px;
-    border-radius: 3px;
-}
-
-@media (max-width: 768px) {
-    .highlight-match {
-        font-size: inherit;
-    }
-}
-
 @media (min-width: 576px) {
     .products-grid.grid-2,
     .products-grid.grid-3 {
@@ -2217,7 +2121,6 @@ body {
     cursor: pointer;
     border: 2px solid var(--gray-light);
     transition: var(--transition);
-    min-height: 32px;
 }
 
 .qty-btn:hover {
@@ -2393,7 +2296,6 @@ body {
     cursor: pointer;
     transition: var(--transition);
     min-width: 100px;
-    min-height: 44px; /* Touch target size */
 }
 
 .whatsapp-btn {
@@ -2624,7 +2526,7 @@ body {
     transition: var(--transition);
     border: none;
     cursor: pointer;
-    min-height: 48px; /* Touch target size */
+    min-height: 48px;
 }
 
 .checkout-btn {
@@ -3217,19 +3119,6 @@ body {
         border-color: var(--primary-color);
     }
     
-    .drawer-subcategories {
-        background: #2a2a2a;
-    }
-    
-    .drawer-subcategory-item {
-        color: #ccc;
-    }
-    
-    .drawer-subcategory-item:hover {
-        background: rgba(156, 39, 176, 0.2);
-        color: var(--primary-light);
-    }
-    
     .drawer-quick-links {
         background: #2a2a2a;
         border-color: #333;
@@ -3268,11 +3157,6 @@ body {
     
     .share-btn:hover {
         background: linear-gradient(135deg, #1565C0 0%, #0277BD 100%);
-    }
-    
-    .highlight-match {
-        background-color: #ff9800;
-        color: #000;
     }
 }
 
@@ -3325,15 +3209,6 @@ body {
     .bottom-nav-item i {
         font-size: 0.9rem;
     }
-    
-    .drawer-category-item,
-    .drawer-subcategory-item,
-    .filter-btn,
-    .checkout-btn,
-    .continue-shopping,
-    .share-btn {
-        min-height: 40px;
-    }
 }
 
 /* ============================================
@@ -3351,14 +3226,6 @@ body {
     .drawer-category-item:hover, .drawer-quick-links a:hover,
     .close-drawer:hover, .modal-actions-row .secondary-btn:hover {
         transform: none;
-    }
-    
-    .drawer-subcategories {
-        transition: none;
-    }
-    
-    .collapse-icon {
-        transition: none;
     }
 }
 
@@ -3471,7 +3338,6 @@ ul, ol {
     align-items: center;
     gap: 8px;
     font-size: 0.9rem;
-    min-height: 44px; /* Touch target size */
 }
 
 .show-more-btn:hover {
@@ -3504,7 +3370,6 @@ ul, ol {
     cursor: pointer;
     box-shadow: 0 6px 15px rgba(156, 39, 176, 0.2);
     min-width: 200px;
-    min-height: 48px; /* Touch target size */
 }
 
 .load-more-btn:hover {
@@ -3574,7 +3439,7 @@ ul, ol {
     .header, .footer, .cart-sidebar, .modal, .back-to-top,
     .search-container, .view-options, .menu-toggle, .add-to-cart, .fav-btn,
     .bottom-nav, .drawer, .drawer-overlay, .modal-actions-row .secondary-btn,
-    .share-btn, .drawer-subcategories, .collapse-icon {
+    .share-btn {
         display: none !important;
     }
     
@@ -3595,22 +3460,150 @@ ul, ol {
         border: 1px solid #ddd;
         min-height: auto;
     }
+}
+/* أنماط للقائمة القابلة للطي في الـ Drawer */
+.drawer-category-wrapper {
+    margin-bottom: 6px;
+}
+
+.drawer-category-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    border-radius: var(--border-radius);
+    margin-bottom: 2px;
+    color: var(--dark-color);
+    text-decoration: none;
+    transition: var(--transition);
+    border: 1px solid var(--gray-light);
+    background: var(--gray-lighter);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.drawer-category-item:hover,
+.drawer-category-item.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateX(-5px);
+}
+
+.drawer-category-item i {
+    font-size: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.drawer-subcategories {
+    margin-right: 15px;
+    border-right: 2px solid var(--primary-color);
+    padding-right: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.drawer-subcategory-item {
+    padding: 10px 12px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gray-color);
+    border: 1px solid transparent;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.drawer-subcategory-item::before {
+    content: "•";
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.drawer-subcategory-item:hover {
+    background: rgba(156, 39, 176, 0.05);
+    color: var(--primary-color);
+    border-color: rgba(156, 39, 176, 0.1);
+    transform: translateX(-5px);
+}
+
+/* تنسيق نتائج البحث المميزة */
+.highlighted-text {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    animation: highlightPulse 0.5s ease;
+}
+
+@keyframes highlightPulse {
+    0% { opacity: 0; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.search-result-item:hover .highlighted-text {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
+}
+
+/* تحسينات البحث على الجوال */
+@media (max-width: 992px) {
+    .search-results {
+        position: fixed !important;
+        top: 70px !important;
+        left: 10px !important;
+        right: 10px !important;
+        width: auto !important;
+        max-height: 300px !important;
+        z-index: 1001 !important;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-lg);
+    }
     
-    .highlight-match {
-        background: none;
-        font-weight: bold;
-        color: #000;
+    .search-result-item {
+        padding: 8px 12px;
+    }
+    
+    .search-result-item img {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .search-result-info h4 {
+        font-size: 0.85rem;
+    }
+    
+    .search-result-info .result-price {
+        font-size: 0.8rem;
+    }
+    
+    .search-result-info small {
+        font-size: 0.7rem;
+    }
+    
+    .highlighted-text {
+        padding: 1px 4px;
+        font-size: 0.85rem;
     }
 }
 
-/* تحسينات لشاشات OLED */
-@media (prefers-color-scheme: dark) and (device-type: oled) {
-    :root {
-        --dark-color: #000000;
-        --gray-lighter: #0a0a0a;
+@media (max-width: 576px) {
+    .drawer-subcategories {
+        max-height: 150px;
     }
     
-    body {
-        background-color: #000000;
+    .drawer-category-item {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .drawer-subcategory-item {
+        padding: 8px 10px;
+        font-size: 0.8rem;
     }
 }
