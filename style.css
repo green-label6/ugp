@@ -3461,149 +3461,127 @@ ul, ol {
         min-height: auto;
     }
 }
-/* أنماط للقائمة القابلة للطي في الـ Drawer */
-.drawer-category-wrapper {
-    margin-bottom: 6px;
-}
-
-.drawer-category-item {
+/* ============================================
+   أنماط الأقسام القابلة للطي
+   ============================================ */
+.category-header {
+    cursor: pointer;
+    user-select: none;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 15px;
-    border-radius: var(--border-radius);
-    margin-bottom: 2px;
-    color: var(--dark-color);
-    text-decoration: none;
-    transition: var(--transition);
-    border: 1px solid var(--gray-light);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: var(--gray-lighter);
-    font-size: 0.9rem;
-    cursor: pointer;
+    padding: 15px 20px;
+    border-radius: var(--border-radius-lg);
+    border: 2px solid transparent;
+    margin-bottom: 15px;
 }
 
-.drawer-category-item:hover,
-.drawer-category-item.active {
-    background: var(--primary-color);
+.category-header:hover {
+    border-color: var(--primary-color);
+    background: rgba(156, 39, 176, 0.05);
+}
+
+.category-header.active {
+    background: var(--gradient);
     color: white;
     border-color: var(--primary-color);
-    transform: translateX(-5px);
+    box-shadow: 0 6px 15px rgba(156, 39, 176, 0.2);
 }
 
-.drawer-category-item i {
-    font-size: 1rem;
-    transition: transform 0.3s ease;
-}
-
-.drawer-subcategories {
-    margin-right: 15px;
-    border-right: 2px solid var(--primary-color);
-    padding-right: 15px;
-    max-height: 200px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-.drawer-subcategory-item {
-    padding: 10px 12px;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: var(--transition);
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--gray-color);
-    border: 1px solid transparent;
-    margin-bottom: 4px;
+.category-title {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 800;
 }
 
-.drawer-subcategory-item::before {
-    content: "•";
-    color: var(--primary-color);
-    font-size: 1.2rem;
+.category-icon {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
 }
 
-.drawer-subcategory-item:hover {
-    background: rgba(156, 39, 176, 0.05);
-    color: var(--primary-color);
-    border-color: rgba(156, 39, 176, 0.1);
-    transform: translateX(-5px);
+.category-icon.rotated {
+    transform: rotate(-90deg);
 }
 
-/* تنسيق نتائج البحث المميزة */
-.highlighted-text {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+.category-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0 10px;
+}
+
+.category-content.expanded {
+    max-height: none;
+    padding: 10px;
+}
+
+.subcategory-title {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(156, 39, 176, 0.03);
+    padding: 15px 20px;
+    border-radius: var(--border-radius);
+    margin: 10px 0;
+    border: 1px solid var(--gray-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.subcategory-title:hover {
+    background: rgba(156, 39, 176, 0.08);
+    border-color: var(--primary-color);
+    transform: translateX(-8px);
+}
+
+.subcategory-group.active-subcategory .subcategory-title {
+    background: var(--gradient);
     color: white;
-    padding: 2px 6px;
+    border-color: var(--primary-color);
+}
+
+.category-count, .subcategory-count {
+    font-size: 0.85rem;
+    background: rgba(156, 39, 176, 0.1);
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-weight: normal;
+}
+
+/* تمييز نتائج البحث */
+mark.search-highlight {
+    background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+    color: white;
+    padding: 0 4px;
     border-radius: 4px;
     font-weight: 700;
-    animation: highlightPulse 0.5s ease;
 }
 
-@keyframes highlightPulse {
-    0% { opacity: 0; transform: scale(0.9); }
-    100% { opacity: 1; transform: scale(1); }
+.product-card.highlighted {
+    border: 2px solid var(--primary-color);
+    transform: scale(1.02);
 }
 
-.search-result-item:hover .highlighted-text {
-    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
+#dynamic-sections {
+    max-height: 1800px;
+    overflow-y: auto;
+    padding: 15px;
+    scroll-behavior: smooth;
 }
 
-/* تحسينات البحث على الجوال */
-@media (max-width: 992px) {
-    .search-results {
-        position: fixed !important;
-        top: 70px !important;
-        left: 10px !important;
-        right: 10px !important;
-        width: auto !important;
-        max-height: 300px !important;
-        z-index: 1001 !important;
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow-lg);
-    }
-    
-    .search-result-item {
-        padding: 8px 12px;
-    }
-    
-    .search-result-item img {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .search-result-info h4 {
-        font-size: 0.85rem;
-    }
-    
-    .search-result-info .result-price {
-        font-size: 0.8rem;
-    }
-    
-    .search-result-info small {
-        font-size: 0.7rem;
-    }
-    
-    .highlighted-text {
-        padding: 1px 4px;
-        font-size: 0.85rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .drawer-subcategories {
-        max-height: 150px;
-    }
-    
-    .drawer-category-item {
-        padding: 10px 12px;
-        font-size: 0.85rem;
-    }
-    
-    .drawer-subcategory-item {
-        padding: 8px 10px;
-        font-size: 0.8rem;
-    }
+@media (max-width: 768px) {
+    .category-title { font-size: 1.1rem; }
+    #dynamic-sections { max-height: 1400px; }
 }
