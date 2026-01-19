@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>كوزمتك بين يديك - تحميل المنتج...</title>
+    <meta name="description" content="كوزمتك بين يديك - علامتك الرائدة في مستحضرات التجميل والعناية الشخصية.">
+    <meta name="theme-color" content="#6200EE">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="product-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- الهيدر الرئيسي -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar">
+                <a href="index.html" class="logo">
+                    <div class="logo-icon"><i class="fas fa-spa"></i></div>
+                    <div class="logo-text">
+                        <span class="logo-main">كوزمتك</span>
+                        <span class="logo-sub">بين يديك</span>
+                    </div>
+                </a>
+                
+                <!-- خيارات العرض والترتيب -->
+                <div class="view-options">
+                    <button class="view-btn active" data-view="grid-2" title="عمودين"><i class="fas fa-th-large"></i></button>
+                    <button class="view-btn" data-view="grid-3" title="3 أعمدة"><i class="fas fa-th"></i></button>
+                    <button class="view-btn" data-view="list" title="قائمة"><i class="fas fa-list"></i></button>
+                </div>
+                
+                <!-- الأيقونات -->
+                <div class="nav-icons">
+                    <a href="https://instagram.com/ah_._ay" target="_blank" class="social-link-top" title="انستجرام">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="cart-icon" id="cartIcon" title="سلة المشتريات">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </a>
+                </div>
+                
+                <!-- زر القائمة للجوال -->
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- قائمة الجوال -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <h3>القائمة</h3>
+            <button class="close-menu" id="closeMenu">&times;</button>
+        </div>
+        <ul class="mobile-nav-links">
+            <li><a href="index.html" class="mobile-nav-link active">الرئيسية</a></li>
+            <li><a href="index.html#dynamic-sections" class="mobile-nav-link">جميع المنتجات</a></li>
+        </ul>
+        <div class="mobile-social">
+            <a href="https://instagram.com/ah_._ay" target="_blank"><i class="fab fa-instagram"></i></a>
+            <a href="https://wa.me/9647839277919" target="_blank"><i class="fab fa-whatsapp"></i></a>
+        </div>
+    </div>
+
+    <!-- شريط التنقل (Breadcrumbs) -->
+    <nav class="breadcrumbs" id="breadcrumbs">
+        <div class="container">
+            <a href="index.html"><i class="fas fa-home"></i> الرئيسية</a>
+            <span class="separator"><i class="fas fa-chevron-left"></i></span>
+            <span class="current-category" id="breadcrumbCategory">...</span>
+            <span class="separator"><i class="fas fa-chevron-left"></i></span>
+            <span class="current-product" id="breadcrumbProduct">...</span>
+        </div>
+    </nav>
+
+    <!-- المحتوى الرئيسي - صفحة تفاصيل المنتج -->
+    <main class="product-page-main">
+        <div class="container">
+            <!-- قسم تفاصيل المنتج -->
+            <section class="product-main-section" id="productMainSection">
+                <!-- سيتم ملؤها ديناميكياً -->
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل تفاصيل المنتج...</p>
+                </div>
+            </section>
+
+            <!-- قسم المنتجات ذات الصلة -->
+            <section class="related-products-section" id="relatedProductsSection">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-star"></i>
+                        منتجات ذات صلة
+                    </h2>
+                    <div class="carousel-controls">
+                        <button class="carousel-btn prev" id="relatedPrev" aria-label="المنتجات السابقة">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <button class="carousel-btn next" id="relatedNext" aria-label="المنتجات التالية">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="related-products-carousel" id="relatedCarousel">
+                    <!-- سيتم ملؤها ديناميكياً -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- الفوتر -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="footer-logo">
+                        <div class="logo-icon"><i class="fas fa-spa"></i></div>
+                        <div class="logo-text">
+                            <span class="logo-main">كوزمتك</span>
+                            <span class="logo-sub">بين يديك</span>
+                        </div>
+                    </div>
+                    <p class="footer-description">جمالك يستحق الأفضل دائماً. نحن هنا لنوفر لك منتجات التجميل والعناية الشخصية الأصلية بأسعار مناسبة.</p>
+                    <div class="footer-social">
+                        <a href="https://instagram.com/ah_._ay" target="_blank" class="social-link">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="https://wa.me/9647839277919" target="_blank" class="social-link">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="footer-col">
+                    <h3 class="footer-title">روابط سريعة</h3>
+                    <ul class="footer-links">
+                        <li><a href="index.html">الرئيسية</a></li>
+                        <li><a href="index.html#dynamic-sections">جميع المنتجات</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3 class="footer-title">تواصل معنا</h3>
+                    <ul class="footer-contact">
+                        <li>
+                            <i class="fas fa-phone-alt"></i>
+                            <span>9647839277919+</span>
+                        </li>
+                        <li>
+                            <i class="fab fa-whatsapp"></i>
+                            <span>واتساب: 9647839277919+</span>
+                        </li>
+                        <li>
+                            <i class="fab fa-instagram"></i>
+                            <span>انستجرام: ah_._ay</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="currentYear"></span> كوزمتك بين يديك. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- سلة المشتريات الجانبية -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>سلة المشتريات</h3>
+            <button class="close-cart" id="closeCart">&times;</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- سيتم ملؤها عبر JavaScript -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>الإجمالي:</span>
+                <span id="cartTotalValue">0 د.ع</span>
+            </div>
+            <button class="checkout-btn" id="checkoutBtn">
+                <i class="fab fa-whatsapp"></i> إتمام الطلب عبر واتساب
+            </button>
+            <button class="continue-shopping" id="continueShopping">متابعة التسوق</button>
+        </div>
+    </div>
+
+    <!-- نافذة تفاصيل المنتج (محدثة للمقارنة) -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModal">&times;</button>
+            <div class="product-details-grid">
+                <div class="product-details-img">
+                    <img id="modalImage" src="" alt="">
+                </div>
+                <div class="product-details-info">
+                    <span id="modalCategory" class="product-category"></span>
+                    <h2 id="modalName"></h2>
+                    <div id="modalPrice" class="product-price-large"></div>
+                    <div class="product-description-full">
+                        <h4><i class="fas fa-info-circle"></i> الوصف الكامل:</h4>
+                        <div id="modalDescription" class="description-content"></div>
+                    </div>
+                    <div class="product-details-actions">
+                        <div class="quantity-control">
+                            <button class="qty-btn minus">-</button>
+                            <input type="number" id="productQty" value="1" min="1">
+                            <button class="qty-btn plus">+</button>
+                        </div>
+                        <div class="modal-actions-row">
+                            <button id="modalAddToCart" class="primary-btn">
+                                <i class="fas fa-cart-plus"></i> إضافة للسلة
+                            </button>
+                            <button id="modalAddToFav" class="secondary-btn">
+                                <i class="fas fa-heart"></i> المفضلة
+                            </button>
+                        </div>
+                        <button id="modalShare" class="share-btn">
+                            <i class="fas fa-share-alt"></i> مشاركة المنتج
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تحميل -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <p>جاري التحميل...</p>
+        </div>
+    </div>
+
+    <!-- رسائل التنبيه -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- زر العودة للأعلى -->
+    <div class="back-to-top" id="backToTop">
+        <i class="fas fa-chevron-up"></i>
+    </div>
+
+    <!-- ملفات JavaScript -->
+    <script src="script.js"></script>
+    <script src="product-script.js"></script>
+</body>
+</html>
