@@ -11,6 +11,38 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        /* أنماط إضافية للتحسين */
+        .sidebar-cat-item:not(.active):hover {
+            border-color: var(--primary-light);
+            box-shadow: 0 2px 8px rgba(156, 39, 176, 0.1);
+        }
+        .sidebar-cat-item.active .cat-header span:first-child {
+            color: var(--primary-color);
+            font-weight: 800;
+        }
+        .subcategory-item span:first-child {
+            font-size: 0.85rem;
+            color: var(--dark-color);
+        }
+        .subcategory-item.active span:first-child {
+            color: white;
+        }
+        .subcategories-list {
+            transition: max-height 0.3s ease, opacity 0.3s ease;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .sidebar-cat-item.expanded .subcategories-list {
+            max-height: 500px;
+            opacity: 1;
+        }
+        .sidebar-cat-item {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        .sidebar-cat-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
         /* إضافة أنماط مؤقتة للعناصر الجديدة حتى يتم تحميل CSS */
         .featured-badge {
             position: absolute;
