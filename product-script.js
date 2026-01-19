@@ -19,6 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initializeProductPage() {
+    // إظهار مؤشر التحميل
+    showLoadingIndicator();
+    
     setCurrentYear();
     setupEventListeners();
     setupNotifications();
@@ -29,15 +32,58 @@ async function initializeProductPage() {
     setupCart();
     setupCheckout();
     setupProductModal();
-    setupCarousel();
     
     try {
+        // تحميل البيانات بشكل متتابع
         await loadProductsData();
+        
+        // بعد تحميل البيانات، إعداد الكاروسيل
+        setupCarousel();
+        
+        // استخراج معلومات المنتج من الرابط وعرضها
         await loadProductFromUrl();
+        
     } catch (error) {
         console.error('خطأ في تحميل البيانات:', error);
-        showProductError();
+        showProductError('حدث خطأ أثناء تحميل البيانات، يرجى تحديث الصفحة');
+    } finally {
+        // إخفاء مؤشر التحميل
+        hideLoadingIndicator();
     }
+}
+
+// ============================================
+// دالة إظهار مؤشر التحميل
+// ============================================
+
+function showLoadingIndicator() {
+    const section = document.getElementById('productMainSection');
+    if (section) {
+        section.innerHTML = `
+            <div class="loading-indicator">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>جاري تحميل البيانات...</p>
+            </div>
+        `;
+    }
+    
+    const relatedSection = document.getElementById('relatedProductsSection');
+    if (relatedSection) {
+        relatedSection.innerHTML = `
+            <div class="loading-indicator">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>جاري تحميل المنتجات ذات الصلة...</p>
+            </div>
+        `;
+    }
+}
+
+// ============================================
+// دالة إخفاء مؤشر التحميل
+// ============================================
+
+function hideLoadingIndicator() {
+    // يتم إزالة مؤشرات التحميل عند عرض المحتوى الفعلي
 }
 
 // ============================================
@@ -49,17 +95,19 @@ async function loadProductFromUrl() {
     const productId = parseInt(urlParams.get('id'));
     
     if (!productId || isNaN(productId)) {
-        showProductError('لم يتم تحديد منتج');
+        showProductError('لم يتم تحديد منتج في الرابط');
         return;
     }
     
+    // البحث عن المنتج في البيانات المحملة
     currentProduct = allProducts.find(p => p.id === productId);
     
     if (!currentProduct) {
-        showProductError('المنتج غير موجود');
+        showProductError('المنتج غير موجود في قاعدة البيانات');
         return;
     }
     
+    // عرض تفاصيل المنتج والمنتجات ذات الصلة
     displayProductDetails(currentProduct);
     displayRelatedProducts(currentProduct);
     updatePageTitle(currentProduct);
@@ -72,23 +120,29 @@ async function loadProductFromUrl() {
 
 function displayProductDetails(product) {
     const section = document.getElementById('productMainSection');
-    if (!section) return;
+    if (!section) {
+        console.error('لم يتم العثور على عنصر productMainSection');
+        return;
+    }
     
     const formattedPrice = formatPrice(product.price);
     const cdnUrl = getCDNUrl(product.image);
     const isFav = favorites.includes(product.id);
     
+    // التحقق من وجود الصورة
+    const imageUrl = cdnUrl || 'https://via.placeholder.com/400x400?text=No+Image';
+    
     // إنشاء HTML لصفحة المنتج
     section.innerHTML = `
         <div class="product-details-grid">
             <div class="product-details-img">
-                <img src="${cdnUrl}" 
+                <img src="${imageUrl}" 
                      alt="${product.name}" 
                      onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'"
                      id="productMainImage">
             </div>
             <div class="product-details-info">
-                <span class="product-category">${product.category} - ${product.subcategory}</span>
+                <span class="product-category">${product.category || 'غير محدد'} - ${product.subcategory || 'غير محدد'}</span>
                 <h2 id="productName">${product.name}</h2>
                 <div class="product-price-large">${formattedPrice}</div>
                 
@@ -141,6 +195,43 @@ function displayProductDetails(product) {
             </div>
         </div>
     `;
+    
+    // إعادة تعيين عناصر التحكم في الكمية
+    reattachQuantityControls();
+}
+
+// ============================================
+// إعادة ربط عناصر التحكم في الكمية
+// ============================================
+
+function reattachQuantityControls() {
+    const plusBtn = document.querySelector('.qty-btn.plus');
+    const minusBtn = document.querySelector('.qty-btn.minus');
+    const qtyInput = document.getElementById('productQty');
+    
+    if (plusBtn && minusBtn && qtyInput) {
+        // إزالة المستمعين السابقين
+        const newPlusBtn = plusBtn.cloneNode(true);
+        const newMinusBtn = minusBtn.cloneNode(true);
+        const newQtyInput = qtyInput.cloneNode(true);
+        
+        plusBtn.parentNode.replaceChild(newPlusBtn, plusBtn);
+        minusBtn.parentNode.replaceChild(newMinusBtn, minusBtn);
+        qtyInput.parentNode.replaceChild(newQtyInput, qtyInput);
+        
+        // إضافة المستمعين الجدد
+        newPlusBtn.addEventListener('click', () => {
+            const currentVal = parseInt(newQtyInput.value) || 1;
+            newQtyInput.value = currentVal + 1;
+        });
+        
+        newMinusBtn.addEventListener('click', () => {
+            const currentVal = parseInt(newQtyInput.value) || 1;
+            if (currentVal > 1) {
+                newQtyInput.value = currentVal - 1;
+            }
+        });
+    }
 }
 
 // ============================================
@@ -203,8 +294,11 @@ function switchTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
     
     // تفعيل التبويب المحدد
-    document.querySelector(`.tab-btn[onclick="switchTab('${tabName}')"]`).classList.add('active');
-    document.getElementById(`tab-${tabName}`).classList.add('active');
+    const targetBtn = document.querySelector(`.tab-btn[onclick="switchTab('${tabName}')"]`);
+    const targetContent = document.getElementById(`tab-${tabName}`);
+    
+    if (targetBtn) targetBtn.classList.add('active');
+    if (targetContent) targetContent.classList.add('active');
 }
 
 // ============================================
@@ -213,7 +307,23 @@ function switchTab(tabName) {
 
 function displayRelatedProducts(currentProduct) {
     const carousel = document.getElementById('relatedCarousel');
-    if (!carousel) return;
+    const relatedSection = document.getElementById('relatedProductsSection');
+    
+    if (!carousel) {
+        console.error('لم يتم العثور على عنصر relatedCarousel');
+        // إعادة إنشاء القسم إذا لم يكن موجوداً
+        if (relatedSection) {
+            relatedSection.innerHTML = `
+                <div class="related-products-carousel" id="relatedCarousel">
+                    <div class="no-related-products">
+                        <i class="fas fa-box-open"></i>
+                        <p>لا توجد منتجات ذات صلة حالياً</p>
+                    </div>
+                </div>
+            `;
+        }
+        return;
+    }
     
     // تصفية المنتجات ذات الصلة (نفس القسم الفرعي، مع استبعاد المنتج الحالي)
     const relatedProducts = allProducts.filter(p => 
@@ -249,6 +359,17 @@ function createRelatedProductCard(product) {
     const formattedPrice = formatPrice(product.price);
     const cdnUrl = getCDNUrl(product.image);
     const isFav = favorites.includes(product.id);
+    const imageUrl = cdnUrl || 'https://via.placeholder.com/200x200?text=No+Image';
+    
+    // تقليم الوصف
+    let shortDescription = '';
+    if (product.description) {
+        shortDescription = product.description.length > 60 
+            ? product.description.substring(0, 60) + '...' 
+            : product.description;
+    } else {
+        shortDescription = 'لا يوجد وصف متاح';
+    }
     
     return `
         <div class="product-card" onclick="navigateToProduct(${product.id})">
@@ -257,14 +378,14 @@ function createRelatedProductCard(product) {
                 <i class="fas fa-heart"></i>
             </button>
             <div class="product-img">
-                <img src="${cdnUrl}" 
+                <img src="${imageUrl}" 
                      alt="${product.name}"
                      onerror="this.src='https://via.placeholder.com/200x200?text=No+Image'">
             </div>
             <div class="product-info">
-                <span class="product-category">${product.subcategory}</span>
+                <span class="product-category">${product.subcategory || 'غير محدد'}</span>
                 <h3 class="product-name">${product.name}</h3>
-                <p class="product-description">${product.description.substring(0, 60)}${product.description.length > 60 ? '...' : ''}</p>
+                <p class="product-description">${shortDescription}</p>
                 <div class="product-footer">
                     <div class="product-price">${formattedPrice}</div>
                     <button class="add-to-cart" onclick="addToCart(${product.id}, 1); event.stopPropagation();">
@@ -289,9 +410,16 @@ function navigateToProduct(productId) {
 // ============================================
 
 function setupProductCardListeners() {
-    document.querySelectorAll('.related-products-carousel .fav-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const productId = parseInt(btn.dataset.id);
+    // التحقق من وجود عناصر قبل إضافة المستمعين
+    const favButtons = document.querySelectorAll('.related-products-carousel .fav-btn');
+    
+    favButtons.forEach(btn => {
+        // إزالة المستمع السابق إذا كان موجوداً
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        
+        newBtn.addEventListener('click', (e) => {
+            const productId = parseInt(newBtn.dataset.id);
             toggleFavorite(productId, e);
         });
     });
@@ -306,7 +434,10 @@ function setupCarousel() {
     const prevBtn = document.getElementById('relatedPrev');
     const nextBtn = document.getElementById('relatedNext');
     
-    if (!carousel || !prevBtn || !nextBtn) return;
+    if (!carousel || !prevBtn || !nextBtn) {
+        console.log('لم يتم العثور على عناصر الكاروسيل، سيتم المحاولة لاحقاً');
+        return;
+    }
     
     // زر التالي (يمين)
     nextBtn.addEventListener('click', () => {
@@ -336,8 +467,8 @@ function scrollCarousel(direction) {
     const carousel = document.getElementById('relatedCarousel');
     if (!carousel) return;
     
-    const cardWidth = carousel.querySelector('.product-card')?.offsetWidth || 200;
-    const gap = 15;
+    const cardWidth = carousel.querySelector('.product-card')?.offsetWidth || 250;
+    const gap = 16;
     const scrollAmount = (cardWidth + gap) * 2; // تمرير بطاقتين في كل مرة
     
     if (direction === 'next') {
@@ -371,6 +502,8 @@ function updateCarouselButtons() {
 // ============================================
 
 function setupTouchSwipe(element) {
+    if (!element) return;
+    
     let touchStartX = 0;
     let touchEndX = 0;
     
@@ -421,7 +554,10 @@ function changeQuantity(change) {
 // ============================================
 
 function addCurrentProductToCart() {
-    if (!currentProduct) return;
+    if (!currentProduct) {
+        showNotification('يرجى الانتظار حتى يتم تحميل المنتج', 'warning');
+        return;
+    }
     
     const qtyInput = document.getElementById('productQty');
     const quantity = parseInt(qtyInput?.value) || 1;
@@ -459,13 +595,22 @@ function shareCurrentProduct() {
     const productUrl = window.location.href;
     const priceText = formatPrice(currentProduct.price);
     
+    let descriptionText = '';
+    if (currentProduct.description) {
+        descriptionText = currentProduct.description.length > 150 
+            ? currentProduct.description.substring(0, 150) + '...' 
+            : currentProduct.description;
+    } else {
+        descriptionText = 'لا يوجد وصف متاح';
+    }
+    
     const shareTextAr = `
 🎀 منتج من كوزمتك بين يديك 🎀
 
 ✨ ${currentProduct.name}
-📝 ${currentProduct.description.substring(0, 150)}...
+📝 ${descriptionText}
 💰 السعر: ${priceText}
-🏷️ الفئة: ${currentProduct.category} - ${currentProduct.subcategory}
+🏷️ الفئة: ${currentProduct.category || 'غير محدد'} - ${currentProduct.subcategory || 'غير محدد'}
 
 🔗 ${productUrl}
     `;
@@ -512,7 +657,7 @@ function manualShare(shareText) {
             <button class="close-modal" onclick="this.parentElement.parentElement.remove(); document.body.style.overflow='auto'">&times;</button>
             <div class="share-modal">
                 <h3><i class="fas fa-share-alt"></i> مشاركة المنتج</h3>
-                <p>انسخ النص التالي وشاركه على وسائل التواصل الاجتماعي:</p>
+                <p>انسخ النص التالي وشاركه على وسائل التواصل الاجتماعية:</p>
                 <div class="share-text-container">
                     <textarea id="shareTextArea" readonly rows="8">${shareText}</textarea>
                     <button onclick="copyShareText()" class="primary-btn">
@@ -596,8 +741,17 @@ function updatePageTitle(product) {
     
     // تحديث meta description
     const metaDesc = document.querySelector('meta[name="description"]');
+    let descText = '';
+    if (product.description) {
+        descText = product.description.length > 150 
+            ? product.description.substring(0, 150) + '...' 
+            : product.description;
+    } else {
+        descText = `منتج ${product.name} متاح الآن بأسعار مناسبة`;
+    }
+    
     if (metaDesc) {
-        metaDesc.content = `${product.name} - ${product.description.substring(0, 150)}... متاح الآن بأسعار مناسبة. تسوقي الآن من كوزمتك بين يديك.`;
+        metaDesc.content = `${product.name} - ${descText} متاح الآن بأسعار مناسبة. تسوقي الآن من كوزمتك بين يديك.`;
     }
 }
 
@@ -610,9 +764,9 @@ function updateBreadcrumbs(product) {
     const productBreadcrumb = document.getElementById('breadcrumbProduct');
     
     if (categoryBreadcrumb) {
-        categoryBreadcrumb.textContent = product.category;
+        categoryBreadcrumb.textContent = product.category || 'غير محدد';
         categoryBreadcrumb.onclick = () => {
-            window.location.href = `index.html#cat-${Object.keys(categoriesData).indexOf(product.category)}`;
+            window.location.href = 'index.html';
         };
         categoryBreadcrumb.style.cursor = 'pointer';
         categoryBreadcrumb.style.color = 'var(--primary-color)';
@@ -656,9 +810,16 @@ function showProductError(message = 'حدث خطأ') {
 async function loadProductsData() {
     try {
         const response = await fetch('products_by_category.json');
-        if (!response.ok) throw new Error('فشل في تحميل البيانات');
+        if (!response.ok) {
+            throw new Error(`فشل في تحميل البيانات: ${response.status} ${response.statusText}`);
+        }
         
         const data = await response.json();
+        
+        if (!data || !data.categories) {
+            throw new Error('تنسيق البيانات غير صحيح');
+        }
+        
         categoriesData = data.categories;
         
         // تحويل البيانات إلى مصفوفة مسطحة
@@ -666,19 +827,25 @@ async function loadProductsData() {
         allProducts = [];
         
         for (const categoryName in categoriesData) {
-            for (const subcategoryName in categoriesData[categoryName]) {
-                categoriesData[categoryName][subcategoryName].forEach(product => {
-                    allProducts.push({
-                        ...product,
-                        id: idCounter++,
-                        category: categoryName,
-                        subcategory: subcategoryName,
-                        priceNum: parseFloat(product.price) || 0,
-                        description: product.description || 'لا يوجد وصف متاح للمنتج'
+            const category = categoriesData[categoryName];
+            for (const subcategoryName in category) {
+                const products = category[subcategoryName];
+                if (Array.isArray(products)) {
+                    products.forEach(product => {
+                        allProducts.push({
+                            ...product,
+                            id: idCounter++,
+                            category: categoryName,
+                            subcategory: subcategoryName,
+                            priceNum: parseFloat(product.price) || 0,
+                            description: product.description || 'لا يوجد وصف متاح للمنتج'
+                        });
                     });
-                });
+                }
             }
         }
+        
+        console.log(`تم تحميل ${allProducts.length} منتج بنجاح`);
         
     } catch (error) {
         console.error('خطأ في تحميل المنتجات:', error);
@@ -692,7 +859,10 @@ async function loadProductsData() {
 
 function addToCart(id, quantity = 1) {
     const product = allProducts.find(p => p.id === id);
-    if (!product) return;
+    if (!product) {
+        showNotification('المنتج غير موجود', 'error');
+        return;
+    }
     
     const existing = cart.find(item => item.id === id);
     if (existing) {
@@ -713,8 +883,11 @@ function addToCart(id, quantity = 1) {
     
     // فتح سلة المشتريات على الجوال
     if (window.innerWidth <= 768) {
-        document.getElementById('cartSidebar').classList.add('active');
-        document.body.style.overflow = 'hidden';
+        const cartSidebar = document.getElementById('cartSidebar');
+        if (cartSidebar) {
+            cartSidebar.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
     }
 }
 
@@ -726,6 +899,7 @@ function updateCartUI() {
     const cartCount = document.getElementById('cartCount');
     const cartItems = document.getElementById('cartItems');
     const cartTotalValue = document.getElementById('cartTotalValue');
+    
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     
     if (cartCount) cartCount.textContent = totalItems;
@@ -799,7 +973,7 @@ function toggleFavorite(id, event) {
 // ============================================
 
 function updateFavoritesUI() {
-    // تحديث العداد إذا لزم الأمر
+    // يمكن إضافة تحديث للعدادات هنا
 }
 
 // ============================================
@@ -1015,23 +1189,6 @@ function setupProductModal() {
             }
         });
     }
-    
-    // عناصر التحكم في الكمية
-    const plusBtn = document.querySelector('.qty-btn.plus');
-    const minusBtn = document.querySelector('.qty-btn.minus');
-    const qtyInput = document.getElementById('productQty');
-    
-    if (plusBtn && minusBtn && qtyInput) {
-        plusBtn.addEventListener('click', () => {
-            qtyInput.value = parseInt(qtyInput.value) + 1;
-        });
-        
-        minusBtn.addEventListener('click', () => {
-            if (parseInt(qtyInput.value) > 1) {
-                qtyInput.value = parseInt(qtyInput.value) - 1;
-            }
-        });
-    }
 }
 
 // ============================================
@@ -1062,14 +1219,6 @@ function setCurrentYear() {
 }
 
 // ============================================
-// تحديث واجهة المفضلة
-// ============================================
-
-function updateFavoritesUI() {
-    // يمكن إضافة تحديث للعدادات هنا
-}
-
-// ============================================
 // التعامل مع تغيير حجم النافذة
 // ============================================
 
@@ -1080,9 +1229,3 @@ window.addEventListener('resize', () => {
         updateCarouselButtons();
     }, 250);
 });
-
-// ============================================
-// التهيئة النهائية
-// ============================================
-
-updateCartUI();
