@@ -155,6 +155,7 @@ body {
     padding: 8px 16px;
     transition: var(--transition);
     border: 2px solid transparent;
+    touch-action: manipulation; /* [إضافة] لمنع التداخل على الجوال */
 }
 
 .search-box:focus-within {
@@ -202,6 +203,7 @@ body {
     border: none;
     cursor: pointer;
     flex-shrink: 0;
+    touch-action: manipulation; /* [إضافة] لمنع التداخل */
 }
 
 .search-btn:hover {
@@ -308,6 +310,7 @@ body {
     border: 2px solid var(--gray-light);
     cursor: pointer;
     flex-shrink: 0;
+    touch-action: manipulation; /* [إضافة] لمنع التداخل */
 }
 
 .view-btn.active, .view-btn:hover {
@@ -339,11 +342,107 @@ body {
     outline: none;
 }
 
-/* تحسين التنقل */
+/* [تعديل رئيسي] تحسين التنقل لجعله قوائم قابلة للطي/التوسيع */
 .nav-links {
     display: flex;
     gap: 5px;
     flex-wrap: wrap;
+}
+
+/* عنصر القسم الرئيسي */
+.nav-category-item {
+    position: relative;
+}
+
+/* عنوان القسم الرئيسي (قابل للنقر) */
+.nav-category-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 600;
+    color: var(--dark-color);
+    user-select: none;
+    touch-action: manipulation; /* [إضافة] لمنع التداخل على الجوال */
+}
+
+.nav-category-header:hover {
+    background: rgba(156, 39, 176, 0.08);
+    color: var(--primary-color);
+}
+
+/* سهم القسم */
+.category-arrow {
+    transition: transform 0.3s ease;
+    font-size: 0.8em;
+    color: var(--primary-color);
+}
+
+/* تدوير السهم عند التوسيع */
+.nav-category-item.expanded .category-arrow {
+    transform: rotate(-90deg);
+}
+
+/* قائمة الأقسام الفرعية (مخفية بشكل افتراضي) */
+.nav-subcategory-list {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    padding-right: 25px;
+    background: rgba(156, 39, 176, 0.02);
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+}
+
+/* عند التوسيع، إظهار القائمة مع scroll */
+.nav-category-item.expanded .nav-subcategory-list {
+    max-height: 300px; /* يمكن تعديله حسب الحاجة */
+    overflow-y: auto;
+    scrollbar-width: thin; /* Firefox */
+}
+
+/* تصميم شريط التمرير للمتصفحات المستندة إلى WebKit */
+.nav-subcategory-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.nav-subcategory-list::-webkit-scrollbar-track {
+    background: var(--gray-lighter);
+    border-radius: 3px;
+}
+
+.nav-subcategory-list::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 3px;
+}
+
+/* روابط الأقسام الفرعية */
+.nav-subcategory-list a {
+    display: block;
+    padding: 10px 15px;
+    font-size: 0.9rem;
+    color: var(--gray-color);
+    text-decoration: none;
+    transition: var(--transition);
+    border-right: 3px solid transparent;
+    margin: 5px 0;
+    border-radius: var(--border-radius);
+}
+
+.nav-subcategory-list a:hover {
+    color: var(--primary-color);
+    background: rgba(156, 39, 176, 0.05);
+    border-right-color: var(--primary-color);
+    padding-right: 20px;
+}
+
+.nav-subcategory-list a.active {
+    color: var(--primary-dark);
+    background: rgba(156, 39, 176, 0.08);
+    border-right-color: var(--primary-dark);
+    font-weight: 700;
 }
 
 .nav-link {
@@ -1016,6 +1115,7 @@ body {
     transition: var(--transition);
     border: none;
     cursor: pointer;
+    touch-action: manipulation; /* [إضافة] لمنع التداخل */
 }
 
 .add-to-cart:hover {
@@ -1223,6 +1323,7 @@ body {
     cursor: pointer;
     border: 2px solid var(--gray-light);
     transition: var(--transition);
+    touch-action: manipulation; /* [إضافة] لمنع التداخل */
 }
 
 .qty-btn:hover {
@@ -1300,22 +1401,19 @@ body {
     overflow-y: auto;
 }
 
-.mobile-nav-link {
-    padding: 15px;
-    border-radius: var(--border-radius);
-    font-weight: 600;
-    margin-bottom: 8px;
-    display: block;
-    transition: var(--transition);
-    border: 2px solid transparent;
-    color: var(--dark-color);
-    text-decoration: none;
+/* [تعديل] تنسيق الأقسام في القائمة الجوال */
+.mobile-nav-links .nav-category-item {
+    margin-bottom: 5px;
 }
 
-.mobile-nav-link:hover, .mobile-nav-link.active {
-    background: rgba(156, 39, 176, 0.08);
-    color: var(--primary-color);
-    border-color: rgba(156, 39, 176, 0.1);
+.mobile-nav-links .nav-category-header {
+    padding: 12px 15px;
+    font-size: 1rem;
+}
+
+.mobile-nav-links .nav-subcategory-list a {
+    font-size: 0.9rem;
+    padding: 8px 20px;
 }
 
 .mobile-search {
@@ -1978,6 +2076,16 @@ body {
     margin-bottom: 20px;
 }
 
+/* [إضافة جديدة] تنسيق النص المظلل */
+.highlight-match {
+    background-color: #ffeb3b !important;
+    color: #000 !important;
+    font-weight: 700;
+    padding: 2px 4px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 .results-count {
     font-size: 1rem;
     color: var(--gray-color);
@@ -2028,12 +2136,15 @@ body {
 }
 
 @media (max-width: 992px) {
+    /* [تعديل] إظهار زر القائمة والقوائم القابلة للطي */
     .nav-links, .view-options, .sort-container, .search-container {
         display: none;
     }
     
     .menu-toggle {
         display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .navbar {
@@ -2209,31 +2320,7 @@ body {
     }
 }
 
-/* طباعة */
-@media print {
-    .header, .footer, .cart-sidebar, .modal, .back-to-top,
-    .search-container, .view-options, .menu-toggle, .add-to-cart, .fav-btn {
-        display: none !important;
-    }
-    
-    body {
-        color: #000;
-        background: #fff;
-    }
-    
-    .container {
-        max-width: 100%;
-        padding: 0;
-    }
-    
-    .product-card {
-        break-inside: avoid;
-        box-shadow: none;
-        border: 1px solid #ddd;
-    }
-}
-
-/* الوضع الداكن */
+/* [إضافة] تعديل التظليل للوضع الداكن */
 @media (prefers-color-scheme: dark) {
     :root {
         --light-color: #121212;
@@ -2250,7 +2337,7 @@ body {
     
     .product-card, .modal-content, .cart-sidebar, .sidebar,
     .feature-card, .search-box, .search-results, .error-msg,
-    .no-products, .loading-spinner {
+    .no-products, .loading-spinner, .nav-category-header {
         background: #1e1e1e;
         border-color: #333333;
         color: #ffffff;
@@ -2283,6 +2370,49 @@ body {
         background: #1e1e1e;
         color: #ffffff;
         border-color: #333333;
+    }
+    
+    /* [إضافة] تعديل لون التظليل في الوضع الداكن */
+    .highlight-match {
+        background-color: #ffd600 !important;
+        color: #000 !important;
+    }
+}
+
+/* طباعة */
+@media print {
+    .header, .footer, .cart-sidebar, .modal, .back-to-top,
+    .search-container, .view-options, .menu-toggle, .add-to-cart, .fav-btn,
+    .nav-category-header, .mobile-menu, .notification-container, .loading-overlay {
+        display: none !important;
+    }
+    
+    body {
+        color: #000;
+        background: #fff;
+    }
+    
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
+    
+    .product-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    /* [إضافة] طباعة الأقسام الفرعية */
+    .nav-subcategory-list {
+        display: block !important;
+        max-height: none !important;
+    }
+    
+    .nav-subcategory-list a {
+        color: #000;
+        font-size: 11pt;
+        padding: 2pt 0;
     }
 }
 
