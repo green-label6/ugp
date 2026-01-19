@@ -1,3 +1,149 @@
+/* تعديلات لعرض عمودين افتراضيًا على الجوال */
+@media (max-width: 768px) {
+    .products-grid.grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .products-grid.grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .products-grid.list {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* إظهار خيارات العرض على الجوال */
+@media (max-width: 992px) {
+    .view-options {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 5px;
+        padding: 5px 0;
+    }
+    .view-options .view-btn {
+        min-width: 40px;
+        height: 40px;
+        font-size: 0.9rem;
+    }
+    .sort-container {
+        display: none;
+    }
+    .view-btn.open-drawer {
+        display: flex;
+    }
+}
+
+/* أنماط لهيكل الأقسام الجديد */
+.sidebar-cat-item.has-subcategories {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.sidebar-cat-item.has-subcategories i {
+    font-size: 0.8rem;
+    color: var(--gray-color);
+    transition: var(--transition);
+}
+.sidebar-cat-item.has-subcategories:hover i {
+    color: var(--primary-color);
+    transform: translateX(-3px);
+}
+.cat-count, .subcat-count {
+    background: var(--gray-lighter);
+    color: var(--gray-color);
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-right: 5px;
+}
+.sidebar-cat-item.back-btn {
+    color: var(--primary-color);
+    font-weight: 700;
+    background: rgba(156, 39, 176, 0.1);
+}
+.sidebar-cat-item.back-btn i {
+    margin-left: 5px;
+}
+.sidebar-cat-item.category-title {
+    font-weight: 800;
+    color: var(--primary-color);
+    background: rgba(156, 39, 176, 0.05);
+    border-right: 3px solid var(--primary-color);
+}
+.sidebar-cat-item.subcategory-item {
+    padding-right: 20px;
+    border-right: 2px solid var(--gray-light);
+    transition: var(--transition);
+}
+.sidebar-cat-item.subcategory-item:hover {
+    border-right-color: var(--primary-color);
+    background: rgba(156, 39, 176, 0.05);
+}
+.sidebar-cat-item.subcategory-item.active {
+    border-right-color: var(--primary-color);
+    background: var(--primary-color);
+    color: white;
+}
+.sidebar-cat-item.subcategory-item.active .subcat-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+/* تحسينات للبحث */
+.search-tips {
+    background: var(--gray-lighter);
+    border-radius: var(--border-radius);
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: var(--gray-color);
+}
+.search-tips h5 {
+    color: var(--dark-color);
+    margin-bottom: 5px;
+}
+.search-tips ul {
+    padding-right: 15px;
+    margin: 0;
+}
+.search-tips li {
+    margin-bottom: 3px;
+}
+
+/* تحسينات للعرض على الجوال */
+@media (max-width: 576px) {
+    .view-options {
+        position: fixed;
+        bottom: 70px;
+        right: 10px;
+        background: white;
+        padding: 8px;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-lg);
+        z-index: 900;
+        display: flex !important;
+        gap: 5px;
+    }
+    .view-options .view-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.8rem;
+    }
+    .product-card {
+        min-height: 280px;
+    }
+    .product-img {
+        height: 140px;
+    }
+    .product-name {
+        font-size: 0.9rem;
+        height: 2.4em;
+    }
+    .product-description {
+        font-size: 0.75rem;
+        height: 3.2em;
+    }
+}
 :root {
     --primary-color: #9c27b0;
     --primary-light: #e1bee7;

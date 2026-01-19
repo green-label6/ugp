@@ -1,3 +1,129 @@
+// متغيرات جديدة لهيكل الأقسام
+let categoriesHierarchy = {};
+let currentMainCategory = null;
+let currentSubcategory = null;
+
+// دالة لإنشاء هيكل هرمي للأقسام
+function createCategoriesHierarchy() {
+    categoriesHierarchy = {};
+    for (const categoryName in categoriesData) {
+        categoriesHierarchy[categoryName] = {
+            subcategories: [],
+            productsCount: 0
+        };
+        for (const subcategoryName in categoriesData[categoryName]) {
+            const subcatProducts = categoriesData[categoryName][subcategoryName];
+            categoriesHierarchy[categoryName].subcategories.push({
+                name: subcategoryName,
+                count: subcatProducts.length
+            });
+            categoriesHierarchy[categoryName].productsCount += subcatProducts.length;
+        }
+    }
+}
+
+// دالة لعرض الأقسام الرئيسية
+function renderMainCategories() {
+    const sidebarCats = document.getElementById('sidebarCategories');
+    if (!sidebarCats) return;
+    let html = '<li class="sidebar-cat-item active" onclick="showAllCategories()">جميع الأقسام</li>';
+    Object.keys(categoriesHierarchy).forEach((cat, index) => {
+        const catId = `main-cat-${index}`;
+        html += `
+            <li class="sidebar-cat-item has-subcategories" 
+                onclick="showSubcategories('${cat}', ${index})"
+                data-cat="${cat}">
+                <span>${cat}</span>
+                <i class="fas fa-chevron-left"></i>
+                <span class="cat-count">(${categoriesHierarchy[cat].productsCount})</span>
+            </li>
+        `;
+    });
+    sidebarCats.innerHTML = html;
+}
+
+// دالة لعرض التصنيفات الفرعية
+function showSubcategories(categoryName, catIndex) {
+    currentMainCategory = categoryName;
+    const sidebarCats = document.getElementById('sidebarCategories');
+    if (!sidebarCats) return;
+    let html = `
+        <li class="sidebar-cat-item back-btn" onclick="renderMainCategories()">
+            <i class="fas fa-arrow-right"></i>
+            <span>رجوع</span>
+        </li>
+        <li class="sidebar-cat-item category-title">
+            ${categoryName}
+            <span class="cat-count">(${categoriesHierarchy[categoryName].productsCount})</span>
+        </li>
+    `;
+    categoriesHierarchy[categoryName].subcategories.forEach((subcat, subIndex) => {
+        html += `
+            <li class="sidebar-cat-item subcategory-item" 
+                onclick="filterBySubcategory('${categoryName}', '${subcat.name}', this)">
+                <span>${subcat.name}</span>
+                <span class="subcat-count">${subcat.count}</span>
+            </li>
+        `;
+    });
+    sidebarCats.innerHTML = html;
+    sidebarCats.scrollTop = 0;
+}
+
+// دالة لعرض جميع الأقسام
+function showAllCategories() {
+    currentMainCategory = null;
+    currentSubcategory = null;
+    activeCategory = 'all';
+    resetDisplayedProducts();
+    renderMainContent();
+    renderMainCategories();
+}
+
+// دالة للتصفية حسب التصنيف الفرعي
+function filterBySubcategory(category, subcategory, element) {
+    currentMainCategory = category;
+    currentSubcategory = subcategory;
+    activeCategory = category;
+    document.querySelectorAll('.subcategory-item').forEach(el => el.classList.remove('active'));
+    if (element) element.classList.add('active');
+    resetDisplayedProducts();
+    renderMainContent();
+}
+
+// دالة لتحسين البحث العربي (إزالة التشكيل والتطبيع)
+function normalizeArabic(text) {
+    if (!text) return '';
+    text = text.toLowerCase();
+    text = text.replace(/[\u064B-\u065F]/g, '');
+    text = text.replace(/[إأآ]/g, 'ا');
+    text = text.replace(/ى/g, 'ي');
+    text = text.replace(/ة/g, 'ه');
+    text = text.replace(/\s+/g, ' ').trim();
+    return text;
+}
+
+// دالة للبحث بمطابقة الأحرف والكلمات
+function arabicSearch(query, text) {
+    if (!query || !text) return false;
+    const normalizedQuery = normalizeArabic(query);
+    const normalizedText = normalizeArabic(text);
+    if (!normalizedQuery.includes(' ')) {
+        return normalizedText.includes(normalizedQuery);
+    }
+    const queryWords = normalizedQuery.split(' ').filter(word => word.length > 0);
+    const textWords = normalizedText.split(' ');
+    const searchAllWords = normalizedQuery.length < 20;
+    if (searchAllWords) {
+        return queryWords.every(word => 
+            textWords.some(textWord => textWord.includes(word))
+        );
+    } else {
+        return queryWords.some(word => 
+            textWords.some(textWord => textWord.includes(word))
+        );
+    }
+}
 // ============================================
 // البيانات والمتغيرات العامة
 // ============================================
@@ -51,6 +177,7 @@ function initializeApp() {
     setupBottomNavigation();
     setupDefaultView();
     setupShareButton();
+    createCategoriesHierarchy();
 }
 
 // ============================================
@@ -975,28 +1102,26 @@ function filterByCategory(cat, element) {
 
 function getFilteredProducts() {
     let products = allProducts;
-    
     // تصفية حسب المفضلة
     if (showingFavorites) {
         products = products.filter(p => favorites.includes(p.id));
     }
-    
     // تصفية حسب المنتجات المميزة
     if (showingFeatured) {
         products = products.filter(p => p.featured);
     }
-    
-    // تصفية حسب القسم
+    // تصفية حسب القسم الرئيسي
     if (activeCategory !== 'all') {
         products = products.filter(p => p.category === activeCategory);
+        // إذا كان هناك تصنيف فرعي محدد
+        if (currentSubcategory) {
+            products = products.filter(p => p.subcategory === currentSubcategory);
+        }
     }
-    
     // تصفية حسب السعر
     products = products.filter(p => p.priceNum >= priceFilter.min && p.priceNum <= priceFilter.max);
-    
     // الترتيب
     products = sortProducts(products);
-    
     return products;
 }
 
@@ -1144,8 +1269,9 @@ function getNoProductsMessage() {
 function getSectionTitle() {
     if (showingFavorites) return 'منتجاتك المفضلة';
     if (showingFeatured) return 'المنتجات المميزة';
+    if (currentSubcategory) return currentSubcategory;
     if (activeCategory !== 'all') return activeCategory;
-    return 'نتائج البحث والتصفية';
+    return 'جميع المنتجات';
 }
 
 function sortProducts(products) {
@@ -1527,57 +1653,26 @@ function normalizeEnglish(text) {
 function performSearch(query) {
     const results = document.getElementById('searchResults');
     const searchInput = document.getElementById('searchInput');
-    
     if (!query || !query.trim()) {
         if (results) results.style.display = 'none';
         // إظهار جميع المنتجات عند مسح البحث
         showingFavorites = false;
         showingFeatured = false;
         activeCategory = 'all';
+        currentMainCategory = null;
+        currentSubcategory = null;
         resetDisplayedProducts();
         renderMainContent();
         return;
     }
-    
-    // تطبيع نص البحث
-    const normalizedQueryAr = normalizeArabic(query);
-    const normalizedQueryEn = normalizeEnglish(query);
-    
-    // البحث في جميع المنتجات مع دعم العربية والإنجليزية
+    // البحث في جميع المنتجات
     const filtered = allProducts.filter(product => {
-        // تطبيع بيانات المنتج للبحث
-        const normalizedNameAr = normalizeArabic(product.name);
-        const normalizedDescAr = normalizeArabic(product.description);
-        const normalizedCategoryAr = normalizeArabic(product.category);
-        const normalizedSubcategoryAr = normalizeArabic(product.subcategory);
-        
-        const normalizedNameEn = normalizeEnglish(product.name);
-        const normalizedDescEn = normalizeEnglish(product.description);
-        const normalizedCategoryEn = normalizeEnglish(product.category);
-        const normalizedSubcategoryEn = normalizeEnglish(product.subcategory);
-        
-        // البحث بالعربية
-        const arabicMatch = 
-            normalizedNameAr.includes(normalizedQueryAr) ||
-            normalizedDescAr.includes(normalizedQueryAr) ||
-            normalizedCategoryAr.includes(normalizedQueryAr) ||
-            normalizedSubcategoryAr.includes(normalizedQueryAr);
-        
-        // البحث بالإنجليزية
-        const englishMatch = 
-            normalizedNameEn.includes(normalizedQueryEn) ||
-            normalizedDescEn.includes(normalizedQueryEn) ||
-            normalizedCategoryEn.includes(normalizedQueryEn) ||
-            normalizedSubcategoryEn.includes(normalizedQueryEn);
-        
-        // البحث المختلط (عربي في نص إنجليزي والعكس)
-        const mixedMatch = 
-            normalizedNameEn.includes(normalizedQueryAr) ||
-            normalizedNameAr.includes(normalizedQueryEn);
-        
-        return arabicMatch || englishMatch || mixedMatch;
+        if (arabicSearch(query, product.name)) return true;
+        if (arabicSearch(query, product.description)) return true;
+        if (arabicSearch(query, product.category)) return true;
+        if (arabicSearch(query, product.subcategory)) return true;
+        return false;
     }).slice(0, 8);
-    
     // عرض نتائج البحث
     if (results) {
         if (filtered.length === 0) {
@@ -1596,14 +1691,14 @@ function performSearch(query) {
         }
         results.style.display = 'block';
     }
-    
     // إذا كان البحث من شريط البحث الرئيسي، قم بتصفية المنتجات المعروضة
     if (searchInput && searchInput.value === query) {
         showingFavorites = false;
         showingFeatured = false;
         activeCategory = 'all';
+        currentMainCategory = null;
+        currentSubcategory = null;
         priceFilter = { min: 0, max: Infinity };
-        
         // إذا كانت هناك نتائج، قم بعرضها
         if (filtered.length > 0) {
             // تحديث العرض بالمنتجات المصفاة
@@ -1613,7 +1708,6 @@ function performSearch(query) {
                 currentProducts = filtered.slice(0, productsPerLoad);
                 displayedProductsCount = currentProducts.length;
                 displayProducts(currentProducts);
-                
                 // تحديث عنوان القسم
                 const sectionTitle = container.querySelector('.section-title');
                 if (sectionTitle) {
@@ -1625,6 +1719,32 @@ function performSearch(query) {
             showNoSearchResults(query);
         }
     }
+}
+
+// دالة لعرض رسالة عدم وجود نتائج بحث
+function showNoSearchResults(query) {
+    const container = document.getElementById('dynamic-sections');
+    if (!container) return;
+    container.innerHTML = `
+        <div class="no-products">
+            <i class="fas fa-search"></i>
+            <h3>لا توجد نتائج للبحث</h3>
+            <p>لم يتم العثور على أي منتجات تطابق "${query}".</p>
+            <div style="margin-top: 20px;">
+                <button onclick="resetFilters()" class="primary-btn">عرض جميع المنتجات</button>
+                <button onclick="document.getElementById('searchInput').value=''; document.getElementById('searchInput').focus();" class="secondary-btn" style="margin-right: 10px;">بحث جديد</button>
+            </div>
+            <div style="margin-top: 15px; font-size: 0.9rem; color: #666;">
+                <p><strong>نصائح للبحث:</strong></p>
+                <ul style="text-align: right; padding-right: 20px;">
+                    <li>تأكد من صحة كتابة الكلمات</li>
+                    <li>جرب كلمات بحث أقصر أو أكثر عمومية</li>
+                    <li>يمكنك البحث باللغة العربية أو الإنجليزية</li>
+                    <li>استخدم الفلاتر على اليسار للبحث الدقيق</li>
+                </ul>
+            </div>
+        </div>
+    `;
 }
 
 function showNoSearchResults(query) {
