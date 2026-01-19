@@ -1,14 +1,22 @@
+// ============================================
+// حل نهائي للأقسام والبحث
+// ============================================
+
 // متغيرات جديدة لهيكل الأقسام
 let categoriesHierarchy = {};
 let currentMainCategory = null;
 let currentSubcategory = null;
+let expandedCategories = new Set();
 
-// دالة لإنشاء هيكل هرمي للأقسام
+// دالة إنشاء الهيكل الهرمي
 function createCategoriesHierarchy() {
     categoriesHierarchy = {};
+    expandedCategories.clear();
+
     for (const categoryName in categoriesData) {
         const subcategories = [];
         let productsCount = 0;
+
         for (const subcategoryName in categoriesData[categoryName]) {
             const subcatProducts = categoriesData[categoryName][subcategoryName];
             subcategories.push({
@@ -17,160 +25,132 @@ function createCategoriesHierarchy() {
             });
             productsCount += subcatProducts.length;
         }
+
         categoriesHierarchy[categoryName] = {
             subcategories: subcategories,
             productsCount: productsCount
         };
     }
+
+    renderMainCategories();
 }
 
-// دالة لعرض الأقسام الرئيسية
+// دالة عرض الأقسام الرئيسية
 function renderMainCategories() {
     const sidebarCats = document.getElementById('sidebarCategories');
     if (!sidebarCats) return;
-    let html = '<li class="sidebar-cat-item active" onclick="showAllCategories()">جميع الأقسام</li>';
+
+    let html = `
+        <li class="sidebar-cat-item active" onclick="showAllCategories()">
+            <div class="cat-item-content">
+                <div class="cat-info">
+                    <span class="cat-name">جميع الأقسام</span>
+                </div>
+                <span class="cat-count">${allProducts.length}</span>
+            </div>
+        </li>
+    `;
+
     Object.keys(categoriesHierarchy).forEach((cat, index) => {
-        const catId = `main-cat-${index}`;
         const hasSubcategories = categoriesHierarchy[cat].subcategories.length > 0;
+        const isExpanded = expandedCategories.has(cat);
+
         html += `
-            <li class="sidebar-cat-item ${hasSubcategories ? 'has-subcategories' : ''}" 
-                onclick="${hasSubcategories ? `toggleSubcategories('${cat}')` : `filterByCategory('${cat}', this)`}"
-                data-cat="${cat}">
-                <div class="cat-item-content">
-                    <span>${cat}</span>
-                    ${hasSubcategories ? '<i class=\"fas fa-chevron-down expand-icon\"></i>' : ''}
+            <li class="sidebar-cat-item ${hasSubcategories ? 'has-children' : ''} ${isExpanded ? 'expanded' : ''}"
+                data-category="${cat}">
+                <div class="cat-item-content" onclick="${hasSubcategories ? `toggleCategory('${cat}')` : `selectCategory('${cat}')`}">
+                    <div class="cat-info">
+                        <span class="cat-name">${cat}</span>
+                        ${hasSubcategories ?
+                            `<i class="fas fa-chevron-${isExpanded ? 'up' : 'down'} expand-icon"></i>` :
+                            ''
+                        }
+                    </div>
+                    <span class="cat-count">${categoriesHierarchy[cat].productsCount}</span>
                 </div>
                 ${hasSubcategories ? `
-                    <div class="subcategories-list" id="subcat-${catId}" style="display: none;">
-                        ${categoriesHierarchy[cat].subcategories.map((subcat, subIndex) => `
-                            <div class="subcategory-item" onclick=\"filterBySubcategory('${cat}', '${subcat.name}', event)\">
-                                <span>${subcat.name}</span>
-                                <span class="subcat-count">${subcat.count}</span>
-                            </div>
-                        `).join('')}
+                    <div class="subcategories-container">
+                        <ul class="subcategories-list">
+                            ${categoriesHierarchy[cat].subcategories.map((subcat, subIndex) => `
+                                <li class="subcategory-item" onclick="selectSubcategory('${cat}', '${subcat.name}')">
+                                    <span>${subcat.name}</span>
+                                    <span class="subcat-count">${subcat.count}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
                     </div>
                 ` : ''}
             </li>
         `;
     });
+
     sidebarCats.innerHTML = html;
 }
 
-function toggleSubcategories(categoryName) {
-    const catItem = document.querySelector(`.sidebar-cat-item[data-cat="${categoryName}"]`);
-    if (!catItem) return;
-    const subcatList = catItem.querySelector('.subcategories-list');
-    const expandIcon = catItem.querySelector('.expand-icon');
-    if (subcatList.style.display === 'none' || !subcatList.style.display) {
-        document.querySelectorAll('.subcategories-list').forEach(list => {
-            if (list !== subcatList) list.style.display = 'none';
-        });
-        document.querySelectorAll('.expand-icon').forEach(icon => {
-            if (icon !== expandIcon) {
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
-            }
-        });
-        subcatList.style.display = 'block';
-        expandIcon.classList.remove('fa-chevron-down');
-        expandIcon.classList.add('fa-chevron-up');
-        document.querySelectorAll('.sidebar-cat-item').forEach(item => {
-            item.classList.remove('active');
-        });
+// دالة توسيع/طي القسم
+function toggleCategory(categoryName) {
+    if (expandedCategories.has(categoryName)) {
+        expandedCategories.delete(categoryName);
     } else {
-        subcatList.style.display = 'none';
-        expandIcon.classList.remove('fa-chevron-up');
-        expandIcon.classList.add('fa-chevron-down');
+        expandedCategories.add(categoryName);
     }
+
+    renderMainCategories();
 }
 
-function showAllCategories() {
-    currentMainCategory = null;
+// دالة اختيار قسم رئيسي
+function selectCategory(categoryName) {
+    currentMainCategory = categoryName;
     currentSubcategory = null;
-    activeCategory = 'all';
-    document.querySelectorAll('.subcategories-list').forEach(list => {
-        list.style.display = 'none';
-    });
-    document.querySelectorAll('.expand-icon').forEach(icon => {
-        icon.classList.remove('fa-chevron-up');
-        icon.classList.add('fa-chevron-down');
-    });
-    document.querySelectorAll('.sidebar-cat-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    document.querySelector('.sidebar-cat-item').classList.add('active');
-    resetDisplayedProducts();
-    renderMainContent();
-}
-
-function filterBySubcategory(category, subcategory, event) {
-    if (event) event.stopPropagation();
-    currentMainCategory = category;
-    currentSubcategory = subcategory;
-    activeCategory = category;
-    document.querySelectorAll('.subcategory-item').forEach(el => el.classList.remove('active'));
-    if (event) {
-        event.currentTarget.classList.add('active');
-    }
-    const catItem = document.querySelector(`.sidebar-cat-item[data-cat="${category}"]`);
-    if (catItem) {
-        const subcatList = catItem.querySelector('.subcategories-list');
-        const expandIcon = catItem.querySelector('.expand-icon');
-        if (subcatList) subcatList.style.display = 'none';
-        if (expandIcon) {
-            expandIcon.classList.remove('fa-chevron-up');
-            expandIcon.classList.add('fa-chevron-down');
-        }
-    }
-    resetDisplayedProducts();
-    renderMainContent();
-}
-
-function filterByCategory(cat, element) {
-    currentMainCategory = cat;
-    currentSubcategory = null;
-    activeCategory = cat;
+    activeCategory = categoryName;
     showingFavorites = false;
     showingFeatured = false;
-    document.querySelectorAll('.subcategories-list').forEach(list => {
-        list.style.display = 'none';
-    });
-    document.querySelectorAll('.expand-icon').forEach(icon => {
-        icon.classList.remove('fa-chevron-up');
-        icon.classList.add('fa-chevron-down');
-    });
-    document.querySelectorAll('.sidebar-cat-item').forEach(el => el.classList.remove('active'));
-    if (element) element.classList.add('active');
+
+    updateActiveCategory(categoryName);
     resetDisplayedProducts();
     renderMainContent();
 }
 
-// دالة لعرض التصنيفات الفرعية
-function showSubcategories(categoryName, catIndex) {
+// دالة اختيار قسم فرعي
+function selectSubcategory(categoryName, subcategoryName) {
+    event.stopPropagation();
+
     currentMainCategory = categoryName;
-    const sidebarCats = document.getElementById('sidebarCategories');
-    if (!sidebarCats) return;
-    let html = `
-        <li class="sidebar-cat-item back-btn" onclick="renderMainCategories()">
-            <i class="fas fa-arrow-right"></i>
-            <span>رجوع</span>
-        </li>
-        <li class="sidebar-cat-item category-title">
-            ${categoryName}
-            <span class="cat-count">(${categoriesHierarchy[categoryName].productsCount})</span>
-        </li>
-    `;
-    categoriesHierarchy[categoryName].subcategories.forEach((subcat, subIndex) => {
-        html += `
-            <li class="sidebar-cat-item subcategory-item" 
-                onclick="filterBySubcategory('${categoryName}', '${subcat.name}', this)">
-                <span>${subcat.name}</span>
-                <span class="subcat-count">${subcat.count}</span>
-            </li>
-        `;
+    currentSubcategory = subcategoryName;
+    activeCategory = categoryName;
+    showingFavorites = false;
+    showingFeatured = false;
+
+    updateActiveSubcategory(categoryName, subcategoryName);
+    resetDisplayedProducts();
+    renderMainContent();
+}
+
+// تحديث القسم النشط
+function updateActiveCategory(categoryName) {
+    document.querySelectorAll('.sidebar-cat-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.category === categoryName) {
+            item.classList.add('active');
+        }
     });
-    sidebarCats.innerHTML = html;
-    sidebarCats.scrollTop = 0;
+}
+
+// تحديث القسم الفرعي النشط
+function updateActiveSubcategory(categoryName, subcategoryName) {
+    document.querySelectorAll('.sidebar-cat-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.category === categoryName) {
+            item.classList.add('active');
+        }
+    });
+
+    document.querySelectorAll('.subcategory-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.querySelector('span:first-child').textContent === subcategoryName) {
+            item.classList.add('active');
+        }
+    });
 }
 
 // دالة لعرض جميع الأقسام
@@ -178,20 +158,22 @@ function showAllCategories() {
     currentMainCategory = null;
     currentSubcategory = null;
     activeCategory = 'all';
+    showingFavorites = false;
+    showingFeatured = false;
+
+    // إغلاق جميع الأقسام الممتدة
+    expandedCategories.clear();
+
+    // تحديث النشط
+    document.querySelectorAll('.sidebar-cat-item').forEach(item => {
+        item.classList.remove('active');
+    });
+
+    document.querySelector('.sidebar-cat-item').classList.add('active');
+
     resetDisplayedProducts();
     renderMainContent();
     renderMainCategories();
-}
-
-// دالة للتصفية حسب التصنيف الفرعي
-function filterBySubcategory(category, subcategory, element) {
-    currentMainCategory = category;
-    currentSubcategory = subcategory;
-    activeCategory = category;
-    document.querySelectorAll('.subcategory-item').forEach(el => el.classList.remove('active'));
-    if (element) element.classList.add('active');
-    resetDisplayedProducts();
-    renderMainContent();
 }
 
 // دالة لتحسين البحث العربي (إزالة التشكيل والتطبيع)
@@ -280,8 +262,6 @@ function initializeApp() {
     setupBottomNavigation();
     setupDefaultView();
     setupShareButton();
-    createCategoriesHierarchy();
-    renderMainCategories();
     setupMobileSearch();
 }
 
@@ -1058,8 +1038,8 @@ async function loadProducts() {
         const data = await response.json();
         categoriesData = data.categories;
         flattenProducts();
+        createCategoriesHierarchy();
         renderNavigation();
-        renderSidebarCategories();
         loadDrawerCategories();
         resetDisplayedProducts();
         renderMainContent();
