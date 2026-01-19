@@ -54,6 +54,331 @@ function initializeApp() {
 }
 
 // ============================================
+// Global State for Main Products Display
+// ============================================
+let mainDisplayState = {
+    category: null,
+    subcategory: null,
+    loaded: 0,
+    total: 0,
+    products: []
+};
+
+// ============================================
+// Render Categories Accordion (No Products)
+// ============================================
+
+function renderAccordions() {
+    const container = document.getElementById('dynamic-sections');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    if (!container) return;
+    
+    // Show loading
+    if (loadingIndicator) {
+        loadingIndicator.classList.add('active');
+    }
+    
+    container.innerHTML = '';
+    
+    // Group products by category and subcategory for counting
+    const grouped = {};
+    allProducts.forEach(product => {
+        if (!grouped[product.category]) grouped[product.category] = {};
+        if (!grouped[product.category][product.subcategory]) {
+            grouped[product.category][product.subcategory] = [];
+        }
+        grouped[product.category][product.subcategory].push(product);
+    });
+    
+    // Create accordion for each category
+    Object.keys(grouped).forEach((category, index) => {
+        const catId = `cat-${index}`;
+        const accordionSection = document.createElement('section');
+        accordionSection.className = 'accordion-section';
+        accordionSection.id = catId;
+        
+        let subcatHtml = '<div class="subcategory-list">';
+        Object.keys(grouped[category]).forEach(subcatName => {
+            const products = grouped[category][subcatName];
+            subcatHtml += `
+                <div class="subcategory-item" data-category="${category}" data-subcategory="${subcatName}">
+                    <span>${subcatName}</span>
+                    <span class="product-count">${products.length}</span>
+                </div>
+            `;
+        });
+        subcatHtml += '</div>';
+        
+        accordionSection.innerHTML = `
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <div class="accordion-title">
+                    <i class="fas fa-folder"></i>
+                    ${category}
+                </div>
+                <i class="fas fa-chevron-down accordion-icon"></i>
+            </div>
+            <div class="accordion-content" id="content-${catId}">
+                ${subcatHtml}
+            </div>
+        `;
+        
+        container.appendChild(accordionSection);
+    });
+    
+    // Add click listeners to subcategories
+    document.querySelectorAll('.subcategory-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const category = this.dataset.category;
+            const subcategory = this.dataset.subcategory;
+            loadProductsInMainDisplay(category, subcategory);
+        });
+    });
+    
+    // Initialize first accordion as open
+    setTimeout(() => {
+        const firstHeader = container.querySelector('.accordion-header');
+        if (firstHeader) firstHeader.classList.add('active');
+        const firstContent = container.querySelector('.accordion-content');
+        if (firstContent) firstContent.classList.add('active');
+        
+        // Hide loading
+        if (loadingIndicator) {
+            loadingIndicator.classList.remove('active');
+        }
+    }, 200);
+}
+
+function toggleAccordion(header) {
+    const content = header.nextElementSibling;
+    const isActive = header.classList.contains('active');
+    
+    // Close all
+    document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('active'));
+    document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('active'));
+    
+    // Open clicked if not active
+    if (!isActive) {
+        header.classList.add('active');
+        content.classList.add('active');
+    }
+}
+
+// ============================================
+// Load Products in Main Display
+// ============================================
+
+function loadProductsInMainDisplay(category, subcategory) {
+    // Update active subcategory
+    document.querySelectorAll('.subcategory-item').forEach(item => item.classList.remove('active'));
+    document.querySelector(`[data-category="${category}"][data-subcategory="${subcategory}"]`)?.classList.add('active');
+    
+    // Reset state
+    mainDisplayState = {
+        category: category,
+        subcategory: subcategory,
+        loaded: 0,
+        total: 0,
+        products: []
+    };
+    
+    // Get products
+    const products = allProducts.filter(p => p.category === category && p.subcategory === subcategory);
+    mainDisplayState.total = products.length;
+    mainDisplayState.products = products;
+    
+    // Update title
+    document.getElementById('currentDisplayTitle').textContent = subcategory;
+    document.getElementById('currentDisplayCount').textContent = `(${products.length} منتج)`;
+    
+    // Clear grid
+    const grid = document.getElementById('mainProductsGrid');
+    if (grid) {
+        grid.innerHTML = '';
+    }
+    
+    // Load first batch
+    setTimeout(() => {
+        loadMoreProductsInMainDisplay();
+    }, 100);
+    
+    // Scroll to display
+    document.querySelector('.products-main-display').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function loadMoreProductsInMainDisplay() {
+    const state = mainDisplayState;
+    if (state.loaded >= state.total) return;
+    
+    const grid = document.getElementById('mainProductsGrid');
+    const loadingEl = document.getElementById('mainLoadingIndicator');
+    
+    if (!grid) return;
+    
+    // Show loading
+    if (loadingEl) loadingEl.classList.add('active');
+    
+    // Calculate batch
+    const remaining = state.total - state.loaded;
+    const toLoad = Math.min(10, remaining);
+    const productsToLoad = state.products.slice(state.loaded, state.loaded + toLoad);
+    
+    // Add to grid
+    const productsHtml = productsToLoad.map(p => createProductCardHtml(p)).join('');
+    grid.insertAdjacentHTML('beforeend', productsHtml);
+    
+    // Update state
+    state.loaded += toLoad;
+    
+    // Hide loading
+    setTimeout(() => {
+        if (loadingEl) loadingEl.classList.remove('active');
+        initLazyLoading();
+        applyViewToGrids();
+    }, 300);
+    
+    // Hide if all loaded
+    if (state.loaded >= state.total) {
+        setTimeout(() => {
+            if (loadingEl) loadingEl.style.display = 'none';
+        }, 500);
+    }
+}
+
+// ============================================
+// Setup Infinite Scroll for Main Display
+// ============================================
+
+function setupMainDisplayScroll() {
+    const grid = document.getElementById('mainProductsGrid');
+    if (!grid) return;
+    
+    grid.addEventListener('scroll', function() {
+        const scrollThreshold = 100;
+        
+        if (grid.scrollTop + grid.clientHeight >= grid.scrollHeight - scrollThreshold) {
+            if (!mainDisplayState.products.length || 
+                mainDisplayState.loaded >= mainDisplayState.total) return;
+            
+            const loadingEl = document.getElementById('mainLoadingIndicator');
+            if (loadingEl && loadingEl.classList.contains('active')) return;
+            
+            loadMoreProductsInMainDisplay();
+        }
+    });
+}
+
+// ============================================
+// Clear Main Display
+// ============================================
+
+function clearMainDisplay() {
+    mainDisplayState = {
+        category: null,
+        subcategory: null,
+        loaded: 0,
+        total: 0,
+        products: []
+    };
+    
+    const grid = document.getElementById('mainProductsGrid');
+    if (grid) {
+        grid.innerHTML = '<div class="empty-display-placeholder"><i class="fas fa-hand-pointer"></i><p>اختر تصنيفاً فرعياً لعرض المنتجات</p></div>';
+    }
+    
+    document.getElementById('currentDisplayTitle').textContent = 'اختر تصنيف فرعي لعرض المنتجات';
+    document.getElementById('currentDisplayCount').textContent = '';
+}
+
+// ============================================
+// Initialize on DOM Load
+// ============================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup scroll listener
+    setupMainDisplayScroll();
+    
+    // Setup search to work with new layout
+    setupSearchEnhanced();
+}, { once: true });
+
+// ============================================
+// Enhanced Search Function
+// ============================================
+
+function setupSearchEnhanced() {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+    
+    searchInput.addEventListener('input', function(e) {
+        performSearchMainDisplay(e.target.value);
+    });
+}
+
+function performSearchMainDisplay(query) {
+    const searchHighlightResults = document.getElementById('searchHighlightResults');
+    if (!query || !query.trim()) {
+        if (searchHighlightResults) searchHighlightResults.style.display = 'none';
+        clearMainDisplay();
+        return;
+    }
+    
+    // Search in product names only
+    const normalizedQueryAr = normalizeArabic(query);
+    const normalizedQueryEn = normalizeEnglish(query);
+    
+    const filtered = allProducts.filter(product => {
+        const normalizedNameAr = normalizeArabic(product.name);
+        const normalizedNameEn = normalizeEnglish(product.name);
+        
+        return normalizedNameAr.includes(normalizedQueryAr) ||
+               normalizedNameEn.includes(normalizedQueryEn) ||
+               normalizedNameAr.includes(normalizedQueryEn) ||
+               normalizedNameEn.includes(normalizedQueryAr);
+    });
+    
+    if (searchHighlightResults) {
+        if (filtered.length === 0) {
+            searchHighlightResults.innerHTML = '<div class="no-results">لا توجد نتائج مطابقة</div>';
+        } else {
+            searchHighlightResults.innerHTML = filtered.map(p => `
+                <div class="search-highlight-item" onclick="showProductDetails(${p.id}); document.getElementById('searchHighlightResults').style.display='none';">
+                    <div class="highlight-product-name">${highlightSearch(p.name, query)}</div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span class="highlight-category">${p.subcategory}</span>
+                        <span class="highlight-price">${formatPrice(p.price)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        searchHighlightResults.style.display = 'block';
+    }
+    
+    // Load in main display
+    mainDisplayState = {
+        category: 'search',
+        subcategory: query,
+        loaded: 0,
+        total: filtered.length,
+        products: filtered
+    };
+    
+    document.getElementById('currentDisplayTitle').textContent = `نتائج البحث: "${query}"`;
+    document.getElementById('currentDisplayCount').textContent = `(${filtered.length} منتج)`;
+    
+    const grid = document.getElementById('mainProductsGrid');
+    if (grid) {
+        grid.innerHTML = '';
+    }
+    
+    setTimeout(() => {
+        loadMoreProductsInMainDisplay();
+    }, 50);
+}
+
+
+
+
+// ============================================
 // وظائف مساعدة عامة
 // ============================================
 
