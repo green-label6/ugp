@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        /* إضافة أنماط مؤقتة للعناصر الجديدة حتى يتم تحميل CSS */
+        /* أنماط مؤقتة للعناصر الجديدة حتى يتم تحميل CSS */
         .featured-badge {
             position: absolute;
             top: 15px;
@@ -31,12 +31,6 @@
         
         .view-btn.open-drawer {
             display: flex;
-        }
-        
-        @media (max-width: 768px) {
-            .view-btn.open-drawer {
-                display: none;
-            }
         }
         
         .nav-link.open-drawer {
@@ -245,9 +239,9 @@
                 <button class="close-drawer" id="closeDrawer">&times;</button>
             </div>
             <div class="drawer-body">
-                <ul class="drawer-categories" id="drawerCategories">
-                    <!-- سيتم ملؤها ديناميكياً بالأقسام -->
-                </ul>
+                <div class="drawer-categories" id="drawerCategories">
+                    <!-- سيتم ملؤه ديناميكياً ببنية الـ accordion -->
+                </div>
                 <div class="drawer-quick-links">
                     <h4><i class="fas fa-star"></i> روابط سريعة</h4>
                     <a href="#" id="drawerFavorites"><i class="fas fa-heart"></i> المفضلة</a>
@@ -318,9 +312,9 @@
                 </div>
                 <div class="filter-group">
                     <h4><i class="fas fa-list"></i> الأقسام</h4>
-                    <ul id="sidebarCategories" class="sidebar-cat-list">
-                        <!-- سيتم ملؤها ديناميكياً -->
-                    </ul>
+                    <div id="sidebarCategories" class="sidebar-cat-list">
+                        <!-- سيتم ملؤه ديناميكياً ببنية الـ accordion -->
+                    </div>
                 </div>
                 <div class="filter-group">
                     <h4><i class="fas fa-fire"></i> خاص</h4>
@@ -338,7 +332,7 @@
                 <!-- سيتم إنشاء الأقسام والفئات الفرعية هنا عبر JavaScript -->
             </div>
             
-            <!-- حاوية زر عرض المزيد (ستتم إضافتها ديناميكياً) -->
+            <!-- حاوية زر عرض المزيد (ستتم إضافته ديناميكياً) -->
             <div id="loadMoreContainerGlobal" style="display: none;">
                 <!-- سيتم إضافة زر عرض المزيد هنا ديناميكياً -->
             </div>
