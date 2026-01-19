@@ -1,232 +1,3 @@
-// متغيرات جديدة لهيكل الأقسام
-let categoriesHierarchy = {};
-let currentMainCategory = null;
-let currentSubcategory = null;
-
-// دالة لإنشاء هيكل هرمي للأقسام
-function createCategoriesHierarchy() {
-    categoriesHierarchy = {};
-    for (const categoryName in categoriesData) {
-        const subcategories = [];
-        let productsCount = 0;
-        for (const subcategoryName in categoriesData[categoryName]) {
-            const subcatProducts = categoriesData[categoryName][subcategoryName];
-            subcategories.push({
-                name: subcategoryName,
-                count: subcatProducts.length
-            });
-            productsCount += subcatProducts.length;
-        }
-        categoriesHierarchy[categoryName] = {
-            subcategories: subcategories,
-            productsCount: productsCount
-        };
-    }
-}
-
-// دالة لعرض الأقسام الرئيسية
-function renderMainCategories() {
-    const sidebarCats = document.getElementById('sidebarCategories');
-    if (!sidebarCats) return;
-    let html = '<li class="sidebar-cat-item active" onclick="showAllCategories()">جميع الأقسام</li>';
-    Object.keys(categoriesHierarchy).forEach((cat, index) => {
-        const catId = `main-cat-${index}`;
-        const hasSubcategories = categoriesHierarchy[cat].subcategories.length > 0;
-        html += `
-            <li class="sidebar-cat-item ${hasSubcategories ? 'has-subcategories' : ''}" 
-                onclick="${hasSubcategories ? `toggleSubcategories('${cat}')` : `filterByCategory('${cat}', this)`}"
-                data-cat="${cat}">
-                <div class="cat-item-content">
-                    <span>${cat}</span>
-                    ${hasSubcategories ? '<i class=\"fas fa-chevron-down expand-icon\"></i>' : ''}
-                </div>
-                ${hasSubcategories ? `
-                    <div class="subcategories-list" id="subcat-${catId}" style="display: none;">
-                        ${categoriesHierarchy[cat].subcategories.map((subcat, subIndex) => `
-                            <div class="subcategory-item" onclick=\"filterBySubcategory('${cat}', '${subcat.name}', event)\">
-                                <span>${subcat.name}</span>
-                                <span class="subcat-count">${subcat.count}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : ''}
-            </li>
-        `;
-    });
-    sidebarCats.innerHTML = html;
-}
-
-function toggleSubcategories(categoryName) {
-    const catItem = document.querySelector(`.sidebar-cat-item[data-cat="${categoryName}"]`);
-    if (!catItem) return;
-    const subcatList = catItem.querySelector('.subcategories-list');
-    const expandIcon = catItem.querySelector('.expand-icon');
-    if (subcatList.style.display === 'none' || !subcatList.style.display) {
-        document.querySelectorAll('.subcategories-list').forEach(list => {
-            if (list !== subcatList) list.style.display = 'none';
-        });
-        document.querySelectorAll('.expand-icon').forEach(icon => {
-            if (icon !== expandIcon) {
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
-            }
-        });
-        subcatList.style.display = 'block';
-        expandIcon.classList.remove('fa-chevron-down');
-        expandIcon.classList.add('fa-chevron-up');
-        document.querySelectorAll('.sidebar-cat-item').forEach(item => {
-            item.classList.remove('active');
-        });
-    } else {
-        subcatList.style.display = 'none';
-        expandIcon.classList.remove('fa-chevron-up');
-        expandIcon.classList.add('fa-chevron-down');
-    }
-}
-
-function showAllCategories() {
-    currentMainCategory = null;
-    currentSubcategory = null;
-    activeCategory = 'all';
-    document.querySelectorAll('.subcategories-list').forEach(list => {
-        list.style.display = 'none';
-    });
-    document.querySelectorAll('.expand-icon').forEach(icon => {
-        icon.classList.remove('fa-chevron-up');
-        icon.classList.add('fa-chevron-down');
-    });
-    document.querySelectorAll('.sidebar-cat-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    document.querySelector('.sidebar-cat-item').classList.add('active');
-    resetDisplayedProducts();
-    renderMainContent();
-}
-
-function filterBySubcategory(category, subcategory, event) {
-    if (event) event.stopPropagation();
-    currentMainCategory = category;
-    currentSubcategory = subcategory;
-    activeCategory = category;
-    document.querySelectorAll('.subcategory-item').forEach(el => el.classList.remove('active'));
-    if (event) {
-        event.currentTarget.classList.add('active');
-    }
-    const catItem = document.querySelector(`.sidebar-cat-item[data-cat="${category}"]`);
-    if (catItem) {
-        const subcatList = catItem.querySelector('.subcategories-list');
-        const expandIcon = catItem.querySelector('.expand-icon');
-        if (subcatList) subcatList.style.display = 'none';
-        if (expandIcon) {
-            expandIcon.classList.remove('fa-chevron-up');
-            expandIcon.classList.add('fa-chevron-down');
-        }
-    }
-    resetDisplayedProducts();
-    renderMainContent();
-}
-
-function filterByCategory(cat, element) {
-    currentMainCategory = cat;
-    currentSubcategory = null;
-    activeCategory = cat;
-    showingFavorites = false;
-    showingFeatured = false;
-    document.querySelectorAll('.subcategories-list').forEach(list => {
-        list.style.display = 'none';
-    });
-    document.querySelectorAll('.expand-icon').forEach(icon => {
-        icon.classList.remove('fa-chevron-up');
-        icon.classList.add('fa-chevron-down');
-    });
-    document.querySelectorAll('.sidebar-cat-item').forEach(el => el.classList.remove('active'));
-    if (element) element.classList.add('active');
-    resetDisplayedProducts();
-    renderMainContent();
-}
-
-// دالة لعرض التصنيفات الفرعية
-function showSubcategories(categoryName, catIndex) {
-    currentMainCategory = categoryName;
-    const sidebarCats = document.getElementById('sidebarCategories');
-    if (!sidebarCats) return;
-    let html = `
-        <li class="sidebar-cat-item back-btn" onclick="renderMainCategories()">
-            <i class="fas fa-arrow-right"></i>
-            <span>رجوع</span>
-        </li>
-        <li class="sidebar-cat-item category-title">
-            ${categoryName}
-            <span class="cat-count">(${categoriesHierarchy[categoryName].productsCount})</span>
-        </li>
-    `;
-    categoriesHierarchy[categoryName].subcategories.forEach((subcat, subIndex) => {
-        html += `
-            <li class="sidebar-cat-item subcategory-item" 
-                onclick="filterBySubcategory('${categoryName}', '${subcat.name}', this)">
-                <span>${subcat.name}</span>
-                <span class="subcat-count">${subcat.count}</span>
-            </li>
-        `;
-    });
-    sidebarCats.innerHTML = html;
-    sidebarCats.scrollTop = 0;
-}
-
-// دالة لعرض جميع الأقسام
-function showAllCategories() {
-    currentMainCategory = null;
-    currentSubcategory = null;
-    activeCategory = 'all';
-    resetDisplayedProducts();
-    renderMainContent();
-    renderMainCategories();
-}
-
-// دالة للتصفية حسب التصنيف الفرعي
-function filterBySubcategory(category, subcategory, element) {
-    currentMainCategory = category;
-    currentSubcategory = subcategory;
-    activeCategory = category;
-    document.querySelectorAll('.subcategory-item').forEach(el => el.classList.remove('active'));
-    if (element) element.classList.add('active');
-    resetDisplayedProducts();
-    renderMainContent();
-}
-
-// دالة لتحسين البحث العربي (إزالة التشكيل والتطبيع)
-function normalizeArabic(text) {
-    if (!text) return '';
-    text = text.toLowerCase();
-    text = text.replace(/[\u064B-\u065F]/g, '');
-    text = text.replace(/[إأآ]/g, 'ا');
-    text = text.replace(/ى/g, 'ي');
-    text = text.replace(/ة/g, 'ه');
-    text = text.replace(/\s+/g, ' ').trim();
-    return text;
-}
-
-// دالة للبحث بمطابقة الأحرف والكلمات
-function arabicSearch(query, text) {
-    if (!query || !text) return false;
-    const normalizedQuery = normalizeArabic(query);
-    const normalizedText = normalizeArabic(text);
-    if (!normalizedQuery.includes(' ')) {
-        return normalizedText.includes(normalizedQuery);
-    }
-    const queryWords = normalizedQuery.split(' ').filter(word => word.length > 0);
-    const textWords = normalizedText.split(' ');
-    const searchAllWords = normalizedQuery.length < 20;
-    if (searchAllWords) {
-        return queryWords.every(word => 
-            textWords.some(textWord => textWord.includes(word))
-        );
-    } else {
-        return queryWords.some(word => 
-            textWords.some(textWord => textWord.includes(word))
-        );
-    }
-}
 // ============================================
 // البيانات والمتغيرات العامة
 // ============================================
@@ -242,7 +13,7 @@ let showingFeatured = false;
 let currentSort = 'default';
 let priceFilter = { min: 0, max: Infinity };
 let activeCategory = 'all';
-let featuredProducts = [1, 3, 5, 7, 9, 11]; // IDs للمنتجات المميزة
+let activeSubcategory = 'all';
 
 // متغيرات جديدة للتحميل التدريجي
 let productsPerLoad = 10; // عدد المنتجات في كل تحميل
@@ -280,34 +51,6 @@ function initializeApp() {
     setupBottomNavigation();
     setupDefaultView();
     setupShareButton();
-    createCategoriesHierarchy();
-    renderMainCategories();
-    setupMobileSearch();
-}
-
-// إعداد البحث على الجوال (overlay)
-function setupMobileSearch() {
-    const mobileSearchInput = document.getElementById('mobileSearchInput');
-    if (!mobileSearchInput) return;
-    // عند التركيز على حقل البحث، أظهر overlay البحث
-    mobileSearchInput.addEventListener('focus', () => {
-        // إظهار overlay فارغ إذا لم يكن هناك نتائج
-        const results = document.getElementById('searchResults');
-        if (results) {
-            results.innerHTML = '<button class="close-search-results" id="closeSearchResults">&times;</button>';
-            showSearchResults();
-            setTimeout(() => {
-                const closeBtnEl = document.getElementById('closeSearchResults');
-                if (closeBtnEl) closeBtnEl.onclick = hideSearchResults;
-            }, 10);
-        }
-    });
-    // عند فقدان التركيز، أخفِ overlay (إلا إذا تم النقر على النتائج نفسها)
-    mobileSearchInput.addEventListener('blur', () => {
-        setTimeout(() => {
-            hideSearchResults();
-        }, 200);
-    });
 }
 
 // ============================================
@@ -667,14 +410,34 @@ function loadDrawerCategories() {
     if (!drawerCategories) return;
     
     let html = '';
-    Object.keys(categoriesData).forEach((cat, index) => {
-        const catId = `cat-${index}`;
+    
+    // بناء قائمة الأقسام الفرعية القابلة للطي في الـ Drawer
+    Object.keys(categoriesData).forEach((category, index) => {
+        const subcats = getUniqueSubcategories(category);
+        
         html += `
-            <a href="#${catId}" class="drawer-category-item" onclick="navigateToCategory('${catId}', '${cat}')">
-                <span>${cat}</span>
-                <i class="fas fa-arrow-left"></i>
-            </a>
+            <li class="category-item">
+                <div class="category-header" onclick="toggleCategory(this)">
+                    <span>${category}</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <ul class="subcategory-list">
+                    <li class="subcategory-item" 
+                        onclick="filterBySubcategory('${category}', 'all', this); closeDrawer();">
+                        <i class="fas fa-list"></i> عرض الكل
+                    </li>
         `;
+        
+        subcats.forEach(subcat => {
+            html += `
+                <li class="subcategory-item" 
+                    onclick="filterBySubcategory('${category}', '${subcat}', this); closeDrawer();">
+                    <i class="fas fa-tag"></i> ${subcat}
+                </li>
+            `;
+        });
+        
+        html += `</ul></li>`;
     });
     
     drawerCategories.innerHTML = html;
@@ -1207,10 +970,54 @@ function renderSidebarCategories() {
     const sidebarCats = document.getElementById('sidebarCategories');
     if (!sidebarCats) return;
     
-    let html = '<li class="sidebar-cat-item active" onclick="filterByCategory(\'all\', this)">الكل</li>';
-    Object.keys(categoriesData).forEach(cat => {
-        html += `<li class="sidebar-cat-item" onclick="filterByCategory('${cat}', this)">${cat}</li>`;
+    let html = '';
+    
+    // العنصر "الكل" للرجوع لجميع المنتجات
+    html += `
+        <li class="sidebar-cat-item ${activeCategory === 'all' && activeSubcategory === 'all' ? 'active' : ''}" 
+            onclick="resetFilters()">
+            <i class="fas fa-th"></i> الكل
+        </li>
+    `;
+    
+    // بناء قائمة الأقسام الفرعية القابلة للطي
+    Object.keys(categoriesData).forEach(category => {
+        const isExpanded = activeCategory === category; // توسيع القسم النشط
+        const subcats = getUniqueSubcategories(category);
+        
+        html += `
+            <li class="category-item">
+                <div class="category-header ${isExpanded ? 'expanded' : ''}" 
+                     onclick="toggleCategory(this)" 
+                     data-category="${category}">
+                    <span>${category}</span>
+                    <i class="fas fa-chevron-down" style="transition: transform 0.3s;"></i>
+                </div>
+                <ul class="subcategory-list ${isExpanded ? 'show' : ''}">
+        `;
+        
+        // أضف "عرض الكل" للقسم الرئيسي
+        html += `
+            <li class="subcategory-item ${activeCategory === category && activeSubcategory === 'all' ? 'active' : ''}" 
+                onclick="filterBySubcategory('${category}', 'all', this)">
+                <i class="fas fa-list"></i> عرض الكل
+            </li>
+        `;
+        
+        // أضف الأقسام الفرعية
+        subcats.forEach(subcat => {
+            const isActive = activeCategory === category && activeSubcategory === subcat;
+            html += `
+                <li class="subcategory-item ${isActive ? 'active' : ''}" 
+                    onclick="filterBySubcategory('${category}', '${subcat}', this)">
+                    <i class="fas fa-tag"></i> ${subcat}
+                </li>
+            `;
+        });
+        
+        html += `</ul></li>`;
     });
+    
     sidebarCats.innerHTML = html;
 }
 
@@ -1232,28 +1039,36 @@ function filterByCategory(cat, element) {
 
 function getFilteredProducts() {
     let products = allProducts;
+    
     // تصفية حسب المفضلة
     if (showingFavorites) {
         products = products.filter(p => favorites.includes(p.id));
     }
+    
     // تصفية حسب المنتجات المميزة
     if (showingFeatured) {
         products = products.filter(p => p.featured);
     }
+    
     // تصفية حسب القسم الرئيسي
     if (activeCategory !== 'all') {
         products = products.filter(p => p.category === activeCategory);
-        // إذا كان هناك تصنيف فرعي محدد
-        if (currentSubcategory) {
-            products = products.filter(p => p.subcategory === currentSubcategory);
-        }
     }
+    
+    // تصفية حسب القسم الفرعي (جديد)
+    if (activeSubcategory !== 'all') {
+        products = products.filter(p => p.subcategory === activeSubcategory);
+    }
+    
     // تصفية حسب السعر
     products = products.filter(p => p.priceNum >= priceFilter.min && p.priceNum <= priceFilter.max);
+    
     // الترتيب
     products = sortProducts(products);
+    
     return products;
 }
+
 
 // ============================================
 // تحميل المزيد من المنتجات
@@ -1399,9 +1214,8 @@ function getNoProductsMessage() {
 function getSectionTitle() {
     if (showingFavorites) return 'منتجاتك المفضلة';
     if (showingFeatured) return 'المنتجات المميزة';
-    if (currentSubcategory) return currentSubcategory;
     if (activeCategory !== 'all') return activeCategory;
-    return 'جميع المنتجات';
+    return 'نتائج البحث والتصفية';
 }
 
 function sortProducts(products) {
@@ -1421,6 +1235,7 @@ function sortProducts(products) {
 
 function resetFilters() {
     activeCategory = 'all';
+    activeSubcategory = 'all';
     currentSort = 'default';
     priceFilter = { min: 0, max: Infinity };
     showingFavorites = false;
@@ -1430,8 +1245,19 @@ function resetFilters() {
     document.getElementById('maxPrice').value = '';
     document.getElementById('sortSelect').value = 'default';
     
-    document.querySelectorAll('.sidebar-cat-item').forEach(el => el.classList.remove('active'));
+    // إعادة تعيين حالة القوائم
+    document.querySelectorAll('.sidebar-cat-item, .subcategory-item').forEach(el => {
+        el.classList.remove('active');
+    });
     document.querySelector('.sidebar-cat-item').classList.add('active');
+    
+    // إغلاق جميع الأقسام الموسعة
+    document.querySelectorAll('.category-header').forEach(header => {
+        header.classList.remove('expanded');
+    });
+    document.querySelectorAll('.subcategory-list').forEach(list => {
+        list.classList.remove('show');
+    });
     
     const favToggle = document.getElementById('favToggle');
     if (favToggle) favToggle.classList.remove('active');
@@ -1783,39 +1609,96 @@ function normalizeEnglish(text) {
 function performSearch(query) {
     const results = document.getElementById('searchResults');
     const searchInput = document.getElementById('searchInput');
-    // دعم overlay على الجوال
-    const isMobile = window.innerWidth <= 992;
+    
     if (!query || !query.trim()) {
-        hideSearchResults();
+        if (results) results.style.display = 'none';
         // إظهار جميع المنتجات عند مسح البحث
+        activeCategory = 'all';
+        activeSubcategory = 'all';
         showingFavorites = false;
         showingFeatured = false;
-        activeCategory = 'all';
-        currentMainCategory = null;
-        currentSubcategory = null;
         resetDisplayedProducts();
         renderMainContent();
         return;
     }
-    // البحث في جميع المنتجات
+    
+    // تطبيع نص البحث
+    const normalizedQuery = normalizeArabic(query);
+    const normalizedQueryEn = normalizeEnglish(query);
+    
+    // البحث فقط في أسماء المنتجات (product.name فقط)
     const filtered = allProducts.filter(product => {
-        if (arabicSearch(query, product.name)) return true;
-        if (arabicSearch(query, product.description)) return true;
-        if (arabicSearch(query, product.category)) return true;
-        if (arabicSearch(query, product.subcategory)) return true;
-        return false;
+        const normalizedNameAr = normalizeArabic(product.name);
+        const normalizedNameEn = normalizeEnglish(product.name);
+        
+        // البحث بالعربية أو الإنجليزية في اسم المنتج فقط
+        return normalizedNameAr.includes(normalizedQuery) || 
+               normalizedNameEn.includes(normalizedQueryEn);
     }).slice(0, 8);
+    
+    // تظليل النتائج المطابقة
+    function highlightMatch(text, query) {
+        const regex = new RegExp(`(${query})`, 'gi');
+        return text.replace(regex, '<mark class="search-highlight">$1</mark>');
+    }
+    
     // عرض نتائج البحث
     if (results) {
-        let closeBtn = '';
-        if (isMobile) {
-            closeBtn = '<button class="close-search-results" id="closeSearchResults">&times;</button>';
-        }
         if (filtered.length === 0) {
-            results.innerHTML = closeBtn + '<div class="no-results">لا توجد نتائج مطابقة</div>';
+            results.innerHTML = '<div class="no-results">لا توجد نتائج مطابقة</div>';
         } else {
-            results.innerHTML = closeBtn + filtered.map(p => `
-                <div class="search-result-item" onclick="showProductDetails(${p.id}); hideSearchResults(); if(searchInput) searchInput.value='';">
+            results.innerHTML = filtered.map(p => {
+                const highlightedName = (query) ? highlightMatch(p.name, query) : p.name;
+                return `
+                    <div class="search-result-item" onclick="showProductDetails(${p.id}); document.getElementById('searchResults').style.display='none'; if(searchInput) searchInput.value='';">
+                        <img src="${getCDNUrl(p.image)}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
+                        <div class="search-result-info">
+                            <h4>${highlightedName}</h4>
+                            <p class="result-price">${formatPrice(p.price)}</p>
+                            <small>${p.category} - ${p.subcategory}</small>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        results.style.display = 'block';
+    }
+    
+    // تصفية المنتجات المعروضة في الشبكة الرئيسية
+    if (searchInput && searchInput.value === query) {
+        activeCategory = 'all';
+        activeSubcategory = 'all';
+        showingFavorites = false;
+        showingFeatured = false;
+        priceFilter = { min: 0, max: Infinity };
+        
+        if (filtered.length > 0) {
+            const container = document.getElementById('dynamic-sections');
+            if (container) {
+                resetDisplayedProducts();
+                currentProducts = filtered.slice(0, productsPerLoad);
+                displayedProductsCount = currentProducts.length;
+                displayProducts(currentProducts);
+                
+                // تحديث عنوان القسم
+                const sectionTitle = container.querySelector('.section-title');
+                if (sectionTitle) {
+                    sectionTitle.innerHTML = `نتائج البحث: "${query}" <span class="results-count">(${filtered.length} منتج)</span>`;
+                }
+            }
+        } else {
+            showNoSearchResults(query);
+        }
+    }
+}
+    
+    // عرض نتائج البحث
+    if (results) {
+        if (filtered.length === 0) {
+            results.innerHTML = '<div class="no-results">لا توجد نتائج مطابقة</div>';
+        } else {
+            results.innerHTML = filtered.map(p => `
+                <div class="search-result-item" onclick="showProductDetails(${p.id}); document.getElementById('searchResults').style.display='none'; if(searchInput) searchInput.value='';">
                     <img src="${getCDNUrl(p.image)}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
                     <div class="search-result-info">
                         <h4>${p.name}</h4>
@@ -1825,25 +1708,16 @@ function performSearch(query) {
                 </div>
             `).join('');
         }
-        showSearchResults();
-        // إضافة حدث زر الإغلاق على الجوال
-        if (isMobile) {
-            setTimeout(() => {
-                const closeBtnEl = document.getElementById('closeSearchResults');
-                if (closeBtnEl) {
-                    closeBtnEl.onclick = hideSearchResults;
-                }
-            }, 10);
-        }
+        results.style.display = 'block';
     }
+    
     // إذا كان البحث من شريط البحث الرئيسي، قم بتصفية المنتجات المعروضة
     if (searchInput && searchInput.value === query) {
         showingFavorites = false;
         showingFeatured = false;
         activeCategory = 'all';
-        currentMainCategory = null;
-        currentSubcategory = null;
         priceFilter = { min: 0, max: Infinity };
+        
         // إذا كانت هناك نتائج، قم بعرضها
         if (filtered.length > 0) {
             // تحديث العرض بالمنتجات المصفاة
@@ -1853,6 +1727,7 @@ function performSearch(query) {
                 currentProducts = filtered.slice(0, productsPerLoad);
                 displayedProductsCount = currentProducts.length;
                 displayProducts(currentProducts);
+                
                 // تحديث عنوان القسم
                 const sectionTitle = container.querySelector('.section-title');
                 if (sectionTitle) {
@@ -1863,71 +1738,8 @@ function performSearch(query) {
             // عرض رسالة عدم وجود نتائج
             showNoSearchResults(query);
         }
-        // إخفاء overlay البحث على الجوال بعد اختيار نتيجة
-        if (isMobile && results) {
-            hideSearchResults();
-        }
     }
-}
 
-// دالة إظهار نتائج البحث كـ overlay على الجوال
-function showSearchResults() {
-    const results = document.getElementById('searchResults');
-    if (!results) return;
-    const isMobile = window.innerWidth <= 992;
-    results.classList.add('show');
-    results.style.display = 'block';
-    if (isMobile) {
-        document.body.classList.add('search-results-open');
-        const overlay = document.getElementById('searchOverlay');
-        if (overlay) {
-            overlay.style.display = 'block';
-            overlay.onclick = () => {
-                hideSearchResults();
-            };
-        }
-    }
-}
-
-// دالة إخفاء نتائج البحث overlay
-function hideSearchResults() {
-    const results = document.getElementById('searchResults');
-    if (!results) return;
-    results.classList.remove('show');
-    results.style.display = 'none';
-    document.body.classList.remove('search-results-open');
-    const overlay = document.getElementById('searchOverlay');
-    if (overlay) {
-        overlay.style.display = 'none';
-        overlay.onclick = null;
-    }
-}
-
-// دالة لعرض رسالة عدم وجود نتائج بحث
-function showNoSearchResults(query) {
-    const container = document.getElementById('dynamic-sections');
-    if (!container) return;
-    container.innerHTML = `
-        <div class="no-products">
-            <i class="fas fa-search"></i>
-            <h3>لا توجد نتائج للبحث</h3>
-            <p>لم يتم العثور على أي منتجات تطابق "${query}".</p>
-            <div style="margin-top: 20px;">
-                <button onclick="resetFilters()" class="primary-btn">عرض جميع المنتجات</button>
-                <button onclick="document.getElementById('searchInput').value=''; document.getElementById('searchInput').focus();" class="secondary-btn" style="margin-right: 10px;">بحث جديد</button>
-            </div>
-            <div style="margin-top: 15px; font-size: 0.9rem; color: #666;">
-                <p><strong>نصائح للبحث:</strong></p>
-                <ul style="text-align: right; padding-right: 20px;">
-                    <li>تأكد من صحة كتابة الكلمات</li>
-                    <li>جرب كلمات بحث أقصر أو أكثر عمومية</li>
-                    <li>يمكنك البحث باللغة العربية أو الإنجليزية</li>
-                    <li>استخدم الفلاتر على اليسار للبحث الدقيق</li>
-                </ul>
-            </div>
-        </div>
-    `;
-}
 
 function showNoSearchResults(query) {
     const container = document.getElementById('dynamic-sections');
@@ -1958,6 +1770,117 @@ function showNoSearchResults(query) {
 // ============================================
 // إعداد معالجي الأحداث
 // ============================================
+
+function setupSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    
+    if (searchInput) {
+        let searchTimeout;
+        
+        // دعم الكتابة مع تأخير لتجنب البحث المفرط
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                performSearch(e.target.value);
+            }, 300); // 300ms تأخير مناسب للجوال
+        });
+        
+        // دعم Enter للبحث الفوري
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                clearTimeout(searchTimeout);
+                performSearch(e.target.value);
+                // إغلاق لوحة المفاتيح على الجوال
+                searchInput.blur();
+            }
+        });
+        
+        // دعم مسح البحث
+        searchInput.addEventListener('search', (e) => {
+            if (e.target.value === '') {
+                performSearch('');
+            }
+        });
+    }
+    
+    if (searchBtn) {
+        // دعم النقر على زر البحث
+        searchBtn.addEventListener('click', () => {
+            if (searchInput) {
+                performSearch(searchInput.value);
+                searchInput.blur(); // إغلاق لوحة المفاتيح
+            }
+        });
+    }
+    
+    // البحث على الجوال في القائمة
+    const mobileSearchInput = document.getElementById('mobileSearchInput');
+    const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+    
+    if (mobileSearchInput) {
+        mobileSearchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch(e.target.value);
+                document.getElementById('mobileMenu').classList.remove('active');
+                mobileSearchInput.value = '';
+                mobileSearchInput.blur();
+            }
+        });
+    }
+    
+    if (mobileSearchBtn) {
+        mobileSearchBtn.addEventListener('click', () => {
+            performSearch(mobileSearchInput.value);
+            document.getElementById('mobileMenu').classList.remove('active');
+            mobileSearchInput.value = '';
+            mobileSearchInput.blur();
+        });
+    }
+    
+    // البحث في الشريط الجانبي (Sidebar)
+    const sidebarSearchInput = document.getElementById('sidebarSearchInput');
+    const sidebarSearchBtn = document.getElementById('sidebarSearchBtn');
+    
+    if (sidebarSearchInput) {
+        sidebarSearchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch(e.target.value);
+                sidebarSearchInput.value = '';
+                sidebarSearchInput.blur();
+                
+                // إغلاق الـ Drawer على الجوال
+                if (window.innerWidth <= 992) {
+                    closeDrawer();
+                }
+            }
+        });
+    }
+    
+    if (sidebarSearchBtn) {
+        sidebarSearchBtn.addEventListener('click', () => {
+            performSearch(sidebarSearchInput.value);
+            sidebarSearchInput.value = '';
+            sidebarSearchBtn.blur();
+            
+            if (window.innerWidth <= 992) {
+                closeDrawer();
+            }
+        });
+    }
+    
+    // إغلاق نتائج البحث عند النقر خارجها
+    document.addEventListener('click', (e) => {
+        const searchContainer = document.querySelector('.search-container');
+        const searchResults = document.getElementById('searchResults');
+        
+        if (searchContainer && searchResults && 
+            !searchContainer.contains(e.target) && 
+            !searchResults.contains(e.target)) {
+            searchResults.style.display = 'none';
+        }
+    });
+}
 
 function setupEventListeners() {
     setupSearch();
@@ -1997,110 +1920,7 @@ function setupEventListeners() {
     }
 }
 
-function setupSearch() {
-    const searchInput = document.getElementById('searchInput');
-    const searchBtn = document.getElementById('searchBtn');
-    
-    if (searchInput) {
-        let searchTimeout;
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                performSearch(e.target.value);
-            }, 500); // زيادة المهلة لتفادي البحث مع كل حرف
-        });
-        
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                clearTimeout(searchTimeout);
-                performSearch(e.target.value);
-            }
-        });
-        
-        // مسح البحث عند النقر على أيقونة المسح (إذا أضفناها)
-        searchInput.addEventListener('search', (e) => {
-            if (e.target.value === '') {
-                performSearch('');
-            }
-        });
-    }
-    
-    if (searchBtn) {
-        searchBtn.addEventListener('click', () => {
-            performSearch(searchInput.value);
-        });
-    }
-    
-    // البحث على الجوال
-    const mobileSearchInput = document.getElementById('mobileSearchInput');
-    const mobileSearchBtn = document.getElementById('mobileSearchBtn');
-    
-    if (mobileSearchInput) {
-        mobileSearchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                performSearch(e.target.value);
-                document.getElementById('mobileMenu').classList.remove('active');
-                mobileSearchInput.value = '';
-            }
-        });
-    }
-    
-    if (mobileSearchBtn) {
-        mobileSearchBtn.addEventListener('click', () => {
-            performSearch(mobileSearchInput.value);
-            document.getElementById('mobileMenu').classList.remove('active');
-            mobileSearchInput.value = '';
-        });
-    }
-    
-    // إغلاق نتائج البحث عند النقر خارجها
-    document.addEventListener('click', (e) => {
-        const searchContainer = document.querySelector('.search-container');
-        const searchResults = document.getElementById('searchResults');
-        
-        if (searchContainer && searchResults && 
-            !searchContainer.contains(e.target) && 
-            !searchResults.contains(e.target)) {
-            searchResults.style.display = 'none';
-        }
-    });
-    
-    // البحث في الشريط الجانبي
-    const sidebarSearchInput = document.getElementById('sidebarSearchInput');
-    const sidebarSearchBtn = document.getElementById('sidebarSearchBtn');
-    
-    if (sidebarSearchInput) {
-        sidebarSearchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                performSearch(e.target.value);
-                sidebarSearchInput.value = '';
-                
-                // إغلاق الشريط الجانبي على الجوال
-                if (window.innerWidth <= 992) {
-                    const drawer = document.getElementById('drawer');
-                    if (drawer && drawer.classList.contains('active')) {
-                        closeDrawer();
-                    }
-                }
-            }
-        });
-    }
-    
-    if (sidebarSearchBtn) {
-        sidebarSearchBtn.addEventListener('click', () => {
-            performSearch(sidebarSearchInput.value);
-            sidebarSearchInput.value = '';
-            
-            // إغلاق الشريط الجانبي على الجوال
-            if (window.innerWidth <= 992) {
-                const drawer = document.getElementById('drawer');
-                if (drawer && drawer.classList.contains('active')) {
-                    closeDrawer();
-                }
-            }
-        });
-    }
-}
+
 
 function setupCart() {
     const cartIcon = document.getElementById('cartIcon');
@@ -2431,6 +2251,343 @@ window.addEventListener('resize', () => {
         }
     }, 250);
 });
+
+// ============================================
+// إضافة متغير جديد للقسم الفرعي النشط
+// ============================================
+// (تم إضافته في البداية)
+
+// ============================================
+// إضافة دالة تبديل القسم (قابلة للطي) - Sidebar
+// ============================================
+function toggleCategory(element) {
+    const subcategoryList = element.nextElementSibling;
+    const icon = element.querySelector('i');
+    
+    element.classList.toggle('expanded');
+    subcategoryList.classList.toggle('show');
+    
+    // تدوير الأيقونة
+    if (subcategoryList.classList.contains('show')) {
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+// ============================================
+// إضافة دالة تصفية المنتجات حسب القسم الفرعي
+// ============================================
+function filterBySubcategory(category, subcategory, element) {
+    activeCategory = category;
+    activeSubcategory = subcategory;
+    showingFavorites = false;
+    showingFeatured = false;
+    
+    // تحديث الحالة النشطة في الـ Sidebar
+    document.querySelectorAll('.sidebar-cat-item, .subcategory-item').forEach(el => {
+        el.classList.remove('active');
+    });
+    
+    // تمييز القسم الرئيسي والفرعي النشط
+    if (element) {
+        element.classList.add('active');
+        // تمييز القسم الرئيسي المتوافق
+        const parentCategory = document.querySelector(`[data-category="${category}"]`);
+        if (parentCategory) {
+            parentCategory.classList.add('active');
+        }
+    }
+    
+    // إغلاق القائمة على الجوال
+    if (window.innerWidth <= 992) {
+        const drawer = document.getElementById('drawer');
+        if (drawer && drawer.classList.contains('active')) {
+            closeDrawer();
+        }
+    }
+    
+    resetDisplayedProducts();
+    renderMainContent();
+    
+    // التمرير إلى قسم المنتجات
+    setTimeout(() => {
+        const dynamicSections = document.getElementById('dynamic-sections');
+        if (dynamicSections) {
+            dynamicSections.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, 300);
+}
+
+// ============================================
+// تعديل دالة getFilteredProducts لدعم القسم الفرعي
+// ============================================
+function getFilteredProducts() {
+    let products = allProducts;
+    
+    // تصفية حسب المفضلة
+    if (showingFavorites) {
+        products = products.filter(p => favorites.includes(p.id));
+    }
+    
+    // تصفية حسب المنتجات المميزة
+    if (showingFeatured) {
+        products = products.filter(p => p.featured);
+    }
+    
+    // تصفية حسب القسم الرئيسي
+    if (activeCategory !== 'all') {
+        products = products.filter(p => p.category === activeCategory);
+    }
+    
+    // تصفية حسب القسم الفرعي (جديد)
+    if (activeSubcategory !== 'all') {
+        products = products.filter(p => p.subcategory === activeSubcategory);
+    }
+    
+    // تصفية حسب السعر
+    products = products.filter(p => p.priceNum >= priceFilter.min && p.priceNum <= priceFilter.max);
+    
+    // الترتيب
+    products = sortProducts(products);
+    
+    return products;
+}
+
+// ============================================
+// تعديل دالة renderSidebarCategories لجعلها قابلة للطي
+// ============================================
+function renderSidebarCategories() {
+    const sidebarCats = document.getElementById('sidebarCategories');
+    if (!sidebarCats) return;
+    
+    let html = '';
+    
+    // العنصر "الكل" للرجوع لجميع المنتجات
+    html += `
+        <li class="sidebar-cat-item ${activeCategory === 'all' && activeSubcategory === 'all' ? 'active' : ''}" 
+            onclick="resetFilters()">
+            <i class="fas fa-th"></i> الكل
+        </li>
+    `;
+    
+    // بناء قائمة الأقسام الفرعية القابلة للطي
+    Object.keys(categoriesData).forEach(category => {
+        const isExpanded = activeCategory === category; // توسيع القسم النشط
+        const subcats = getUniqueSubcategories(category);
+        
+        html += `
+            <li class="category-item">
+                <div class="category-header ${isExpanded ? 'expanded' : ''}" 
+                     onclick="toggleCategory(this)" 
+                     data-category="${category}">
+                    <span>${category}</span>
+                    <i class="fas fa-chevron-down" style="transition: transform 0.3s;"></i>
+                </div>
+                <ul class="subcategory-list ${isExpanded ? 'show' : ''}">
+        `;
+        
+        // أضف "عرض الكل" للقسم الرئيسي
+        html += `
+            <li class="subcategory-item ${activeCategory === category && activeSubcategory === 'all' ? 'active' : ''}" 
+                onclick="filterBySubcategory('${category}', 'all', this)">
+                <i class="fas fa-list"></i> عرض الكل
+            </li>
+        `;
+        
+        // أضف الأقسام الفرعية
+        subcats.forEach(subcat => {
+            const isActive = activeCategory === category && activeSubcategory === subcat;
+            html += `
+                <li class="subcategory-item ${isActive ? 'active' : ''}" 
+                    onclick="filterBySubcategory('${category}', '${subcat}', this)">
+                    <i class="fas fa-tag"></i> ${subcat}
+                </li>
+            `;
+        });
+        
+        html += `</ul></li>`;
+    });
+    
+    sidebarCats.innerHTML = html;
+}
+
+// ============================================
+// إضافة دالة مساعدة للحصول على الأقسام الفرعية الفريدة
+// ============================================
+function getUniqueSubcategories(category) {
+    const subcats = new Set();
+    for (const subcat in categoriesData[category]) {
+        subcats.add(subcat);
+    }
+    return Array.from(subcats);
+}
+
+// ============================================
+// تعديل دالة loadDrawerCategories لجعلها قابلة للطي
+// ============================================
+function loadDrawerCategories() {
+    const drawerCategories = document.getElementById('drawerCategories');
+    if (!drawerCategories) return;
+    
+    let html = '';
+    
+    // بناء قائمة الأقسام الفرعية القابلة للطي في الـ Drawer
+    Object.keys(categoriesData).forEach((category, index) => {
+        const subcats = getUniqueSubcategories(category);
+        
+        html += `
+            <li class="category-item">
+                <div class="category-header" onclick="toggleCategory(this)">
+                    <span>${category}</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <ul class="subcategory-list">
+                    <li class="subcategory-item" 
+                        onclick="filterBySubcategory('${category}', 'all', this); closeDrawer();">
+                        <i class="fas fa-list"></i> عرض الكل
+                    </li>
+        `;
+        
+        subcats.forEach(subcat => {
+            html += `
+                <li class="subcategory-item" 
+                    onclick="filterBySubcategory('${category}', '${subcat}', this); closeDrawer();">
+                    <i class="fas fa-tag"></i> ${subcat}
+                </li>
+            `;
+        });
+        
+        html += `</ul></li>`;
+    });
+    
+    drawerCategories.innerHTML = html;
+}
+
+// ============================================
+// تعديل دالة performSearch لتحسين البحث في أسماء المنتجات فقط
+// ============================================
+function performSearch(query) {
+    const results = document.getElementById('searchResults');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (!query || !query.trim()) {
+        if (results) results.style.display = 'none';
+        // إظهار جميع المنتجات عند مسح البحث
+        activeCategory = 'all';
+        activeSubcategory = 'all';
+        showingFavorites = false;
+        showingFeatured = false;
+        resetDisplayedProducts();
+        renderMainContent();
+        return;
+    }
+    
+    // تطبيع نص البحث
+    const normalizedQuery = normalizeArabic(query);
+    const normalizedQueryEn = normalizeEnglish(query);
+    
+    // البحث فقط في أسماء المنتجات (product.name فقط)
+    const filtered = allProducts.filter(product => {
+        const normalizedNameAr = normalizeArabic(product.name);
+        const normalizedNameEn = normalizeEnglish(product.name);
+        
+        // البحث بالعربية أو الإنجليزية في اسم المنتج فقط
+        return normalizedNameAr.includes(normalizedQuery) || 
+               normalizedNameEn.includes(normalizedQueryEn);
+    }).slice(0, 8);
+    
+    // تظليل النتائج المطابقة
+    function highlightMatch(text, query) {
+        const regex = new RegExp(`(${query})`, 'gi');
+        return text.replace(regex, '<mark class="search-highlight">$1</mark>');
+    }
+    
+    // عرض نتائج البحث
+    if (results) {
+        if (filtered.length === 0) {
+            results.innerHTML = '<div class="no-results">لا توجد نتائج مطابقة</div>';
+        } else {
+            results.innerHTML = filtered.map(p => {
+                const highlightedName = (query) ? highlightMatch(p.name, query) : p.name;
+                return `
+                    <div class="search-result-item" onclick="showProductDetails(${p.id}); document.getElementById('searchResults').style.display='none'; if(searchInput) searchInput.value='';">
+                        <img src="${getCDNUrl(p.image)}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
+                        <div class="search-result-info">
+                            <h4>${highlightedName}</h4>
+                            <p class="result-price">${formatPrice(p.price)}</p>
+                            <small>${p.category} - ${p.subcategory}</small>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        results.style.display = 'block';
+    }
+    
+    // تصفية المنتجات المعروضة في الشبكة الرئيسية
+    if (searchInput && searchInput.value === query) {
+        activeCategory = 'all';
+        activeSubcategory = 'all';
+        showingFavorites = false;
+        showingFeatured = false;
+        priceFilter = { min: 0, max: Infinity };
+        
+        if (filtered.length > 0) {
+            const container = document.getElementById('dynamic-sections');
+            if (container) {
+                resetDisplayedProducts();
+                currentProducts = filtered.slice(0, productsPerLoad);
+                displayedProductsCount = currentProducts.length;
+                displayProducts(currentProducts);
+                
+                // تحديث عنوان القسم
+                const sectionTitle = container.querySelector('.section-title');
+                if (sectionTitle) {
+                    sectionTitle.innerHTML = `نتائج البحث: "${query}" <span class="results-count">(${filtered.length} منتج)</span>`;
+                }
+            }
+        } else {
+            showNoSearchResults(query);
+        }
+    }
+}
+
+// ============================================
+// تعديل دالة resetFilters لإعادة تعيين القسم الفرعي أيضاً
+// ============================================
+function resetFilters() {
+    activeCategory = 'all';
+    activeSubcategory = 'all';
+    currentSort = 'default';
+    priceFilter = { min: 0, max: Infinity };
+    showingFavorites = false;
+    showingFeatured = false;
+    
+    document.getElementById('minPrice').value = '';
+    document.getElementById('maxPrice').value = '';
+    document.getElementById('sortSelect').value = 'default';
+    
+    // إعادة تعيين حالة القوائم
+    document.querySelectorAll('.sidebar-cat-item, .subcategory-item').forEach(el => {
+        el.classList.remove('active');
+    });
+    document.querySelector('.sidebar-cat-item').classList.add('active');
+    
+    // إغلاق جميع الأقسام الموسعة
+    document.querySelectorAll('.category-header').forEach(header => {
+        header.classList.remove('expanded');
+    });
+    document.querySelectorAll('.subcategory-list').forEach(list => {
+        list.classList.remove('show');
+    });
+    
+    const favToggle = document.getElementById('favToggle');
+    if (favToggle) favToggle.classList.remove('active');
+    
+    resetDisplayedProducts();
+    renderMainContent();
+}
 
 // ============================================
 // التهيئة النهائية
