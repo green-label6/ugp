@@ -345,6 +345,211 @@
                 padding: 5px 10px 5px 20px;
             }
         }
+
+/* ============================================
+   تحسينات نهائية للبحث والأقسام
+   ============================================ */
+
+/* منع التجميد على الجوال */
+@media (max-width: 768px) {
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    input, textarea, button, select {
+        font-size: 16px !important;
+        touch-action: manipulation;
+    }
+    
+    /* تحسين البحث على الجوال */
+    .search-results {
+        position: fixed !important;
+        top: 70px !important;
+        left: 15px !important;
+        right: 15px !important;
+        max-height: 60vh !important;
+        z-index: 2000 !important;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
+        border-radius: 16px !important;
+        background: white !important;
+        border: 1px solid #e0e0e0 !important;
+        animation: slideDown 0.2s ease !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* منع التكبير التلقائي */
+    input[type="search"] {
+        -webkit-appearance: none;
+        appearance: none;
+    }
+    
+    /* تحسين الأداء */
+    .search-result-item {
+        will-change: transform;
+        transform: translateZ(0);
+    }
+    
+    /* تحسين bottom navigator */
+    .bottom-nav {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        background: white !important;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1) !important;
+        z-index: 1000 !important;
+        padding: 8px 0 !important;
+    }
+    
+    .bottom-nav-item {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        padding: 8px 4px !important;
+        text-decoration: none !important;
+        color: #666 !important;
+        font-size: 0.7rem !important;
+        position: relative !important;
+    }
+    
+    .bottom-nav-item.active {
+        color: var(--primary-color) !important;
+    }
+    
+    .bottom-nav-item i {
+        font-size: 1.2rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .favorites-count,
+    .cart-count-bottom {
+        position: absolute !important;
+        top: 0 !important;
+        left: 60% !important;
+        background: var(--secondary-color) !important;
+        color: white !important;
+        font-size: 0.6rem !important;
+        min-width: 16px !important;
+        height: 16px !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-weight: 700 !important;
+    }
+}
+
+/* تحسينات الأقسام */
+.subcategories-container {
+    max-height: 300px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    transition: all 0.3s ease !important;
+}
+
+.subcategories-container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.subcategories-container::-webkit-scrollbar-track {
+    background: var(--gray-lighter);
+}
+
+.subcategories-container::-webkit-scrollbar-thumb {
+    background: var(--gray-light);
+    border-radius: 2px;
+}
+
+/* منع التحميل الزائد */
+.search-box input {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+/* تحسينات للأجهزة البطيئة */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* إصلاح ارتفاع الصفحة */
+body {
+    padding-bottom: 60px !important;
+}
+
+/* تحسين الشريط الجانبي على الجوال */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        right: -100% !important;
+        width: 280px !important;
+        height: 100vh !important;
+        z-index: 1000 !important;
+        transition: all 0.3s ease !important;
+        overflow-y: auto !important;
+        padding-top: 70px !important;
+        box-shadow: var(--shadow-lg) !important;
+        background: white !important;
+    }
+    
+    .sidebar.active {
+        right: 0 !important;
+    }
+    
+    .sidebar-overlay {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: rgba(0, 0, 0, 0.5) !important;
+        z-index: 999 !important;
+        display: none !important;
+    }
+    
+    .sidebar-overlay.active {
+        display: block !important;
+    }
+    
+    /* زر فتح الشريط الجانبي */
+    .open-sidebar-btn {
+        display: flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+        background: var(--gradient) !important;
+        color: white !important;
+        border: none !important;
+        padding: 8px 12px !important;
+        border-radius: var(--border-radius) !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        margin-left: 10px !important;
+    }
+}
+
+/* منع التكبير على iOS */
+@media (max-width: 768px) {
+    input, select, textarea {
+        font-size: 16px;
+    }
+}
     </style>
 </head>
 <body>
@@ -884,6 +1089,166 @@
             `;
             document.head.appendChild(style);
         });
+    </script>
+
+    <script>
+    // ============================================
+    // تحسينات إضافية للجوال
+    // ============================================
+
+    // منع السلوك الافتراضي للبحث
+    document.addEventListener('DOMContentLoaded', function() {
+        // منع إرسال النموذج عند البحث
+        const searchForms = document.querySelectorAll('.search-box, .search-box-in-filter');
+        searchForms.forEach(form => {
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+            }
+        });
+        
+        // تحسين الأداء على الجوال
+        if ('IntersectionObserver' in window) {
+            // استخدام IntersectionObserver للتحميل البطيء
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        if (img.dataset.src) {
+                            img.src = img.dataset.src;
+                            img.classList.add('loaded');
+                            observer.unobserve(img);
+                        }
+                    }
+                });
+            }, {
+                rootMargin: '50px 0px',
+                threshold: 0.1
+            });
+            
+            // مراقبة الصور
+            document.querySelectorAll('img.lazy-img').forEach(img => {
+                observer.observe(img);
+            });
+        }
+        
+        // إدارة الذاكرة
+        window.addEventListener('beforeunload', function() {
+            searchCache = {};
+            if (searchDebounceTimer) {
+                clearTimeout(searchDebounceTimer);
+            }
+        });
+        
+        // تحسين bottom navigator
+        setTimeout(function() {
+            // تحديث العدادات
+            updateBottomNavCounters();
+            
+            // ربط أحداث إضافية
+            const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+            bottomNavItems.forEach(item => {
+                item.addEventListener('touchstart', function() {
+                    this.style.opacity = '0.7';
+                });
+                
+                item.addEventListener('touchend', function() {
+                    this.style.opacity = '1';
+                });
+            });
+        }, 1000);
+    });
+
+    // فتح الشريط الجانبي على الجوال
+    function openSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.createElement('div');
+        overlay.className = 'sidebar-overlay';
+        overlay.id = 'sidebarOverlay';
+        overlay.onclick = closeSidebar;
+        document.body.appendChild(overlay);
+        
+        if (sidebar) {
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    // إغلاق الشريط الجانبي على الجوال
+    function closeSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        if (sidebar) {
+            sidebar.classList.remove('active');
+        }
+        
+        if (overlay) {
+            overlay.classList.remove('active');
+            setTimeout(() => {
+                overlay.remove();
+            }, 300);
+        }
+        
+        document.body.style.overflow = 'auto';
+    }
+
+    // إضافة زر فتح الشريط الجانبي على الجوال
+    if (window.innerWidth <= 768) {
+        const openSidebarBtn = document.createElement('button');
+        openSidebarBtn.className = 'open-sidebar-btn';
+        openSidebarBtn.innerHTML = '<i class="fas fa-filter"></i> الفلاتر';
+        openSidebarBtn.onclick = openSidebar;
+        
+        // إضافة الزر إلى الهيدر
+        const navIcons = document.querySelector('.nav-icons');
+        if (navIcons) {
+            navIcons.insertBefore(openSidebarBtn, navIcons.firstChild);
+        }
+    }
+
+    // ============================================
+    // إصلاحات فورية للمشاكل
+    // ============================================
+
+    // منع التكرار في البحث
+    let lastSearchQuery = '';
+    function executeSearch(query) {
+        if (query === lastSearchQuery) return;
+        lastSearchQuery = query;
+        
+        // تنفيذ البحث
+        const normalizedQuery = normalizeSearchQuery(query);
+        const results = searchProducts(normalizedQuery);
+        displaySearchResults(results, query);
+        openSearchPage(results, query);
+    }
+
+    // إعادة تعيين البحث عند الخروج
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            // إعادة تعيين البحث عند مغادرة الصفحة
+            searchCache = {};
+            if (searchDebounceTimer) {
+                clearTimeout(searchDebounceTimer);
+            }
+        }
+    });
+
+    // تحسين الأداء عند التمرير
+    let scrollTimeout;
+    window.addEventListener('scroll', function() {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(function() {
+            // إخفاء نتائج البحث عند التمرير
+            if (window.innerWidth <= 768) {
+                closeSearchResults();
+            }
+        }, 100);
+    });
     </script>
 </body>
 </html>
