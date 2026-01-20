@@ -27,6 +27,9 @@ let currentProductInModal = null;
 // متغير لحالة البحث
 let currentSearchQuery = '';
 
+// متغيرات صفحة تفاصيل المنتج
+let currentProductDetailId = null;
+
 // ============================================
 // تهيئة الموقع عند تحميل الصفحة
 // ============================================
@@ -55,7 +58,9 @@ function initializeApp() {
     setupBottomNavigation();
     setupDefaultView();
     setupShareButton();
-    setupCollapsibleCategories(); // إضافة تهيئة الأقسام القابلة للطي
+    setupCollapsibleCategories();
+    setupProductDetailPage();
+    checkUrlForProduct();
 }
 
 // ============================================
@@ -1408,7 +1413,7 @@ function createProductCardHtml(product, searchQuery = '') {
         : product.name;
     
     return `
-        <div class="product-card" onclick="showProductDetails(${product.id})">
+        <div class="product-card" onclick="handleProductClick(${product.id})">
             ${isFeatured ? `<div class="featured-badge"><i class="fas fa-crown"></i> مميز</div>` : ''}
             <button class="fav-btn ${isFav ? 'active' : ''}" data-id="${product.id}" onclick="toggleFavorite(${product.id}, event)">
                 <i class="fas fa-heart"></i>
@@ -1432,6 +1437,15 @@ function createProductCardHtml(product, searchQuery = '') {
             </div>
         </div>
     `;
+}
+
+// ============================================
+// معالجة النقر على المنتج - فتح صفحة التفاصيل
+// ============================================
+
+function handleProductClick(productId) {
+    // فتح صفحة التفاصيل على جميع الأجهزة
+    showProductDetailPage(productId);
 }
 
 function formatPrice(price) {
@@ -2191,6 +2205,646 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// ============================================
+// إعداد صفحة تفاصيل المنتج
+// ============================================
+
+function setupProductDetailPage() {
+    // الاستماع لأحداث العودة للصفحة السابقة في المتصفح
+    window.addEventListener('popstate', handleBrowserBackForward);
+    
+    // إضافة أنماط CSS لصفحة التفاصيل والكاروسيل
+    addProductDetailPageStyles();
+}
+
+function handleBrowserBackForward(event) {
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('product');
+    
+    if (productId) {
+        const product = allProducts.find(p => p.id == productId);
+        if (product) {
+            showProductDetailPage(product.id);
+        } else {
+            goBackToMainView();
+        }
+    } else {
+        goBackToMainView();
+    }
+}
+
+function checkUrlForProduct() {
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('product');
+    
+    if (productId) {
+        const product = allProducts.find(p => p.id == productId);
+        if (product) {
+            showProductDetailPage(product.id);
+        }
+    }
+}
+
+function showProductDetailPage(productId) {
+    const product = allProducts.find(p => p.id == productId);
+    if (!product) {
+        showNotification('المنتج غير موجود', 'error');
+        return;
+    }
+    
+    currentProductDetailId = productId;
+    
+    // الحصول على المنتجات ذات الصلة
+    const relatedProducts = getRelatedProducts(product);
+    
+    // إنشاء محتوى صفحة التفاصيل
+    const detailView = document.getElementById('product-detail-view');
+    const dynamicSections = document.getElementById('dynamic-sections');
+    const heroSection = document.getElementById('home');
+    const featuresSection = document.querySelector('.features-section');
+    const loadMoreContainer = document.getElementById('loadMoreContainerGlobal');
+    const sidebar = document.getElementById('sidebar');
+    
+    // إظهار صفحة التفاصيل وإخفاء المحتوى الرئيسي
+    if (detailView) {
+        detailView.style.display = 'block';
+        detailView.innerHTML = createProductDetailPageHtml(product, relatedProducts);
+    }
+    
+    if (dynamicSections) dynamicSections.style.display = 'none';
+    if (heroSection) heroSection.style.display = 'none';
+    if (featuresSection) featuresSection.style.display = 'none';
+    if (loadMoreContainer) loadMoreContainer.style.display = 'none';
+    if (sidebar) sidebar.style.display = 'none';
+    
+    // تحديث URL باستخدام history.pushState
+    const newUrl = `?product=${productId}`;
+    history.pushState({ productId: productId }, product.name, newUrl);
+    
+    // التمرير إلى أعلى الصفحة
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // تهيئة التحميل البطيء للصور
+    initLazyLoading();
+    
+    // تحديث حالة زر المفضلة
+    updateDetailPageFavoriteButton(productId);
+}
+
+function createProductDetailPageHtml(product, relatedProducts) {
+    const cdnUrl = getCDNUrl(product.image);
+    const formattedPrice = formatPrice(product.price);
+    const isFav = favorites.includes(product.id);
+    const relatedProductsHtml = createRelatedProductsCarouselHtml(relatedProducts, product.id);
+    
+    return `
+        <div class="product-detail-page">
+            <!-- زر العودة للخلف -->
+            <button class="back-to-main-btn" onclick="goBackToMainView()">
+                <i class="fas fa-arrow-right"></i>
+                <span>العودة للمنتجات</span>
+            </button>
+            
+            <!-- تفاصيل المنتج -->
+            <div class="detail-product-container">
+                <div class="detail-product-image-section">
+                    <div class="detail-image-wrapper">
+                        <img src="${cdnUrl}" 
+                             alt="${product.name}"
+                             onerror="this.src='https://via.placeholder.com/500x500?text=No+Image'">
+                        ${product.featured ? '<div class="featured-badge"><i class="fas fa-crown"></i> مميز</div>' : ''}
+                    </div>
+                </div>
+                
+                <div class="detail-product-info-section">
+                    <div class="detail-breadcrumb">
+                        <span onclick="goBackToMainView()" class="breadcrumb-link">الرئيسية</span>
+                        <i class="fas fa-chevron-left"></i>
+                        <span onclick="filterByCategory('${product.category}'); goBackToMainView();" class="breadcrumb-link">${product.category}</span>
+                        <i class="fas fa-chevron-left"></i>
+                        <span class="breadcrumb-current">${product.subcategory}</span>
+                    </div>
+                    
+                    <h1 class="detail-product-name">${product.name}</h1>
+                    
+                    <div class="detail-product-price">${formattedPrice}</div>
+                    
+                    <div class="detail-product-description">
+                        <h3><i class="fas fa-info-circle"></i> وصف المنتج</h3>
+                        <p>${product.description.replace(/\n/g, '<br>')}</p>
+                    </div>
+                    
+                    <div class="detail-product-actions">
+                        <div class="detail-quantity-control">
+                            <button class="qty-btn minus" onclick="updateDetailQuantity(-1)">-</button>
+                            <input type="number" id="detailProductQty" value="1" min="1">
+                            <button class="qty-btn plus" onclick="updateDetailQuantity(1)">+</button>
+                        </div>
+                        
+                        <button class="primary-btn add-to-cart-btn" onclick="addToCartFromDetail(${product.id})">
+                            <i class="fas fa-cart-plus"></i>
+                            إضافة للسلة
+                        </button>
+                    </div>
+                    
+                    <div class="detail-action-buttons">
+                        <button class="secondary-btn fav-action-btn ${isFav ? 'active' : ''}" id="detailFavBtn" onclick="toggleFavoriteFromDetail(${product.id})">
+                            <i class="fas fa-heart"></i>
+                            ${isFav ? 'في المفضلة' : 'إضافة للمفضلة'}
+                        </button>
+                        
+                        <button class="share-action-btn" onclick="shareProductDetail(${product.id})">
+                            <i class="fas fa-share-alt"></i>
+                            مشاركة
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- كاروسيل المنتجات ذات الصلة -->
+            ${relatedProductsHtml}
+        </div>
+    `;
+}
+
+function createRelatedProductsCarouselHtml(relatedProducts, currentProductId) {
+    if (!relatedProducts || relatedProducts.length === 0) {
+        return '';
+    }
+    
+    const productsHtml = relatedProducts.map(p => `
+        <div class="related-product-card" onclick="showProductDetailPage(${p.id})">
+            <div class="related-product-image">
+                <img src="${getCDNUrl(p.image)}" 
+                     alt="${p.name}"
+                     loading="lazy"
+                     onerror="this.src='https://via.placeholder.com/150x150?text=No+Image'">
+            </div>
+            <div class="related-product-info">
+                <h4 class="related-product-name">${p.name}</h4>
+                <p class="related-product-price">${formatPrice(p.price)}</p>
+            </div>
+        </div>
+    `).join('');
+    
+    return `
+        <div class="related-products-section">
+            <h3 class="related-products-title">
+                <i class="fas fa-layer-group"></i>
+                منتجات ذات صلة
+            </h3>
+            <div class="related-products-carousel">
+                <button class="carousel-nav-btn carousel-prev" onclick="scrollCarousel('related', -1)">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <div class="carousel-container" id="relatedCarousel">
+                    ${productsHtml}
+                </div>
+                <button class="carousel-nav-btn carousel-next" onclick="scrollCarousel('related', 1)">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function getRelatedProducts(product) {
+    // إرجاع منتجات من نفس الفئة باستثناء المنتج الحالي
+    return allProducts.filter(p => 
+        p.category === product.category && 
+        p.id !== product.id
+    ).slice(0, 10); // عرض حتى 10 منتجات ذات صلة
+}
+
+function goBackToMainView() {
+    const detailView = document.getElementById('product-detail-view');
+    const dynamicSections = document.getElementById('dynamic-sections');
+    const heroSection = document.getElementById('home');
+    const featuresSection = document.querySelector('.features-section');
+    const loadMoreContainer = document.getElementById('loadMoreContainerGlobal');
+    const sidebar = document.getElementById('sidebar');
+    
+    // إخفاء صفحة التفاصيل وإظهار المحتوى الرئيسي
+    if (detailView) detailView.style.display = 'none';
+    if (dynamicSections) dynamicSections.style.display = 'block';
+    if (heroSection) heroSection.style.display = 'block';
+    if (featuresSection) featuresSection.style.display = 'block';
+    if (loadMoreContainer) loadMoreContainer.style.display = 'block';
+    if (sidebar) sidebar.style.display = 'block';
+    
+    // تحديث URL
+    history.pushState({}, '', window.location.pathname);
+    
+    currentProductDetailId = null;
+    
+    // التمرير لأعلى
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateDetailQuantity(change) {
+    const qtyInput = document.getElementById('detailProductQty');
+    if (qtyInput) {
+        let currentQty = parseInt(qtyInput.value) || 1;
+        currentQty += change;
+        if (currentQty < 1) currentQty = 1;
+        qtyInput.value = currentQty;
+    }
+}
+
+function addToCartFromDetail(productId) {
+    const qtyInput = document.getElementById('detailProductQty');
+    const quantity = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+    addToCart(productId, quantity);
+}
+
+function toggleFavoriteFromDetail(productId) {
+    toggleFavorite(productId);
+    updateDetailPageFavoriteButton(productId);
+}
+
+function updateDetailPageFavoriteButton(productId) {
+    const favBtn = document.getElementById('detailFavBtn');
+    if (favBtn) {
+        const isFav = favorites.includes(productId);
+        favBtn.classList.toggle('active', isFav);
+        favBtn.innerHTML = isFav 
+            ? '<i class="fas fa-heart"></i> في المفضلة' 
+            : '<i class="fas fa-heart"></i> إضافة للمفضلة';
+    }
+}
+
+function shareProductDetail(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) return;
+    
+    currentProductInModal = product;
+    shareProduct(product);
+}
+
+function scrollCarousel(carouselType, direction) {
+    const carousel = document.getElementById(`${carouselType}Carousel`);
+    if (!carousel) return;
+    
+    const scrollAmount = 220; // عرض المنتج تقريباً + الهامش
+    carousel.scrollBy({
+        left: direction * scrollAmount,
+        behavior: 'smooth'
+    });
+}
+
+function addProductDetailPageStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        /* أنماط صفحة تفاصيل المنتج */
+        .product-detail-page {
+            width: 100%;
+            padding: 20px;
+            background: #fff;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        
+        .back-to-main-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--gray-lighter);
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.95rem;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+        
+        .back-to-main-btn:hover {
+            background: var(--gray-light);
+        }
+        
+        .detail-product-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+        
+        @media (max-width: 992px) {
+            .detail-product-container {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+        }
+        
+        .detail-image-wrapper {
+            position: relative;
+            background: var(--gray-lighter);
+            border-radius: var(--border-radius-xl);
+            overflow: hidden;
+            aspect-ratio: 1;
+        }
+        
+        .detail-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 20px;
+        }
+        
+        .detail-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--gray-color);
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .breadcrumb-link {
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .breadcrumb-link:hover {
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-current {
+            color: var(--text-color);
+        }
+        
+        .detail-product-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        @media (max-width: 768px) {
+            .detail-product-name {
+                font-size: 1.4rem;
+            }
+        }
+        
+        .detail-product-price {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+        }
+        
+        .detail-product-description {
+            margin-bottom: 30px;
+        }
+        
+        .detail-product-description h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            color: var(--text-color);
+            margin-bottom: 15px;
+        }
+        
+        .detail-product-description p {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: var(--gray-color);
+        }
+        
+        .detail-product-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .detail-quantity-control {
+            display: flex;
+            align-items: center;
+            background: var(--gray-lighter);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        
+        .detail-quantity-control .qty-btn {
+            width: 40px;
+            height: 44px;
+            border: none;
+            background: transparent;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .detail-quantity-control .qty-btn:hover {
+            background: var(--gray-light);
+        }
+        
+        .detail-quantity-control input {
+            width: 50px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .add-to-cart-btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px 25px;
+        }
+        
+        .detail-action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .fav-action-btn, .share-action-btn {
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .fav-action-btn {
+            background: var(--gray-lighter);
+            color: var(--text-color);
+        }
+        
+        .fav-action-btn.active {
+            background: #ffebee;
+            color: #e91e63;
+        }
+        
+        .share-action-btn {
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: white;
+        }
+        
+        .fav-action-btn:hover, .share-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        
+        /* أنماط كاروسيل المنتجات ذات الصلة */
+        .related-products-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid var(--gray-light);
+        }
+        
+        .related-products-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 20px;
+        }
+        
+        .related-products-carousel {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .carousel-container {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 10px 5px;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .carousel-container::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .carousel-track {
+            display: flex;
+            gap: 15px;
+            white-space: nowrap;
+        }
+        
+        .related-product-card {
+            flex: 0 0 180px;
+            scroll-snap-align: start;
+            background: #fff;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-block;
+            white-space: normal;
+            vertical-align: top;
+        }
+        
+        .related-product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        
+        .related-product-image {
+            aspect-ratio: 1;
+            background: var(--gray-lighter);
+            overflow: hidden;
+        }
+        
+        .related-product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .related-product-info {
+            padding: 12px;
+        }
+        
+        .related-product-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .related-product-price {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .carousel-nav-btn {
+            flex: 0 0 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: var(--transition);
+            z-index: 2;
+        }
+        
+        .carousel-nav-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .carousel-nav-btn {
+                display: none;
+            }
+            
+            .related-product-card {
+                flex: 0 0 150px;
+            }
+            
+            .product-detail-page {
+                padding: 15px;
+            }
+            
+            .detail-product-actions {
+                flex-direction: column;
+            }
+            
+            .add-to-cart-btn {
+                width: 100%;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
 
 // ============================================
 // التعامل مع تغيير حجم النافذة
