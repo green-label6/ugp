@@ -2399,7 +2399,9 @@ function createRelatedProductsCarouselHtml(relatedProducts, currentProductId) {
                     <i class="fas fa-chevron-right"></i>
                 </button>
                 <div class="carousel-container" id="relatedCarousel">
-                    ${productsHtml}
+                    <div class="carousel-track">
+                        ${productsHtml}
+                    </div>
                 </div>
                 <button class="carousel-nav-btn carousel-next" onclick="scrollCarousel('related', 1)">
                     <i class="fas fa-chevron-left"></i>
@@ -2496,14 +2498,21 @@ function scrollCarousel(carouselType, direction) {
 function addProductDetailPageStyles() {
     const style = document.createElement('style');
     style.textContent = `
-        /* أنماط صفحة تفاصيل المنتج */
+        /* أنماط صفحة تفاصيل المنتج - تحسين التوافق مع الجوال */
         .product-detail-page {
             width: 100%;
-            padding: 20px;
+            padding: 15px;
             background: #fff;
-            border-radius: var(--border-radius);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             margin-bottom: 30px;
+            overflow-x: hidden;
+        }
+        
+        @media (min-width: 768px) {
+            .product-detail-page {
+                padding: 25px;
+                border-radius: var(--border-radius);
+                box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            }
         }
         
         .back-to-main-btn {
@@ -2512,13 +2521,13 @@ function addProductDetailPageStyles() {
             gap: 8px;
             background: var(--gray-lighter);
             border: none;
-            padding: 10px 20px;
+            padding: 10px 16px;
             border-radius: var(--border-radius);
             cursor: pointer;
             font-family: 'Cairo', sans-serif;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: var(--text-color);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             transition: var(--transition);
         }
         
@@ -2526,43 +2535,88 @@ function addProductDetailPageStyles() {
             background: var(--gray-light);
         }
         
-        .detail-product-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            margin-bottom: 50px;
+        .back-to-main-btn i {
+            font-size: 0.85rem;
         }
         
-        @media (max-width: 992px) {
+        /* تنسيق الحاوية الرئيسية للمنتج */
+        .detail-product-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        @media (min-width: 768px) {
             .detail-product-container {
-                grid-template-columns: 1fr;
-                gap: 25px;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+                margin-bottom: 40px;
             }
+        }
+        
+        @media (min-width: 1024px) {
+            .detail-product-container {
+                gap: 40px;
+            }
+        }
+        
+        /* قسم الصورة */
+        .detail-product-image-section {
+            width: 100%;
         }
         
         .detail-image-wrapper {
             position: relative;
             background: var(--gray-lighter);
-            border-radius: var(--border-radius-xl);
+            border-radius: var(--border-radius);
             overflow: hidden;
-            aspect-ratio: 1;
+            width: 100%;
+            /* الحفاظ على نسبة العرض مع max-height */
+            max-height: 45vh;
+        }
+        
+        @media (min-width: 768px) {
+            .detail-image-wrapper {
+                max-height: none;
+                aspect-ratio: 1;
+                border-radius: var(--border-radius-xl);
+            }
         }
         
         .detail-image-wrapper img {
             width: 100%;
             height: 100%;
+            max-height: 45vh;
             object-fit: contain;
-            padding: 20px;
+            padding: 10px;
         }
         
+        @media (min-width: 768px) {
+            .detail-image-wrapper img {
+                max-height: none;
+                padding: 20px;
+            }
+        }
+        
+        /* تنسيق شريط التنقل (Breadcrumb) */
         .detail-breadcrumb {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
+            gap: 6px;
+            font-size: 0.75rem;
             color: var(--gray-color);
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             flex-wrap: wrap;
+        }
+        
+        @media (min-width: 768px) {
+            .detail-breadcrumb {
+                font-size: 0.85rem;
+                gap: 8px;
+                margin-bottom: 15px;
+            }
         }
         
         .breadcrumb-link {
@@ -2579,69 +2633,151 @@ function addProductDetailPageStyles() {
             color: var(--text-color);
         }
         
-        .detail-product-name {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-color);
-            margin-bottom: 15px;
-            line-height: 1.4;
+        .detail-breadcrumb i {
+            font-size: 0.65rem;
         }
         
-        @media (max-width: 768px) {
-            .detail-product-name {
-                font-size: 1.4rem;
+        @media (min-width: 768px) {
+            .detail-breadcrumb i {
+                font-size: 0.75rem;
             }
         }
         
-        .detail-product-price {
-            font-size: 1.6rem;
+        /* عنوان المنتج */
+        .detail-product-name {
+            font-size: 1.3rem;
             font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 25px;
+            color: var(--text-color);
+            margin-bottom: 10px;
+            line-height: 1.4;
         }
         
+        @media (min-width: 768px) {
+            .detail-product-name {
+                font-size: 1.6rem;
+                margin-bottom: 15px;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .detail-product-name {
+                font-size: 1.8rem;
+            }
+        }
+        
+        /* سعر المنتج */
+        .detail-product-price {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        @media (min-width: 768px) {
+            .detail-product-price {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .detail-product-price {
+                font-size: 1.6rem;
+            }
+        }
+        
+        /* وصف المنتج */
         .detail-product-description {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .detail-product-description {
+                margin-bottom: 25px;
+            }
         }
         
         .detail-product-description h3 {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 1.1rem;
+            gap: 8px;
+            font-size: 1rem;
             color: var(--text-color);
-            margin-bottom: 15px;
+            margin-bottom: 10px;
+        }
+        
+        @media (min-width: 768px) {
+            .detail-product-description h3 {
+                font-size: 1.1rem;
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+        }
+        
+        .detail-product-description h3 i {
+            font-size: 0.9rem;
+        }
+        
+        @media (min-width: 768px) {
+            .detail-product-description h3 i {
+                font-size: 1rem;
+            }
         }
         
         .detail-product-description p {
-            font-size: 0.95rem;
-            line-height: 1.8;
+            font-size: 0.9rem;
+            line-height: 1.7;
             color: var(--gray-color);
         }
         
-        .detail-product-actions {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+        @media (min-width: 768px) {
+            .detail-product-description p {
+                font-size: 0.95rem;
+                line-height: 1.8;
+            }
         }
         
+        /* قسم الأزرار والإجراءات */
+        .detail-product-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-direction: row;
+        }
+        
+        @media (min-width: 768px) {
+            .detail-product-actions {
+                gap: 15px;
+                margin-bottom: 20px;
+            }
+        }
+        
+        /* عناصر التحكم بالكمية */
         .detail-quantity-control {
             display: flex;
             align-items: center;
             background: var(--gray-lighter);
             border-radius: var(--border-radius);
             overflow: hidden;
+            flex-shrink: 0;
         }
         
         .detail-quantity-control .qty-btn {
-            width: 40px;
-            height: 44px;
+            width: 36px;
+            height: 40px;
             border: none;
             background: transparent;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             cursor: pointer;
             transition: var(--transition);
+        }
+        
+        @media (min-width: 768px) {
+            .detail-quantity-control .qty-btn {
+                width: 40px;
+                height: 44px;
+                font-size: 1.2rem;
+            }
         }
         
         .detail-quantity-control .qty-btn:hover {
@@ -2649,37 +2785,70 @@ function addProductDetailPageStyles() {
         }
         
         .detail-quantity-control input {
-            width: 50px;
+            width: 40px;
             text-align: center;
             border: none;
             background: transparent;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
+            padding: 8px 0;
         }
         
+        @media (min-width: 768px) {
+            .detail-quantity-control input {
+                width: 50px;
+                font-size: 1rem;
+            }
+        }
+        
+        /* زر إضافة للسلة */
         .add-to-cart-btn {
             flex: 1;
-            min-width: 150px;
-            padding: 12px 25px;
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            white-space: nowrap;
         }
         
+        @media (min-width: 768px) {
+            .add-to-cart-btn {
+                padding: 14px 25px;
+                font-size: 1rem;
+            }
+        }
+        
+        /* أزرار المفضلة والمشاركة */
         .detail-action-buttons {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
         }
         
+        @media (min-width: 768px) {
+            .detail-action-buttons {
+                gap: 12px;
+            }
+        }
+        
         .fav-action-btn, .share-action-btn {
-            padding: 12px 20px;
+            padding: 10px 16px;
             border-radius: var(--border-radius);
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             cursor: pointer;
             transition: var(--transition);
             border: none;
             font-family: 'Cairo', sans-serif;
+            font-size: 0.85rem;
+        }
+        
+        @media (min-width: 768px) {
+            .fav-action-btn, .share-action-btn {
+                padding: 12px 20px;
+                gap: 8px;
+                font-size: 0.95rem;
+            }
         }
         
         .fav-action-btn {
@@ -2704,39 +2873,71 @@ function addProductDetailPageStyles() {
         
         /* أنماط كاروسيل المنتجات ذات الصلة */
         .related-products-section {
-            margin-top: 40px;
-            padding-top: 30px;
+            margin-top: 25px;
+            padding-top: 20px;
             border-top: 1px solid var(--gray-light);
+        }
+        
+        @media (min-width: 768px) {
+            .related-products-section {
+                margin-top: 35px;
+                padding-top: 30px;
+            }
         }
         
         .related-products-title {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 1.3rem;
+            gap: 8px;
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--text-color);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
+        @media (min-width: 768px) {
+            .related-products-title {
+                font-size: 1.25rem;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+        }
+        
+        .related-products-title i {
+            font-size: 0.95rem;
+        }
+        
+        @media (min-width: 768px) {
+            .related-products-title i {
+                font-size: 1.1rem;
+            }
+        }
+        
+        /* حاوية الكاروسيل */
         .related-products-carousel {
             position: relative;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
+        }
+        
+        @media (min-width: 768px) {
+            .related-products-carousel {
+                gap: 15px;
+            }
         }
         
         .carousel-container {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             overflow-x: auto;
             scroll-behavior: smooth;
             scroll-snap-type: x mandatory;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            padding: 10px 5px;
-            white-space: nowrap;
+            padding: 8px 5px 15px;
             -webkit-overflow-scrolling: touch;
+            width: 100%;
         }
         
         .carousel-container::-webkit-scrollbar {
@@ -2745,12 +2946,19 @@ function addProductDetailPageStyles() {
         
         .carousel-track {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             white-space: nowrap;
         }
         
+        @media (min-width: 768px) {
+            .carousel-track {
+                gap: 15px;
+            }
+        }
+        
+        /* بطاقات المنتجات ذات الصلة */
         .related-product-card {
-            flex: 0 0 180px;
+            flex: 0 0 140px;
             scroll-snap-align: start;
             background: #fff;
             border-radius: var(--border-radius);
@@ -2761,17 +2969,32 @@ function addProductDetailPageStyles() {
             display: inline-block;
             white-space: normal;
             vertical-align: top;
+            border: 1px solid var(--gray-light);
+        }
+        
+        @media (min-width: 480px) {
+            .related-product-card {
+                flex: 0 0 155px;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .related-product-card {
+                flex: 0 0 170px;
+                border-radius: var(--border-radius);
+            }
         }
         
         .related-product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.12);
         }
         
         .related-product-image {
             aspect-ratio: 1;
             background: var(--gray-lighter);
             overflow: hidden;
+            width: 100%;
         }
         
         .related-product-image img {
@@ -2781,28 +3004,48 @@ function addProductDetailPageStyles() {
         }
         
         .related-product-info {
-            padding: 12px;
+            padding: 10px;
+        }
+        
+        @media (min-width: 768px) {
+            .related-product-info {
+                padding: 12px;
+            }
         }
         
         .related-product-name {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-weight: 600;
             color: var(--text-color);
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         
+        @media (min-width: 768px) {
+            .related-product-name {
+                font-size: 0.85rem;
+                margin-bottom: 5px;
+            }
+        }
+        
         .related-product-price {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 700;
             color: var(--primary-color);
         }
         
+        @media (min-width: 768px) {
+            .related-product-price {
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* أزرار التنقل في الكاروسيل */
         .carousel-nav-btn {
-            flex: 0 0 40px;
-            height: 40px;
+            flex: 0 0 36px;
+            height: 36px;
             border-radius: 50%;
             border: none;
             background: var(--primary-color);
@@ -2811,9 +3054,18 @@ function addProductDetailPageStyles() {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1rem;
+            font-size: 0.9rem;
             transition: var(--transition);
             z-index: 2;
+            flex-shrink: 0;
+        }
+        
+        @media (min-width: 768px) {
+            .carousel-nav-btn {
+                flex: 0 0 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
         }
         
         .carousel-nav-btn:hover {
@@ -2821,26 +3073,21 @@ function addProductDetailPageStyles() {
             box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
         }
         
-        @media (max-width: 768px) {
+        /* إخفاء أزرار التنقل على الشاشات الصغيرة */
+        @media (max-width: 767px) {
             .carousel-nav-btn {
                 display: none;
             }
-            
-            .related-product-card {
-                flex: 0 0 150px;
-            }
-            
-            .product-detail-page {
-                padding: 15px;
-            }
-            
-            .detail-product-actions {
-                flex-direction: column;
-            }
-            
-            .add-to-cart-btn {
-                width: 100%;
-            }
+        }
+        
+        /* منع التمرير الأفقي على مستوى الصفحة */
+        body {
+            overflow-x: hidden;
+        }
+        
+        /* ضمان عدم تجاوز أي عنصر للحاوية */
+        .main-content-wrapper {
+            overflow-x: hidden;
         }
     `;
     document.head.appendChild(style);
