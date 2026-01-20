@@ -1408,7 +1408,7 @@ function createProductCardHtml(product, searchQuery = '') {
         : product.name;
     
     return `
-        <a href="product.html?id=${product.id}" class="product-card">
+        <div class="product-card" onclick="showProductDetails(${product.id})">
             ${isFeatured ? `<div class="featured-badge"><i class="fas fa-crown"></i> مميز</div>` : ''}
             <button class="fav-btn ${isFav ? 'active' : ''}" data-id="${product.id}" onclick="toggleFavorite(${product.id}, event)">
                 <i class="fas fa-heart"></i>
@@ -1425,12 +1425,12 @@ function createProductCardHtml(product, searchQuery = '') {
                 <p class="product-description">${product.description.substring(0, 100)}${product.description.length > 100 ? '...' : ''}</p>
                 <div class="product-footer">
                     <div class="product-price">${formattedPrice}</div>
-                    <button class="add-to-cart" onclick="addToCart(${product.id}, 1); event.preventDefault(); event.stopPropagation();">
+                    <button class="add-to-cart" onclick="addToCart(${product.id}, 1); event.stopPropagation();">
                         <i class="fas fa-cart-plus"></i>
                     </button>
                 </div>
             </div>
-        </a>
+        </div>
     `;
 }
 

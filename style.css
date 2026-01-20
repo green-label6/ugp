@@ -1820,27 +1820,12 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 320px;
-    text-decoration: none;
-    color: inherit;
 }
 
 .product-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary-color);
-}
-
-.product-card:active {
-    transform: translateY(-3px);
-}
-
-.product-card .product-name {
-    color: var(--dark-color);
-    text-decoration: none;
-}
-
-.product-card:hover .product-name {
-    color: var(--primary-color);
 }
 
 .featured-badge {
